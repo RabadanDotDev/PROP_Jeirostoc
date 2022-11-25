@@ -16,17 +16,24 @@ import java.util.Random;
  * @author josep
  */
 public abstract class PlayerBase implements IAuto, IPlayer {
+    private HeuristicStatus _lastStatus;
 
     @Override
     public Move move(GameStatus gs) {
-        ArrayList<Point> moves =  gs.getMoves();
+        HeuristicStatus nhs = new HeuristicStatus(gs, _lastStatus);
+        Move m;
+        
+        ArrayList<Point> moves =  nhs.getMoves();
         if(moves.isEmpty()) {
-            return new Move(null, 0L,0,  SearchType.RANDOM); 
+            m = new Move(null, 0L,0,  SearchType.RANDOM); 
         } else {
             Random rand = new Random();
             int q = rand.nextInt(moves.size());
-            return new Move( moves.get(q), 0L, 0, SearchType.RANDOM);         
+            m = new Move( moves.get(q), 0L, 0, SearchType.RANDOM);         
         }
+        
+        _lastStatus = nhs.getNextStatus(m.getTo());
+        return m;
     }
 
     @Override
