@@ -1,6 +1,7 @@
 package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
 import edu.upc.epsevg.prop.othello.Move;
+import edu.upc.epsevg.prop.othello.SearchType;
 
 /**
  * Base class to perform a search for the best movement.
@@ -11,6 +12,7 @@ import edu.upc.epsevg.prop.othello.Move;
 abstract class SearchAlg {
     protected boolean _searchIsOn;
     protected int _maxGlobalDepth;
+    protected SearchType _searchType;
 
     /**
      * Create a MiniMax search algorithm with a given max global length

@@ -16,6 +16,7 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
      */
     public SearchAlgMiniMaxIDS() {
         super(0);
+        _searchType = SearchType.MINIMAX_IDS;
     }
     
     /**

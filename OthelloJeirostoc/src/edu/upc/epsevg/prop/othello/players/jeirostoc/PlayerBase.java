@@ -32,6 +32,7 @@ abstract class PlayerBase implements IAuto, IPlayer {
         // Return result
         if(m.getTo() != null)
             _lastStatus = nhs.getNextStatus(m.getTo());
+        
         return m;
     }
 }

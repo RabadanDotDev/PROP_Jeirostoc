@@ -53,7 +53,10 @@ class HeuristicStatus extends GameStatus {
      */
     public HeuristicStatus getNextStatus(java.awt.Point to) {
         HeuristicStatus hs = new HeuristicStatus(this);
-        hs.movePiece(to);
+        if(to == null)
+            hs.skipTurn();
+        else
+            hs.movePiece(to);
         return hs;
     }
     
@@ -108,6 +111,12 @@ class HeuristicStatus extends GameStatus {
     public void movePiece(Point point) {
         super.movePiece(point);
         entry.swapPlayer();
+    }
+
+    @Override
+    public void skipTurn() {
+        super.skipTurn();
+        entry.swapPlayer();;
     }
 
     @Override
