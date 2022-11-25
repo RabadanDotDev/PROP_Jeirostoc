@@ -11,7 +11,7 @@ import java.util.Objects;
  * @author raul
  * @author josep
  */
-class StatusEntry {
+class HeuristicStatusEntry {
     /**
      * BitSet from a GameStatus specifying the places of the board that are 
      * occupied.
@@ -37,7 +37,7 @@ class StatusEntry {
      * @param board_color
      * @param current_player 
      */
-    public StatusEntry(BitSet board_occupied, BitSet board_color, CellType current_player) {
+    public HeuristicStatusEntry(BitSet board_occupied, BitSet board_color, CellType current_player) {
         this._boardOccupied = board_occupied;
         this._boardColor = board_color;
         this._turn = current_player;
@@ -50,8 +50,8 @@ class StatusEntry {
      * @return The clone
      */
     @Override
-    public StatusEntry clone() {
-        return new StatusEntry(
+    public HeuristicStatusEntry clone() {
+        return new HeuristicStatusEntry(
                 (BitSet)_boardOccupied.clone(), 
                 (BitSet)_boardColor.clone(),
                 _turn
@@ -86,7 +86,7 @@ class StatusEntry {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final StatusEntry other = (StatusEntry) obj;
+        final HeuristicStatusEntry other = (HeuristicStatusEntry) obj;
         if (!Objects.equals(this._boardOccupied, other._boardOccupied)) {
             return false;
         }

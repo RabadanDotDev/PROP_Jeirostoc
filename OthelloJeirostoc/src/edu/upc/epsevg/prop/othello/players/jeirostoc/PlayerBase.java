@@ -4,41 +4,34 @@ import edu.upc.epsevg.prop.othello.GameStatus;
 import edu.upc.epsevg.prop.othello.IAuto;
 import edu.upc.epsevg.prop.othello.IPlayer;
 import edu.upc.epsevg.prop.othello.Move;
-import edu.upc.epsevg.prop.othello.SearchType;
-import java.awt.Point;
-import java.util.ArrayList;
-import java.util.Random;
 
 /**
- * Base class for PlayerMinimax and PlayerID
+ * Player that conserves intermediate heuristic calculations and performs a 
+ * search depending on how it is initialized.
  * 
  * @author raul
  * @author josep
  */
-public abstract class PlayerBase implements IAuto, IPlayer {
+abstract class PlayerBase implements IAuto, IPlayer {
+    protected final SearchAlg _searchAlg;
     private HeuristicStatus _lastStatus;
-
-    @Override
-    public Move move(GameStatus gs) {
-        HeuristicStatus nhs = new HeuristicStatus(gs, _lastStatus);
-        Move m;
-        
-        ArrayList<Point> moves =  nhs.getMoves();
-        if(moves.isEmpty()) {
-            m = new Move(null, 0L,0,  SearchType.RANDOM); 
-        } else {
-            Random rand = new Random();
-            int q = rand.nextInt(moves.size());
-            m = new Move( moves.get(q), 0L, 0, SearchType.RANDOM);         
-        }
-        
-        _lastStatus = nhs.getNextStatus(m.getTo());
-        return m;
-    }
-
-    @Override
-    public void timeout() {
-        System.out.println("TODO timeout");
+    
+    protected PlayerBase(SearchAlg searchAlg) {
+        _searchAlg = searchAlg;
     }
     
+    @Override
+    public Move move(GameStatus gs) {
+        // Update status
+        HeuristicStatus nhs = new HeuristicStatus(gs, _lastStatus);
+        
+        // Do search
+        _searchAlg.searchON();
+        Move m = _searchAlg.nextMove(nhs);
+        
+        // Return result
+        if(m.getTo() != null)
+            _lastStatus = nhs.getNextStatus(m.getTo());
+        return m;
+    }
 }

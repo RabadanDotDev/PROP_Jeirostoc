@@ -11,7 +11,7 @@ import java.awt.Point;
  * @author josep
  */
 class HeuristicStatus extends GameStatus {
-    private final StatusEntry entry;
+    private final HeuristicStatusEntry entry;
     
     /**
      * Creates a HeuristicStatus based on a specific game status
@@ -20,7 +20,7 @@ class HeuristicStatus extends GameStatus {
      */
     public HeuristicStatus(int [][] status){
         super(status);
-        entry = new StatusEntry(board_occupied, board_color, currentPlayer);
+        entry = new HeuristicStatusEntry(board_occupied, board_color, currentPlayer);
     }
     
     /**
@@ -42,7 +42,7 @@ class HeuristicStatus extends GameStatus {
      */
     public HeuristicStatus(GameStatus gs, HeuristicStatus lastStatus) {
         super(gs);
-        entry = new StatusEntry(board_occupied, board_color, currentPlayer);
+        entry = new HeuristicStatusEntry(board_occupied, board_color, currentPlayer);
     }
     
     /**
@@ -89,7 +89,7 @@ class HeuristicStatus extends GameStatus {
      * 
      * @return The copy of the entry representing the current status of the game
      */
-    public StatusEntry getAsEntry() {
+    public HeuristicStatusEntry getAsEntry() {
         return entry.clone();
     }
 
