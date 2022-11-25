@@ -58,12 +58,23 @@ class HeuristicStatus extends GameStatus {
     }
     
     /**
+     * Get the heuristic of the current state of the game from the point of view
+     * of the current player
+     * 
+     * @return The heuristic of the current state of the game from the point of
+     * view of the current player
+     */
+    public double getHeuristic() {
+        return getHeuristic(currentPlayer);
+    }
+    
+    /**
      * Get the heuristic of the current state of the game
      * 
-     * @param p The cell type to use to calculate the heursitic from
-     * @return The heuristic of the currrent state of the game
+     * @param p The cell type to use to calculate the heuristic from
+     * @return The heuristic of the current state of the game
      */
-    public double getHeuristic(CellType p){
+    public double getHeuristic(CellType p) {
         if(this.isGameOver() && this.GetWinner().equals(p))
             return Double.POSITIVE_INFINITY;
         else if (this.isGameOver())
