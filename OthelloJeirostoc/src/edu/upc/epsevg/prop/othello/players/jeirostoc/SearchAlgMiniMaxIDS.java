@@ -15,8 +15,7 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
      * Create a MiniMax search algorithm with iterative deepening.
      */
     public SearchAlgMiniMaxIDS() {
-        super(0);
-        _searchType = SearchType.MINIMAX_IDS;
+        super(0, SearchType.MINIMAX_IDS);
     }
     
     /**
@@ -29,6 +28,8 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
     public Move nextMove(HeuristicStatus hs) {
         Move bestSoFar = new Move(null, 0L,0,  SearchType.MINIMAX_IDS);
         
+        // Do a minimax search incrementing the maxDepth until the search is
+        // stopped
         while (_searchIsOn) {
             this._maxGlobalDepth++;
             bestSoFar = super.nextMove(hs);

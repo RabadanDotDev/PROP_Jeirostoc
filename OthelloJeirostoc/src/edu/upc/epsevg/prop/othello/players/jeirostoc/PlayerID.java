@@ -7,15 +7,26 @@ package edu.upc.epsevg.prop.othello.players.jeirostoc;
  * @author josep
  */
 public class PlayerID extends PlayerBase {
+    /**
+     * Default constructor.
+     */
     public PlayerID() {
         super(new SearchAlgMiniMaxIDS());
     }
     
+    /**
+     * Get the name of the player.
+     * 
+     * @return The name of the player
+     */
     @Override
     public String getName() {
         return "Jeirostoc MiniMaxID";
     }
 
+    /**
+     * Inform the player that it has run out of time.
+     */
     @Override
     public void timeout() {
         _searchAlg.searchOFF();

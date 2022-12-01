@@ -13,11 +13,19 @@ import java.util.Random;
  * @author josep
  */
 class SearchAlgRandom extends SearchAlg {
-
+    /**
+     * Create a SearchAlgthat just chooses a random move
+     */
     public SearchAlgRandom() {
-        super(-1);
+        super(-1, SearchType.RANDOM);
     }
     
+    /**
+     * Get a random next move
+     * 
+     * @param hs The current game status
+     * @return The selected move
+     */
     @Override
     public Move nextMove(HeuristicStatus hs) {        
         ArrayList<Point> moves = hs.getMoves();

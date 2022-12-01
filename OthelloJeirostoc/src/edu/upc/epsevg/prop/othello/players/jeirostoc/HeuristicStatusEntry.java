@@ -66,6 +66,10 @@ class HeuristicStatusEntry {
         _turn = CellType.opposite(_turn);
     }
 
+    /**
+     * Compute the hashcode of this entry
+     * @return The hashcode
+     */
     @Override
     public int hashCode() {
         int hash = 7;
@@ -96,14 +100,28 @@ class HeuristicStatusEntry {
         return this._turn == other._turn;
     }
 
+    /**
+     * Get the BitSet of the positions of the board that are occupied
+     * @return The BitSet of the positions of the board that are occupied
+     */
     public BitSet getBoardOccupied() {
         return _boardOccupied;
     }
 
+    /**
+     * Get the BitSet of the colors of the positions of the board that are 
+     * occupied
+     * @return The BitSet of the colors of the positions of the board that are 
+     * occupied
+     */
     public BitSet getBoardColor() {
         return _boardColor;
     }
 
+    /**
+     * Get the CellType of the player that has to play next.
+     * @return The CellType of the player that has to play next.
+     */
     public CellType getTurn() {
         return _turn;
     }

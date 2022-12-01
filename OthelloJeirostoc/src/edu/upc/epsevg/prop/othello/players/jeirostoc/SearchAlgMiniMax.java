@@ -13,7 +13,15 @@ import java.util.ArrayList;
  * @author josep
  */
 class SearchAlgMiniMax extends SearchAlg {
+    /**
+     * The number of nodes which the current search has computed their 
+     * heuristic.
+     */
     private long _nodesWithComputedHeuristic;
+    
+    /**
+     * The maximum depth the current search has computed an heuristic.
+     */
     private int _depthReached;
     
     /**
@@ -22,8 +30,17 @@ class SearchAlgMiniMax extends SearchAlg {
      * @param maxDepth 
      */
     public SearchAlgMiniMax(int maxDepth) {
-        super(maxDepth);
-        _searchType = SearchType.MINIMAX;
+        super(maxDepth, SearchType.MINIMAX);
+    }
+    
+    /**
+     * Create a MiniMax search algorithm with a given max global length and 
+     * different SearchType. This is intended for specializations of this class
+     * 
+     * @param maxGlobalDepth 
+     */
+    protected SearchAlgMiniMax(int maxGlobalDepth, SearchType searchType) {
+        super(maxGlobalDepth, searchType);
     }
     
     /**
@@ -34,14 +51,16 @@ class SearchAlgMiniMax extends SearchAlg {
      */
     @Override
     public Move nextMove(HeuristicStatus hs) {  
+        // Init trackers
         _nodesWithComputedHeuristic = 0;
         _depthReached = 0;
+        
+        // Init result
         Point pointToMove = null;
         double bestHeuristic = Double.NEGATIVE_INFINITY;
         
-        ArrayList<Point> points = hs.getMoves();
-        
         // Analize moves if they exist
+        ArrayList<Point> points = hs.getMoves();
         for (Point p : points) {
             // Check if search can continue
             if(!_searchIsOn)
@@ -57,25 +76,28 @@ class SearchAlgMiniMax extends SearchAlg {
                     false
             );
             
+            // Store the found heuristic if its better
             if(bestHeuristic < nextHeuristic || pointToMove == null) {
                 bestHeuristic = nextHeuristic;
                 pointToMove = p;
             }
         }
         
+        // Return selected movement
         return new Move(pointToMove, _nodesWithComputedHeuristic, _depthReached, _searchType);
     }
     
     /**
-     * Return the heuristic more favorable to the current player within the 
-     * bounds alpha and beta.
+     * Maximize or minimize the heuristic from the perspective of player within 
+     * the bounds alpha and beta.
      * 
      * @param player The player to evaluate the game with
      * @param hs The current game state
      * @param currentDepth The depth of this call
      * @param alpha The upper bound
      * @param beta The lower bound
-     * @param color 1 if its the player owner of the search, -1 if its not.
+     * @param isMax True if the heuristic has to be maximized and false if it 
+     * has to be minimized.
      * @return the heuristic more favorable to the current player within the 
      * bounds alpha and beta.
      */
@@ -116,7 +138,7 @@ class SearchAlgMiniMax extends SearchAlg {
                 break;
         }
         
-        // Return most favourable bound to current player
+        // Return the maxmimized or minimized bound
         return isMax ? alpha : beta;
     }
 }

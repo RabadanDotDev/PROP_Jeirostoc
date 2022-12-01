@@ -11,6 +11,10 @@ import java.awt.Point;
  * @author josep
  */
 class HeuristicStatus extends GameStatus {
+    /**
+     * Simplified entry to use in case this class has to be added into a map or 
+     * needs to a hashcode to be computed.
+     */
     private final HeuristicStatusEntry entry;
     
     /**
@@ -107,18 +111,32 @@ class HeuristicStatus extends GameStatus {
         return entry.clone();
     }
 
+    /**
+     * Make a movement using the current player in point
+     * 
+     * @param point The position to make a movement in
+     */
     @Override
     public void movePiece(Point point) {
         super.movePiece(point);
         entry.swapPlayer();
     }
 
+    /**
+     * Make the current player skip a turn.
+     */
     @Override
     public void skipTurn() {
         super.skipTurn();
-        entry.swapPlayer();;
+        entry.swapPlayer();
     }
 
+    /**
+     * Compute the hashcode using the current state of the board and the current 
+     * player
+     * 
+     * @return The hashcode
+     */
     @Override
     public int hashCode() {
         return entry.hashCode();

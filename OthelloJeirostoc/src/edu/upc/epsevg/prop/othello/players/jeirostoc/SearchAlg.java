@@ -10,22 +10,35 @@ import edu.upc.epsevg.prop.othello.SearchType;
  * @author josep
  */
 abstract class SearchAlg {
+    /**
+     * Indicates if the search is active or not. This value has to be honored 
+     * as soon as it is detected
+     */
     protected boolean _searchIsOn;
+    
+    /**
+     * The current maximum depth the algorithm is allowed to go.
+     */
     protected int _maxGlobalDepth;
-    protected SearchType _searchType;
+    
+    /**
+     * The specialized class search type.
+     */
+    protected final SearchType _searchType;
 
     /**
      * Create a MiniMax search algorithm with a given max global length
      * 
      * @param maxGlobalDepth 
      */
-    protected SearchAlg(int maxGlobalDepth) {
+    protected SearchAlg(int maxGlobalDepth, SearchType searchType) {
         _searchIsOn = true;
         _maxGlobalDepth = maxGlobalDepth;
+        _searchType = searchType;
     }
     
     /**
-     * Get next move based on the current game status
+     * Get next move based on the current game status.
      * 
      * @param hs The current game status
      * @return The selected move
