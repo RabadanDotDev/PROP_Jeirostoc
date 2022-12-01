@@ -113,7 +113,7 @@ class SearchAlgMiniMax extends SearchAlg {
         ArrayList<Point> points = hs.getMoves();
         
         // Analize skipped turn if there is no movements
-        if(points.isEmpty())
+        if(points.isEmpty() && _searchIsOn)
             return minimax(player, hs.getNextStatus(null), currentDepth+1, alpha, beta, !isMax);
         
         // Analize moves if they exist
