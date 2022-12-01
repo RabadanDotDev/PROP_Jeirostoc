@@ -154,6 +154,6 @@ class HeuristicStatus extends GameStatus {
             return false;
         }
         final HeuristicStatus other = (HeuristicStatus) obj;
-        return this.entry.equals(other);
+        return this.entry.equals(other.entry);
     }
 }
