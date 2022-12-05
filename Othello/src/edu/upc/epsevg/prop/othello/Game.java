@@ -5,6 +5,7 @@ import edu.upc.epsevg.prop.othello.players.RandomPlayer;
 import edu.upc.epsevg.prop.othello.Level;
 import edu.upc.epsevg.prop.othello.IPlayer;
 import edu.upc.epsevg.prop.othello.players.DesdemonaPlayer;
+import edu.upc.epsevg.prop.othello.players.jeirostoc.PlayerID;
 import edu.upc.epsevg.prop.othello.players.jeirostoc.PlayerMiniMax;
 
 
@@ -25,7 +26,7 @@ public class Game {
             @Override
             public void run() {
                 
-                IPlayer player1 = new PlayerMiniMax(4);
+                IPlayer player1 = new PlayerID();
                 //IPlayer player1 = new HumanPlayer("Human1");
                 IPlayer player2 = new DesdemonaPlayer(1);//GB
 

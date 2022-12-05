@@ -25,6 +25,11 @@ abstract class SearchAlg {
      * The specialized class search type.
      */
     protected final SearchType _searchType;
+    
+    /**
+     * Stores the best heuristic of the last movement for debug purposes.
+     */
+    protected double _lastBestHeuristic;
 
     /**
      * Create a MiniMax search algorithm with a given max global length
@@ -35,6 +40,7 @@ abstract class SearchAlg {
         _searchIsOn = true;
         _maxGlobalDepth = maxGlobalDepth;
         _searchType = searchType;
+        _lastBestHeuristic = 0;
     }
     
     /**
@@ -54,4 +60,12 @@ abstract class SearchAlg {
      * Turn off the search.
      */
     public void searchON() { _searchIsOn = true; }
+
+    /**
+     * Get the best heuristic of the last movement for debug purposes.
+     * @return The best heuristic of the last movement for debug purposes.
+     */
+    public double getLastBestHeuristic() {
+        return _lastBestHeuristic;
+    }
 }

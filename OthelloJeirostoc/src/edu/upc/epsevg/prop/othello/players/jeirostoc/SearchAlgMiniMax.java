@@ -17,12 +17,12 @@ class SearchAlgMiniMax extends SearchAlg {
      * The number of nodes which the current search has computed their 
      * heuristic.
      */
-    private long _nodesWithComputedHeuristic;
+    protected long _nodesWithComputedHeuristic;
     
     /**
      * The maximum depth the current search has computed an heuristic.
      */
-    private int _depthReached;
+    protected int _depthReached;
     
     /**
      * Create a new MiniMax search instance with a given max depth
@@ -55,12 +55,34 @@ class SearchAlgMiniMax extends SearchAlg {
         _nodesWithComputedHeuristic = 0;
         _depthReached = 0;
         
+        // Compute next point
+        Point p = minimaxNextPoint(hs);
+        
+        // Return selected movement
+        return new Move(p, _nodesWithComputedHeuristic, _depthReached, _searchType);
+    }
+    
+    protected Point minimaxNextPoint(HeuristicStatus hs) {
         // Init result
         Point pointToMove = null;
         double bestHeuristic = Double.NEGATIVE_INFINITY;
         
-        // Analize moves if they exist
+        // Get moves
         ArrayList<Point> points = hs.getMoves();
+        
+        // Analize skipped turn if there is no movements
+        if(points.isEmpty() && _searchIsOn) {
+            bestHeuristic = minimax(
+                    hs.getCurrentPlayer(), 
+                    hs.getNextStatus(null), 
+                    1, 
+                    Double.NEGATIVE_INFINITY, 
+                    Double.POSITIVE_INFINITY, 
+                    false
+            );
+        }
+        
+        // Analize moves if they exist
         for (Point p : points) {
             // Check if search can continue
             if(!_searchIsOn)
@@ -83,8 +105,9 @@ class SearchAlgMiniMax extends SearchAlg {
             }
         }
         
-        // Return selected movement
-        return new Move(pointToMove, _nodesWithComputedHeuristic, _depthReached, _searchType);
+        // Return selected point
+        _lastBestHeuristic = bestHeuristic;
+        return pointToMove;
     }
     
     /**
@@ -101,7 +124,7 @@ class SearchAlgMiniMax extends SearchAlg {
      * @return the heuristic more favorable to the current player within the 
      * bounds alpha and beta.
      */
-    public double minimax(CellType player, HeuristicStatus hs, int currentDepth, double alpha, double beta, boolean isMax) {     
+    protected double minimax(CellType player, HeuristicStatus hs, int currentDepth, double alpha, double beta, boolean isMax) {     
         // Check if we got to a terminal state
         if(hs.checkGameOver() || _maxGlobalDepth <= currentDepth) {
             _nodesWithComputedHeuristic++;

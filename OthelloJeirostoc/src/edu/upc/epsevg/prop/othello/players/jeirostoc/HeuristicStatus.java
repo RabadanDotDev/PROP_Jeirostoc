@@ -12,6 +12,11 @@ import java.awt.Point;
  */
 class HeuristicStatus extends GameStatus {
     /**
+     * The version of the heuristic of class for debug purposes.
+     */
+    public final static double HEURISTIC_VER = 1.0;
+    
+    /**
      * Simplified entry to use in case this class has to be added into a map or 
      * needs to a hashcode to be computed.
      */

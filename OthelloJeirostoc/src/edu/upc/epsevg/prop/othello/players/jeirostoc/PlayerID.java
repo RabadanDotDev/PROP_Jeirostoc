@@ -21,7 +21,7 @@ public class PlayerID extends PlayerBase {
      */
     @Override
     public String getName() {
-        return "Jeirostoc MiniMaxID";
+        return "Jeirostoc_MiniMaxID";
     }
 
     /**

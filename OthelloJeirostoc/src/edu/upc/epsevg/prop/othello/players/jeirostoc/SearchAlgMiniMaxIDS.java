@@ -2,6 +2,7 @@ package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
 import edu.upc.epsevg.prop.othello.Move;
 import edu.upc.epsevg.prop.othello.SearchType;
+import java.awt.Point;
 
 /**
  * Search algorithm that chooses a move based on MiniMax with iterative 
@@ -26,15 +27,22 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
      */
     @Override
     public Move nextMove(HeuristicStatus hs) {
-        Move bestSoFar = new Move(null, 0L,0,  SearchType.MINIMAX_IDS);
+        // Init trackers
+        _nodesWithComputedHeuristic = 0;
+        _depthReached = 0;
         
         // Do a minimax search incrementing the maxDepth until the search is
         // stopped
+        Point bestSoFar = null;
+        this._maxGlobalDepth = 1;
         while (_searchIsOn) {
             this._maxGlobalDepth++;
-            bestSoFar = super.nextMove(hs);
+            Point p = minimaxNextPoint(hs);
+            if(_searchIsOn)
+                bestSoFar = p;
         }
         
-        return bestSoFar;
+        // Return selected movement
+        return new Move(bestSoFar, _nodesWithComputedHeuristic, _depthReached, _searchType);
     }
 }

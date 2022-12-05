@@ -1,9 +1,15 @@
 package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
+import edu.upc.epsevg.prop.othello.CellType;
 import edu.upc.epsevg.prop.othello.GameStatus;
 import edu.upc.epsevg.prop.othello.IAuto;
 import edu.upc.epsevg.prop.othello.IPlayer;
 import edu.upc.epsevg.prop.othello.Move;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Player that conserves intermediate heuristic calculations and performs a 
@@ -13,6 +19,10 @@ import edu.upc.epsevg.prop.othello.Move;
  * @author josep
  */
 abstract class PlayerBase implements IAuto, IPlayer {
+    private final static String  CSV_FILE_NAME = "move_log.csv";
+    private final static boolean LOG_MOVEMENTS = true;
+    private static BufferedWriter bw = null;
+    
     /**
      * The search algorithm strategy the instance uses
      */
@@ -30,6 +40,20 @@ abstract class PlayerBase implements IAuto, IPlayer {
      */
     protected PlayerBase(SearchAlg searchAlg) {
         _searchAlg = searchAlg;
+        
+        if(LOG_MOVEMENTS) { 
+            try {
+                bw = new BufferedWriter(new FileWriter(
+                        System.currentTimeMillis() + "_" +
+                        getName() + "_" + 
+                        CSV_FILE_NAME
+                ));
+                
+                bw.append("movement_count;point;nodes_computed_heuristic;depth_reached;search_type;heuristic;heuristic_ver\n");
+            } catch (IOException ex) {
+                Logger.getLogger(PlayerBase.class.getName()).log(Level.SEVERE, "Couldn't open csv file", ex);
+            } 
+        }
     }
     
     @Override
@@ -44,7 +68,28 @@ abstract class PlayerBase implements IAuto, IPlayer {
         // Update cache status
         _lastStatus = nhs.getNextStatus(m.getTo());
         
+        // Log selected movement
+        if(LOG_MOVEMENTS)
+            logMovement(m, gs.getCurrentPlayer());
+        
         // Return result
         return m;
+    }
+    
+    private void logMovement(Move m, CellType p) {
+        try {
+            bw.append("" +
+                    _lastStatus.getMovementCount()    + ";" +
+                    m.getTo()                         + ";" +
+                    m.getNumerOfNodesExplored()       + ";" +
+                    m.getMaxDepthReached()            + ";" +
+                    m.getSearchType()                 + ";" +
+                    _searchAlg.getLastBestHeuristic() + ";" +
+                    HeuristicStatus.HEURISTIC_VER     + "\n"
+            );
+            bw.flush();
+        } catch (IOException ex) {
+            Logger.getLogger(PlayerBase.class.getName()).log(Level.SEVERE, "Couldn't write to csv file", ex);
+        }
     }
 }

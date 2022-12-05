@@ -25,7 +25,7 @@ public class PlayerMiniMax extends PlayerBase {
      */
     @Override
     public String getName() {
-        return "Jeirostoc MiniMax" ;
+        return "Jeirostoc_MiniMax" ;
     }
     
     /**
