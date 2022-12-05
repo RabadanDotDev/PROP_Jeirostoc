@@ -7,6 +7,7 @@ package edu.upc.epsevg.prop.othello;
 
 import edu.upc.epsevg.prop.othello.players.DesdemonaPlayer;
 import edu.upc.epsevg.prop.othello.players.RandomPlayer;
+import edu.upc.epsevg.prop.othello.players.jeirostoc.PlayerID;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,15 +28,16 @@ public class HeadlessGame {
     private int timeout;
 
     public static void main(String[] args) {
+        IPlayer playerID = new PlayerID();
+        IPlayer playerDesDemona = new DesdemonaPlayer(1);//GB
 
-        IPlayer player1 = new RandomPlayer("Crazy Ivan");
-        //Player player2 = new RandomPlayer("Desdesmonasia");
-        IPlayer player2 = new DesdemonaPlayer(1);//GB
+        HeadlessGame game1 = new HeadlessGame(playerID, playerDesDemona, 2, 5);
+        GameResult gr1 = game1.start();
+        System.out.println(gr1);
 
-        HeadlessGame game = new HeadlessGame(player1, player2, 2, 5);
-        GameResult gr = game.start();
-        System.out.println(gr);
-
+        HeadlessGame game2 = new HeadlessGame(playerDesDemona, playerID, 2, 5);
+        GameResult gr2 = game2.start();
+        System.out.println(gr2);
     }
 
     //=====================================================================================0
