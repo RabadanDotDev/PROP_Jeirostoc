@@ -45,8 +45,8 @@ class HeuristicStatusZobristHash {
      */
     public HeuristicStatusZobristHash(BitSet board_occupied, BitSet board_color, CellType current_player) {
         // Copy status
-        this._lastBoardOccupied = board_occupied;
-        this._lastBoardColor    = board_color;
+        this._lastBoardOccupied = (BitSet) board_occupied.clone();
+        this._lastBoardColor    = (BitSet) board_color.clone();
         this._lastTurn          = current_player;
         
         regenZobristHashes();
