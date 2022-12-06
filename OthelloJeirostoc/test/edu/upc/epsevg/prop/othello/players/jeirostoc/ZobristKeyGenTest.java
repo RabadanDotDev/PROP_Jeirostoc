@@ -5,7 +5,6 @@ import java.awt.Point;
 import java.util.BitSet;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.runners.Parameterized;
 
 /**
  * @author raul
@@ -36,7 +35,7 @@ public class ZobristKeyGenTest {
     }
     
     private void assertEqualZobristKeyWith(CellType cellType, ZobristKeyGen.BoardVariation bv) {
-        BitSet k1,k2;
+        long k1,k2;
         
         // Test 
         k1 = ZobristKeyGen.getZobristValue(

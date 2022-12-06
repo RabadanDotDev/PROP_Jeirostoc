@@ -2,7 +2,6 @@ package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
 import edu.upc.epsevg.prop.othello.CellType;
 import java.awt.Point;
-import java.util.BitSet;
 import java.util.Random;
 
 /**
@@ -44,15 +43,15 @@ public class ZobristKeyGen {
         }
     }
     
-    public static BitSet getZobristValue(int x, int y, CellType c, BoardVariation bp) {
+    public static long getZobristValue(int x, int y, CellType c, BoardVariation bp) {
         return VALUES[posToIndex(x, y, cellTypeToStateNum(c) ,bp)];
     }
     
-    public static BitSet getZobristValue(Point p, CellType c, BoardVariation bp) {
+    public static long getZobristValue(Point p, CellType c, BoardVariation bp) {
         return VALUES[posToIndex(p.x, p.y, cellTypeToStateNum(c) ,bp)];
     }
     
-    private static final BitSet[] VALUES;
+    private static final long[] VALUES;
     private final static int BOARD_SIZE = 8;
     private final static int BOARD_STATES = 3;
     private final static int MAP_KEYS_COUNT = BOARD_SIZE*BOARD_SIZE*BOARD_STATES;
@@ -60,16 +59,14 @@ public class ZobristKeyGen {
     static {
         // Init
         Random r = new Random();
-        long[] l = new long[]{0};
-        VALUES = new BitSet[BoardVariation.COUNT.v*MAP_KEYS_COUNT + 1];
+        VALUES = new long[BoardVariation.COUNT.v*MAP_KEYS_COUNT + 1];
         
         // Generate a zobrist value for each position and state of the board
         for (int y = 0; y < BOARD_SIZE; y++) {
             for (int x = 0; x < BOARD_SIZE; x++) {
                 for (int s = 0; s < BOARD_STATES; s++) {
                     // Generate zobrist value for this position and state
-                    l[0] = r.nextLong();
-                    BitSet zv = BitSet.valueOf(l);
+                    long zv = r.nextLong();
                     
                     // Update all variations
                     VALUES[inversePosToIndex(x, y, s, BoardVariation.BASE)]       = zv;
@@ -85,8 +82,7 @@ public class ZobristKeyGen {
         }
         
         // Generate the value to indicate that it is the turn of player 1
-        l[0] = r.nextLong();
-        BitSet zv = BitSet.valueOf(l);
+        long zv = r.nextLong();
         VALUES[BoardVariation.COUNT.v*MAP_KEYS_COUNT] = zv;
     }
     
