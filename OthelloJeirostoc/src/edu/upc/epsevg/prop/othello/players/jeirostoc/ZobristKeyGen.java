@@ -5,12 +5,15 @@ import java.awt.Point;
 import java.util.Random;
 
 /**
- * Helper class to generate zobrist keys for the othello game
+ * Helper class to generate Zobrist keys for the Othello game
  * 
  * @author raul
  * @author josep
  */
-public class ZobristKeyGen {    
+public class ZobristKeyGen {
+    /**
+     * Enumeration to indicate the 8 possible variations of the board.
+     */
     public enum BoardVariation{
         BASE(0),
         ROT90(1),
@@ -42,18 +45,75 @@ public class ZobristKeyGen {
         }
     }
     
+    /**
+     * Get the Zobrist value corresponding to the position (x, y) with the 
+     * CellType c and having applied the transformation indicated by bp.
+     * 
+     * @param x The x position
+     * @param y The y position
+     * @param c The cell type
+     * @param bp The BoardVariation
+     * @return The Zobrist value
+     */
     public static long getZobristValue(int x, int y, CellType c, BoardVariation bp) {
         return VALUES[posToIndex(x, y, cellTypeToStateNum(c) ,bp)];
     }
     
+    /**
+     * Get the Zobrist value corresponding to the position p with the 
+     * CellType c and having applied the transformation indicated by bp.
+     * 
+     * @param p The position
+     * @param c The cell type
+     * @param bp The BoardVariation
+     * @return The Zobrist value
+     */
     public static long getZobristValue(Point p, CellType c, BoardVariation bp) {
         return VALUES[posToIndex(p.x, p.y, cellTypeToStateNum(c) ,bp)];
     }
     
+    /**
+     * Get the Zobrist value corresponding to the position indicated by 
+     * bitsetIndex (with the form y*SIZE + x) cell state s (0 or 1) and having 
+     * applied the transformation indicated by bp.
+     * 
+     * @param bitsetIndex The index of the position
+     * @param s The cell state
+     * @param bp The BoardVariation
+     * @return The Zobrist value
+     */
+    public static long getZobristValue(int bitsetIndex, int s, BoardVariation bp) {
+        return VALUES[posToIndex(bitsetIndex, s, bp)];
+    }
+    
+    /**
+     * Get the Zobrist value corresponding to the player 2 being the one who has
+     * to make a move.
+     * @return The Zobrist value
+     */
+    public static long getZobristValueP2() {
+        return VALUES[VALUES.length-1];
+    }
+    
+    /**
+     * The table containing all the Zobrist values in the 8 variations.
+     */
     private static final long[] VALUES;
+    
+    /**
+     * The size of the board.
+     */
     private final static int BOARD_SIZE = 8;
-    private final static int BOARD_COLORS = 2;
-    private final static int MAP_KEYS_COUNT = BOARD_SIZE*BOARD_SIZE*BOARD_COLORS;
+    
+    /**
+     * The number of considered states that can a position have.
+     */
+    private final static int BOARD_STATE = 2;
+    
+    /**
+     * The number of Zobrist values one variation of the map can have.
+     */
+    private final static int MAP_KEYS_COUNT = BOARD_SIZE*BOARD_SIZE*BOARD_STATE;
     
     static {
         // Init
@@ -63,7 +123,7 @@ public class ZobristKeyGen {
         // Generate a zobrist value for each position and state of the board
         for (int y = 0; y < BOARD_SIZE; y++) {
             for (int x = 0; x < BOARD_SIZE; x++) {
-                for (int s = 0; s < BOARD_COLORS; s++) {
+                for (int s = 0; s < BOARD_STATE; s++) {
                     // Generate zobrist value for this position and state
                     long zv = r.nextLong();
                     
@@ -85,12 +145,33 @@ public class ZobristKeyGen {
         VALUES[BoardVariation.values().length*MAP_KEYS_COUNT] = zv;
     }
     
+    /**
+     * Convert the CellType to its corresponding cell state number
+     * 
+     * @param c The cell type
+     * @return The corresponding cell state number
+     */
     private static int cellTypeToStateNum(CellType c) {
         return switch (c) {
             case PLAYER1 -> 0;
             case PLAYER2 -> 1;
             default      -> 0;
         };
+    }
+    
+    /**
+     * Get the index of the Zobrist value in VALUES corresponding to the board 
+     * position indicated by bitsetIndex with cell state s after doing the 
+     * transformation specified by the variation bp. The BitSet index is assumed
+     * to be equal to (y*board_size + x)
+     * 
+     * @param bitsetIndex The BitSet index
+     * @param s The cell state.
+     * @param bp The board variation
+     * @return The index
+     */
+    private static int posToIndex(int bitsetIndex, int s, BoardVariation bp) {
+        return MAP_KEYS_COUNT*bp.v + bitsetIndex*BOARD_STATE + s;
     }
     
     /**
@@ -105,7 +186,7 @@ public class ZobristKeyGen {
      * @return The index
      */
     private static int posToIndex(int x, int y, int s, BoardVariation bp) {
-        return MAP_KEYS_COUNT*bp.v + (y*BOARD_SIZE + x)*BOARD_COLORS + s;
+        return MAP_KEYS_COUNT*bp.v + (y*BOARD_SIZE + x)*BOARD_STATE + s;
     }
     
     /**
@@ -134,6 +215,6 @@ public class ZobristKeyGen {
             default         -> {invX = x;              invY = y;              }
         }
         
-        return MAP_KEYS_COUNT*bp.v + (invY*BOARD_SIZE + invX)*BOARD_COLORS + s;
+        return MAP_KEYS_COUNT*bp.v + (invY*BOARD_SIZE + invX)*BOARD_STATE + s;
     }
 }

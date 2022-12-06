@@ -17,10 +17,9 @@ class HeuristicStatus extends GameStatus {
     public final static double HEURISTIC_VER = 1.0;
     
     /**
-     * Simplified entry to use in case this class has to be added into a map or 
-     * needs to a hashcode to be computed.
+     * Helper class instance to generate the Zobrist hash.
      */
-    private final HeuristicStatusEntry entry;
+    private final HeuristicStatusZobristHash _zh;
     
     /**
      * Creates a HeuristicStatus based on a specific game status
@@ -29,7 +28,7 @@ class HeuristicStatus extends GameStatus {
      */
     public HeuristicStatus(int [][] status){
         super(status);
-        entry = new HeuristicStatusEntry(board_occupied, board_color, currentPlayer);
+        _zh = new HeuristicStatusZobristHash(board_occupied, board_color, currentPlayer);
     }
     
     /**
@@ -38,7 +37,8 @@ class HeuristicStatus extends GameStatus {
      * @param gs The game status to make a copy from
      */
     public HeuristicStatus(GameStatus gs) {
-        this(gs, null);
+        super(gs);
+        _zh = new HeuristicStatusZobristHash(board_occupied, board_color, currentPlayer);
     }
 
     /**
@@ -51,7 +51,18 @@ class HeuristicStatus extends GameStatus {
      */
     public HeuristicStatus(GameStatus gs, HeuristicStatus lastStatus) {
         super(gs);
-        entry = new HeuristicStatusEntry(board_occupied, board_color, currentPlayer);
+        _zh = new HeuristicStatusZobristHash(lastStatus._zh);
+        _zh.updateZobristHashes(board_occupied, board_color, currentPlayer);
+    }
+    
+    /**
+     * Copy constructor.
+     * 
+     * @param hs The heuristic status to make a copy from
+     */
+    public HeuristicStatus(HeuristicStatus hs) {
+        super(hs);
+        _zh = new HeuristicStatusZobristHash(hs._zh);
     }
     
     /**
@@ -112,8 +123,8 @@ class HeuristicStatus extends GameStatus {
      * 
      * @return The copy of the entry representing the current status of the game
      */
-    public HeuristicStatusEntry getAsEntry() {
-        return entry.clone();
+    public long getZobristHash() {
+        return _zh.zobristHashCode();
     }
 
     /**
@@ -124,7 +135,7 @@ class HeuristicStatus extends GameStatus {
     @Override
     public void movePiece(Point point) {
         super.movePiece(point);
-        entry.swapPlayer();
+        _zh.updateZobristHashes(board_occupied, board_color, currentPlayer);
     }
 
     /**
@@ -133,32 +144,6 @@ class HeuristicStatus extends GameStatus {
     @Override
     public void skipTurn() {
         super.skipTurn();
-        entry.swapPlayer();
-    }
-
-    /**
-     * Compute the hashcode using the current state of the board and the current 
-     * player
-     * 
-     * @return The hashcode
-     */
-    @Override
-    public int hashCode() {
-        return entry.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final HeuristicStatus other = (HeuristicStatus) obj;
-        return this.entry.equals(other.entry);
+        _zh.swapPlayer();
     }
 }
