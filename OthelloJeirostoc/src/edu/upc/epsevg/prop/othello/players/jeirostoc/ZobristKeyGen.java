@@ -19,8 +19,7 @@ public class ZobristKeyGen {
         FLIP(4),
         FLIPROT90(5),
         FLIPROT180(6),
-        FLIPROT270(7),
-        COUNT(8);
+        FLIPROT270(7);
         
         public final int v;
         
@@ -53,18 +52,18 @@ public class ZobristKeyGen {
     
     private static final long[] VALUES;
     private final static int BOARD_SIZE = 8;
-    private final static int BOARD_STATES = 3;
-    private final static int MAP_KEYS_COUNT = BOARD_SIZE*BOARD_SIZE*BOARD_STATES;
+    private final static int BOARD_COLORS = 2;
+    private final static int MAP_KEYS_COUNT = BOARD_SIZE*BOARD_SIZE*BOARD_COLORS;
     
     static {
         // Init
         Random r = new Random();
-        VALUES = new long[BoardVariation.COUNT.v*MAP_KEYS_COUNT + 1];
+        VALUES = new long[BoardVariation.values().length*MAP_KEYS_COUNT + 1];
         
         // Generate a zobrist value for each position and state of the board
         for (int y = 0; y < BOARD_SIZE; y++) {
             for (int x = 0; x < BOARD_SIZE; x++) {
-                for (int s = 0; s < BOARD_STATES; s++) {
+                for (int s = 0; s < BOARD_COLORS; s++) {
                     // Generate zobrist value for this position and state
                     long zv = r.nextLong();
                     
@@ -83,14 +82,13 @@ public class ZobristKeyGen {
         
         // Generate the value to indicate that it is the turn of player 1
         long zv = r.nextLong();
-        VALUES[BoardVariation.COUNT.v*MAP_KEYS_COUNT] = zv;
+        VALUES[BoardVariation.values().length*MAP_KEYS_COUNT] = zv;
     }
     
     private static int cellTypeToStateNum(CellType c) {
         return switch (c) {
-            case EMPTY   -> 0;
-            case PLAYER1 -> 1;
-            case PLAYER2 -> 2;
+            case PLAYER1 -> 0;
+            case PLAYER2 -> 1;
             default      -> 0;
         };
     }
@@ -107,7 +105,7 @@ public class ZobristKeyGen {
      * @return The index
      */
     private static int posToIndex(int x, int y, int s, BoardVariation bp) {
-        return MAP_KEYS_COUNT*bp.v + (y*BOARD_SIZE + x)*BOARD_STATES + s;
+        return MAP_KEYS_COUNT*bp.v + (y*BOARD_SIZE + x)*BOARD_COLORS + s;
     }
     
     /**
@@ -136,6 +134,6 @@ public class ZobristKeyGen {
             default         -> {invX = x;              invY = y;              }
         }
         
-        return MAP_KEYS_COUNT*bp.v + (invY*BOARD_SIZE + invX)*BOARD_STATES + s;
+        return MAP_KEYS_COUNT*bp.v + (invY*BOARD_SIZE + invX)*BOARD_COLORS + s;
     }
 }

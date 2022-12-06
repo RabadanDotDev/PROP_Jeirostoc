@@ -49,7 +49,6 @@ public class ZobristKeyGenTest {
     }
     
     private void assertEqualZobristKeyWith(ZobristKeyGen.BoardVariation bv) {
-        assertEqualZobristKeyWith(CellType.EMPTY,  bv);
         assertEqualZobristKeyWith(CellType.PLAYER1, bv);
         assertEqualZobristKeyWith(CellType.PLAYER2, bv);
     }
