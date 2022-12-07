@@ -73,7 +73,7 @@ class HeuristicStatusZobristHash {
         xorZobristHashesWithPlayer(_lastTurn);
         
         // Update smallest hash
-        _minZobristHash = Arrays.stream(_zobristHashes).min().getAsLong();
+        updateMin();
     }
     
     /**
@@ -109,7 +109,7 @@ class HeuristicStatusZobristHash {
         xorZobristHashesWithPlayer(newCurrentPlayer); // XOR IN
         
         // Update smallest hash
-        _minZobristHash = Arrays.stream(_zobristHashes).min().getAsLong();
+        updateMin();
         
         // Store a copy of the new game status
         this._lastBoardOccupied = (BitSet) newBoardOccupied.clone();
@@ -123,6 +123,13 @@ class HeuristicStatusZobristHash {
      */
     public long zobristHashCode() {
         return _minZobristHash;
+    }
+    
+    private void updateMin() {
+        _minZobristHash = _zobristHashes[0];
+        for (int i = 1; i < _zobristHashes.length; i++) {
+            _minZobristHash = Math.min(_minZobristHash, _zobristHashes[i]);
+        }
     }
     
     /**
@@ -173,6 +180,6 @@ class HeuristicStatusZobristHash {
         xorZobristHashesWithPlayer(_lastTurn);
         
         // Update smallest hash
-        _minZobristHash = Arrays.stream(_zobristHashes).min().getAsLong();
+        updateMin();
     }
 }

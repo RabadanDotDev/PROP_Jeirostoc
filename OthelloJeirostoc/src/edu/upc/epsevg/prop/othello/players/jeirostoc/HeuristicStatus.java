@@ -22,6 +22,12 @@ class HeuristicStatus extends GameStatus {
     private final HeuristicStatusZobristHash _zh;
     
     /**
+     * Last movement made in this heuristic status class. This value will only
+     * be copied in the value constructor.
+     */
+    private Point _lastPoint;
+    
+    /**
      * Creates a HeuristicStatus based on a specific game status
      * 
      * @param status Game status to create HeuristicStatus from
@@ -51,8 +57,13 @@ class HeuristicStatus extends GameStatus {
      */
     public HeuristicStatus(GameStatus gs, HeuristicStatus lastStatus) {
         super(gs);
-        _zh = new HeuristicStatusZobristHash(lastStatus._zh);
-        _zh.updateZobristHashes(board_occupied, board_color, currentPlayer);
+        if(lastStatus == null) {
+            _zh = new HeuristicStatusZobristHash(board_occupied, board_color, currentPlayer);
+        } else {
+            _zh = new HeuristicStatusZobristHash(lastStatus._zh);
+            _zh.updateZobristHashes(board_occupied, board_color, currentPlayer);
+        }
+        _lastPoint = null;
     }
     
     /**
@@ -63,6 +74,7 @@ class HeuristicStatus extends GameStatus {
     public HeuristicStatus(HeuristicStatus hs) {
         super(hs);
         _zh = new HeuristicStatusZobristHash(hs._zh);
+        _lastPoint = hs._lastPoint;
     }
     
     /**
@@ -136,6 +148,7 @@ class HeuristicStatus extends GameStatus {
     public void movePiece(Point point) {
         super.movePiece(point);
         _zh.updateZobristHashes(board_occupied, board_color, currentPlayer);
+        _lastPoint = point;
     }
 
     /**
@@ -145,5 +158,10 @@ class HeuristicStatus extends GameStatus {
     public void skipTurn() {
         super.skipTurn();
         _zh.swapPlayer();
+        _lastPoint = null;
+    }
+
+    Point getLastMovement() {
+        return _lastPoint;
     }
 }
