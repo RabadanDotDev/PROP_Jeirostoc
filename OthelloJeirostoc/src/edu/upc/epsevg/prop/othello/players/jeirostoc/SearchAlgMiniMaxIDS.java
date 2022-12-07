@@ -34,7 +34,7 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
         // Do a minimax search incrementing the maxDepth until the search is
         // stopped
         Point bestSoFar = null;
-        this._maxGlobalDepth = 1;
+        this._maxGlobalDepth = 0;
         while (_searchIsOn) {
             this._maxGlobalDepth++;
             Point p = minimaxNextPoint(hs);

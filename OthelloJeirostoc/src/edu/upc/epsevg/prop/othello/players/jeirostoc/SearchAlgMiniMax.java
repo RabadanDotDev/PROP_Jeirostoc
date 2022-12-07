@@ -28,6 +28,12 @@ class SearchAlgMiniMax extends SearchAlg {
      * Transposition table.
      */
     private TranspositionTable _tp;
+
+    @Override
+    public void searchOFF() {
+        super.searchOFF();
+//        System.out.println(System.currentTimeMillis() + " Search off recieved");
+    }
     
     /**
      * Create a new MiniMax search instance with a given max depth
@@ -70,6 +76,9 @@ class SearchAlgMiniMax extends SearchAlg {
     }
     
     protected Point minimaxNextPoint(HeuristicStatus hs) {
+        if (!_searchIsOn)
+            return null;
+        
         _tp.clear();
         
         // Init result
@@ -144,6 +153,9 @@ class SearchAlgMiniMax extends SearchAlg {
      * bounds alpha and beta.
      */
     protected double minimax(CellType player, HeuristicStatus hs, int currentDepth, double alpha, double beta, boolean isMax) {     
+        if (!_searchIsOn)
+            return 0;
+        
         // Check if we got to a terminal state
         if(hs.checkGameOver() || _maxGlobalDepth <= currentDepth) {
             _nodesWithComputedHeuristic++;

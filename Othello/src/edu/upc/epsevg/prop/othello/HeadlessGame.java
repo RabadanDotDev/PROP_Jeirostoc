@@ -29,7 +29,7 @@ public class HeadlessGame {
 
     public static void main(String[] args) {
         IPlayer playerID = new PlayerID();
-        IPlayer playerDesDemona = new DesdemonaPlayer(1);//GB
+        IPlayer playerDesDemona = new DesdemonaPlayer(2);//GB
 
         HeadlessGame game1 = new HeadlessGame(playerID, playerDesDemona, 2, 5);
         GameResult gr1 = game1.start();
@@ -75,7 +75,9 @@ public class HeadlessGame {
                 //System.out.println("." + new Date());
                 final Result r = new Result();
                 Thread t1 = new Thread(() -> {
+//                    System.out.println(System.currentTimeMillis() + " Start thread player " + players[status.getCurrentPlayer() == CellType.PLAYER1 ? 0 : 1].getName());
                     Move m = players[status.getCurrentPlayer() == CellType.PLAYER1 ? 0 : 1].move(new GameStatus(status));
+//                    System.out.println(System.currentTimeMillis() + " Movement returned ");
                     if (m != null) {
                         status.movePiece(m.getTo());
                     } else {
@@ -83,6 +85,7 @@ public class HeadlessGame {
                     }
                     r.ok = true;
                     semaphore.release();
+//                    System.out.println(System.currentTimeMillis() + " Semaphore released");
                 });
 
                 Thread t2 = new Thread(() -> {

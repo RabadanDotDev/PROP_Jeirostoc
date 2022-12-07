@@ -21,7 +21,7 @@ import java.util.logging.Logger;
 abstract class PlayerBase implements IAuto, IPlayer {
     private final static String  CSV_FILE_NAME = "move_log.csv";
     private final static boolean LOG_MOVEMENTS = true;
-    private static BufferedWriter bw = null;
+    private static FileWriter fw = null;
     
     /**
      * The search algorithm strategy the instance uses
@@ -43,13 +43,13 @@ abstract class PlayerBase implements IAuto, IPlayer {
         
         if(LOG_MOVEMENTS) { 
             try {
-                bw = new BufferedWriter(new FileWriter(
+                fw = new FileWriter(
                         System.currentTimeMillis() + "_" +
                         getName() + "_" + 
                         CSV_FILE_NAME
-                ));
+                );
                 
-                bw.append("movement_count;point;nodes_computed_heuristic;depth_reached;search_type;heuristic;heuristic_ver\n");
+                fw.append("movement_count;point;nodes_computed_heuristic;depth_reached;search_type;heuristic;heuristic_ver\n");
             } catch (IOException ex) {
                 Logger.getLogger(PlayerBase.class.getName()).log(Level.SEVERE, "Couldn't open csv file", ex);
             } 
@@ -64,6 +64,7 @@ abstract class PlayerBase implements IAuto, IPlayer {
         // Do search
         _searchAlg.searchON();
         Move m = _searchAlg.nextMove(nhs);
+//        System.out.println(System.currentTimeMillis() + " Movement decided");
         
         // Update cache status
         _lastStatus = nhs.getNextStatus(m.getTo());
@@ -78,7 +79,7 @@ abstract class PlayerBase implements IAuto, IPlayer {
     
     private void logMovement(Move m, CellType p) {
         try {
-            bw.append("" +
+            fw.append("" +
                     _lastStatus.getMovementCount()    + ";" +
                     m.getTo()                         + ";" +
                     m.getNumerOfNodesExplored()       + ";" +
@@ -87,7 +88,8 @@ abstract class PlayerBase implements IAuto, IPlayer {
                     _searchAlg.getLastBestHeuristic() + ";" +
                     HeuristicStatus.HEURISTIC_VER     + "\n"
             );
-            bw.flush();
+            fw.flush();
+//            System.out.println(System.currentTimeMillis() + " log line written");
         } catch (IOException ex) {
             Logger.getLogger(PlayerBase.class.getName()).log(Level.SEVERE, "Couldn't write to csv file", ex);
         }
