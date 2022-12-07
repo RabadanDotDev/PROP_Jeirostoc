@@ -1,8 +1,9 @@
 package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
+import edu.upc.epsevg.prop.othello.CellType;
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 
 /**
  * Transposition table of HeuristicStatus capable of giving a list of explorable
@@ -11,10 +12,10 @@ import java.util.HashSet;
  * @author raul
  */
 class TranspositionTable {
-    private class TTEntry {
+    private class TTKey {
         long zobristHash;
 
-        public TTEntry(HeuristicStatus hs) {
+        public TTKey(HeuristicStatus hs) {
             this.zobristHash = hs.getZobristHash();
         }
         
@@ -36,15 +37,23 @@ class TranspositionTable {
             if (getClass() != obj.getClass()) {
                 return false;
             }
-            final TTEntry other = (TTEntry) obj;
+            final TTKey other = (TTKey) obj;
             return this.zobristHash == other.zobristHash;
         }
     }
     
-    private HashSet<TTEntry> _table;
+    class TTValue {
+        double selectedHeuristic;
+
+        public TTValue(double selectedHeuristic) {
+            this.selectedHeuristic = selectedHeuristic;
+        }
+    }
+    
+    private HashMap<TTKey, TTValue> _table;
 
     public TranspositionTable() {
-        this._table = new HashSet<>();
+        this._table = new HashMap<>();
     }
     
     public void clear() {
@@ -62,8 +71,7 @@ class TranspositionTable {
         ArrayList<HeuristicStatus> hsl = new ArrayList<>();
         for (Point p : hs.getMoves()) {
             HeuristicStatus next = hs.getNextStatus(p);
-            if(!seen(next))
-                hsl.add(next);
+            hsl.add(next);
         }
         return hsl;
     }
@@ -76,16 +84,28 @@ class TranspositionTable {
      * false otherwise
      */
     public boolean seen(HeuristicStatus hs) {
-        TTEntry t = new TTEntry(hs);
-        return _table.contains(t);
-    }    
+        TTKey t = new TTKey(hs);
+        return _table.containsKey(t);
+    }
+    
+    /**
+     * Get the last registered value if hs has already been seen
+     * 
+     * @param hs The HeuristicStatus
+     * @return The entry if it exists, null if it does not
+     */
+    public TTValue get(HeuristicStatus hs) {
+        TTKey t = new TTKey(hs);
+        return _table.get(t);
+    }
 
     /**
      * Register exploration of node hs
      * 
      * @param hs The HeuristicStatus
+     * @param selectedHeuristic The selected heuristic
      */
-    public void register(HeuristicStatus hs) {
-        _table.add(new TTEntry(hs));
+    public void register(HeuristicStatus hs, double selectedHeuristic) {
+        _table.put(new TTKey(hs), new TTValue(selectedHeuristic));
     }
 }

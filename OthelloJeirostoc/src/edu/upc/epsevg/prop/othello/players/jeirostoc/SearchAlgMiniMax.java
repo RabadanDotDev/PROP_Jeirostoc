@@ -97,29 +97,31 @@ class SearchAlgMiniMax extends SearchAlg {
             if(!_searchIsOn)
                 break;
             
-            // Check if the nextNode has already been explored
-            if(_tp.seen(nextNode))
-                continue;
-            
             // Get next heuristic
-            double nextHeuristic = minimax(
+            double nextHeuristic;
+            var tv = _tp.get(nextNode);
+            if(tv == null) {
+                nextHeuristic = minimax(
                     hs.getCurrentPlayer(), 
                     nextNode, 
                     1, 
                     Double.NEGATIVE_INFINITY, 
                     Double.POSITIVE_INFINITY, 
                     false
-            );
+                );
+                
+                // Register exploration to the transposition table
+                if(_searchIsOn)
+                    _tp.register(nextNode, nextHeuristic);
+            } else {
+                nextHeuristic = tv.selectedHeuristic;
+            }
             
             // Store the found heuristic if its better
             if(bestHeuristic < nextHeuristic || pointToMove == null) {
                 bestHeuristic = nextHeuristic;
                 pointToMove = nextNode.getLastMovement();
             }
-            
-            // Register exploration to the transposition table
-            if(_searchIsOn)
-                _tp.register(nextNode);
         }
         
         // Return selected point
@@ -145,6 +147,16 @@ class SearchAlgMiniMax extends SearchAlg {
         // Check if we got to a terminal state
         if(hs.checkGameOver() || _maxGlobalDepth <= currentDepth) {
             _nodesWithComputedHeuristic++;
+            if (_depthReached < currentDepth && 50 < currentDepth) {
+                System.out.println("Decrese me ther");
+                System.out.println(currentDepth);
+                System.out.println(hs);
+                ArrayList<Point> moves = hs.getMoves();
+                System.out.println(moves.size());
+                if (moves.size() > 0) {
+                    System.out.println(_tp.seen(hs.getNextStatus(moves.get(0))));
+                }
+            }
             _depthReached = Math.max(_depthReached, currentDepth);
             return hs.getHeuristic(player);
         }
@@ -153,8 +165,9 @@ class SearchAlgMiniMax extends SearchAlg {
         ArrayList<HeuristicStatus> nextNodes = _tp.getNextExplorableNodes(hs);
         
         // Analize skipped turn if there is no movements
-        if(nextNodes.isEmpty() && _searchIsOn)
-            return minimax(player, hs.getNextStatus(null), currentDepth+1, alpha, beta, !isMax);
+        if(nextNodes.isEmpty() && _searchIsOn) {
+            alpha = beta = minimax(player, hs.getNextStatus(null), currentDepth+1, alpha, beta, !isMax);
+        }
         
         // Analize moves if they exist
         for (HeuristicStatus nextNode : nextNodes) {
@@ -162,12 +175,18 @@ class SearchAlgMiniMax extends SearchAlg {
             if(!_searchIsOn)
                 break;
             
-            // Check if the nextNode has already been explored
-            if(_tp.seen(nextNode))
-                continue;
-            
             // Get next heuristic
-            double nextHeuristic = minimax(player, nextNode, currentDepth+1, alpha, beta, !isMax);
+            double nextHeuristic;
+            var tv = _tp.get(nextNode);
+            if(tv == null) {
+                nextHeuristic = minimax(player, nextNode, currentDepth+1, alpha, beta, !isMax);
+                
+                // Register exploration to the transposition table
+                if(_searchIsOn)
+                    _tp.register(nextNode, nextHeuristic);
+            } else {
+                nextHeuristic = tv.selectedHeuristic;
+            }
             
             if(isMax) {
                 // Update lower bound
@@ -176,10 +195,6 @@ class SearchAlgMiniMax extends SearchAlg {
                 // Update upper bound
                 beta = Math.min(beta, nextHeuristic);
             }
-            
-            // Register exploration to the transposition table
-            if(_searchIsOn)
-                _tp.register(nextNode);
             
             // Prune if we exceeded lower or upper bound
             if(beta <= alpha)
