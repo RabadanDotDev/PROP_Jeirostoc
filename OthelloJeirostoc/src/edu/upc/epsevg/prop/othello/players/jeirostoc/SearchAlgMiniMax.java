@@ -77,7 +77,7 @@ class SearchAlgMiniMax extends SearchAlg {
         double bestHeuristic = Double.NEGATIVE_INFINITY;
         
         // Get moves
-        ArrayList<HeuristicStatus> nextNodes = _tp.getNextExplorableNodes(hs);
+        ArrayList<HeuristicStatus> nextNodes = _tp.getNextExplorableNodes(hs, true);
         
         // Analize skipped turn if there is no movements
         if(nextNodes.isEmpty() && _searchIsOn) {
@@ -99,7 +99,7 @@ class SearchAlgMiniMax extends SearchAlg {
             
             // Get next heuristic
             double nextHeuristic;
-            var tv = _tp.get(nextNode);
+            var tv = _tp.get(nextNode, _maxGlobalDepth);
             if(tv == null) {
                 nextHeuristic = minimax(
                     hs.getCurrentPlayer(), 
@@ -112,7 +112,7 @@ class SearchAlgMiniMax extends SearchAlg {
                 
                 // Register exploration to the transposition table
                 if(_searchIsOn)
-                    _tp.register(nextNode, nextHeuristic);
+                    _tp.register(nextNode, nextHeuristic,  _maxGlobalDepth);
             } else {
                 nextHeuristic = tv.selectedHeuristic;
             }
@@ -147,22 +147,12 @@ class SearchAlgMiniMax extends SearchAlg {
         // Check if we got to a terminal state
         if(hs.checkGameOver() || _maxGlobalDepth <= currentDepth) {
             _nodesWithComputedHeuristic++;
-            if (_depthReached < currentDepth && 50 < currentDepth) {
-                System.out.println("Decrese me ther");
-                System.out.println(currentDepth);
-                System.out.println(hs);
-                ArrayList<Point> moves = hs.getMoves();
-                System.out.println(moves.size());
-                if (moves.size() > 0) {
-                    System.out.println(_tp.seen(hs.getNextStatus(moves.get(0))));
-                }
-            }
             _depthReached = Math.max(_depthReached, currentDepth);
             return hs.getHeuristic(player);
         }
         
         // Get moves
-        ArrayList<HeuristicStatus> nextNodes = _tp.getNextExplorableNodes(hs);
+        ArrayList<HeuristicStatus> nextNodes = _tp.getNextExplorableNodes(hs, false);
         
         // Analize skipped turn if there is no movements
         if(nextNodes.isEmpty() && _searchIsOn) {
@@ -177,13 +167,13 @@ class SearchAlgMiniMax extends SearchAlg {
             
             // Get next heuristic
             double nextHeuristic;
-            var tv = _tp.get(nextNode);
+            var tv = _tp.get(nextNode, _maxGlobalDepth-currentDepth);
             if(tv == null) {
                 nextHeuristic = minimax(player, nextNode, currentDepth+1, alpha, beta, !isMax);
                 
                 // Register exploration to the transposition table
                 if(_searchIsOn)
-                    _tp.register(nextNode, nextHeuristic);
+                    _tp.register(nextNode, nextHeuristic, _maxGlobalDepth-currentDepth);
             } else {
                 nextHeuristic = tv.selectedHeuristic;
             }
