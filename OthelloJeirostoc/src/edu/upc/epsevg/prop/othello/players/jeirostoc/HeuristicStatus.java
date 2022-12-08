@@ -58,6 +58,7 @@ class HeuristicStatus extends GameStatus {
     public HeuristicStatus(int [][] status){
         super(status);
         _zh = new HeuristicStatusZobristHash(board_occupied, board_color, currentPlayer);
+        _ttKey     = new TranspositionTable.TTKey(this);
     }
     
     /**
@@ -68,6 +69,7 @@ class HeuristicStatus extends GameStatus {
     public HeuristicStatus(GameStatus gs) {
         super(gs);
         _zh = new HeuristicStatusZobristHash(board_occupied, board_color, currentPlayer);
+        _ttKey     = new TranspositionTable.TTKey(this);
     }
 
     /**
@@ -86,6 +88,7 @@ class HeuristicStatus extends GameStatus {
             _zh = new HeuristicStatusZobristHash(lastStatus._zh);
             _zh.updateZobristHashes(board_occupied, board_color, currentPlayer);
         }
+        _ttKey     = new TranspositionTable.TTKey(this);
         _lastPoint = null;
     }
     

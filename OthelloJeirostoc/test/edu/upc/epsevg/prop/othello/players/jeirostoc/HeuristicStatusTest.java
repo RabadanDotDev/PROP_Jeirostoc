@@ -41,7 +41,7 @@ public class HeuristicStatusTest {
             for (int j = 8; j < 9; j++) {
                 if(i != j) {
                     assertEquals(hss[i].getHeuristic(), hss[j].getHeuristic(), 0.001);
-                    assertEquals(hss[i].getZobristHash(), hss[j].getZobristHash());
+                    assertEquals(hss[i].hashCode(), hss[j].hashCode());
                 }
             }
         }
