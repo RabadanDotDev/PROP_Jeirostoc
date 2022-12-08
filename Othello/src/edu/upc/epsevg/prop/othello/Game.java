@@ -28,7 +28,7 @@ public class Game {
                 
                 IPlayer player1 = new PlayerID();
                 //IPlayer player1 = new HumanPlayer("Human1");
-                IPlayer player2 = new DesdemonaPlayer(1);//GB
+                IPlayer player2 = new DesdemonaPlayer(2);//GB
 
                                 
                 new Board(player1 , player2, 2, false);
