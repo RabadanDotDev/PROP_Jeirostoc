@@ -14,16 +14,18 @@ import java.util.HashMap;
  */
 class TranspositionTable {
     static class TTKey {
-        long zobristHash;
+        int hash;
 
         public TTKey(HeuristicStatus hs) {
-            this.zobristHash = hs.getZobristHash();
+            this.hash = hs.hashCode();
+        }
+        
+        public void update(HeuristicStatus hs) {
+            this.hash = hs.hashCode();
         }
         
         @Override
         public int hashCode() {
-            int hash = 7;
-            hash = 59 * hash + (int) (this.zobristHash ^ (this.zobristHash >>> 32));
             return hash;
         }
 
@@ -39,7 +41,7 @@ class TranspositionTable {
                 return false;
             }
             final TTKey other = (TTKey) obj;
-            return this.zobristHash == other.zobristHash;
+            return this.hash == other.hash;
         }
     }
     

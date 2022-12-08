@@ -165,15 +165,6 @@ class HeuristicStatus extends GameStatus {
     public int getMovementCount() {
         return this.piecesCountP1 + this.piecesCountP2 - 4;
     }
-    
-    /**
-     * Get the Zobrist hash
-     * 
-     * @return The Zobrist hash
-     */
-    public long getZobristHash() {
-        return _zh.zobristHashCode();
-    }
 
     /**
      * Get a reference to the TTKey
@@ -193,7 +184,7 @@ class HeuristicStatus extends GameStatus {
     public void movePiece(Point point) {
         super.movePiece(point);
         _zh.updateZobristHashes(board_occupied, board_color, currentPlayer);
-        _ttKey.zobristHash = _zh.zobristHashCode();
+        _ttKey.update(this);
         _lastPoint = point;
     }
 
@@ -204,7 +195,7 @@ class HeuristicStatus extends GameStatus {
     public void skipTurn() {
         super.skipTurn();
         _zh.swapPlayer();
-        _ttKey.zobristHash = _zh.zobristHashCode();
+        _ttKey.update(this);
         _lastPoint = null;
     }
 
