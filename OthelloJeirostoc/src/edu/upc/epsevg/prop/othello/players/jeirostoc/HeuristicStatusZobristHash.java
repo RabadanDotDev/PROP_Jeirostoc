@@ -141,10 +141,8 @@ class HeuristicStatusZobristHash {
      * @param cellState The state of the cell.
      */
     private void xorZobristHashesWith(int bitsetIndex, int cellState) {
-        ZobristKeyGen.BoardVariation[] variations = ZobristKeyGen.BoardVariation.values();
-        for (int i = 0; i < variations.length; i++) {
-            long zobristValue = ZobristKeyGen.getZobristValue(bitsetIndex, cellState, variations[i]);
-            _zobristHashes[i] ^= zobristValue;
+        for (int i = 0; i < ZobristKeyGen.BoardVariation.NUM_VARIATIONS; i++) {
+            _zobristHashes[i] ^= ZobristKeyGen.getZobristValue(bitsetIndex, cellState, i);
         }
     }
     

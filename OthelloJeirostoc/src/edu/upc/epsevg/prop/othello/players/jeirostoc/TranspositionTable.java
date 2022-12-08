@@ -13,7 +13,7 @@ import java.util.HashMap;
  * @author raul
  */
 class TranspositionTable {
-    private class TTKey {
+    static class TTKey {
         long zobristHash;
 
         public TTKey(HeuristicStatus hs) {
@@ -73,7 +73,7 @@ class TranspositionTable {
         }
     }
     
-    private HashMap<TTKey, TTValue>[] _table;
+    private final HashMap<TTKey, TTValue>[] _table;
     private final SortMin _sMin = new SortMin();
     private final SortMax _sMax = new SortMax();
     
@@ -126,8 +126,7 @@ class TranspositionTable {
      * @return The entry if it exists, null if it does not
      */
     public TTValue get(HeuristicStatus hs, int minDistanceToBottom) {
-        TTKey t = new TTKey(hs);
-        TTValue v = _table[hs.getMovementCount()].get(t);
+        TTValue v = _table[hs.getMovementCount()].get(hs.getTTKey());
         if(v != null && minDistanceToBottom <= v.distanceToBottom ) 
             return v;
         else                                           
@@ -141,8 +140,7 @@ class TranspositionTable {
      * @return The heuristic or 0 if hs was not registered
      */
     private double getLastRegisteredHeuristic(HeuristicStatus hs) {
-        TTKey t = new TTKey(hs);
-        TTValue v = _table[hs.getMovementCount()].get(t);
+        TTValue v = _table[hs.getMovementCount()].get(hs.getTTKey());
         if(v == null) 
             return 0;
         else                                           
@@ -157,9 +155,8 @@ class TranspositionTable {
      * @param selectedHeuristic The selected heuristic
      */
     public void register(HeuristicStatus hs, double selectedHeuristic, int distanceToBottom) {
-        TTKey t = new TTKey(hs);
-        TTValue v = _table[hs.getMovementCount()].get(t);
+        TTValue v = _table[hs.getMovementCount()].get(hs.getTTKey());
         if(v == null || v.distanceToBottom <= distanceToBottom) 
-            _table[hs.getMovementCount()].put(new TTKey(hs), new TTValue(selectedHeuristic, distanceToBottom));
+            _table[hs.getMovementCount()].put(hs.getTTKey(), new TTValue(selectedHeuristic, distanceToBottom));
     }
 }

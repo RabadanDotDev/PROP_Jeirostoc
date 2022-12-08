@@ -3,6 +3,7 @@ package edu.upc.epsevg.prop.othello.players.jeirostoc;
 import edu.upc.epsevg.prop.othello.CellType;
 import edu.upc.epsevg.prop.othello.GameStatus;
 import java.awt.Point;
+import java.util.Objects;
 
 /**
  * Game status with capability of computing an heuristic
@@ -11,6 +12,17 @@ import java.awt.Point;
  * @author josep
  */
 class HeuristicStatus extends GameStatus {
+    private final static double[] diskWeights = {
+        1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1
+    };
+    
     /**
      * The version of the heuristic of class for debug purposes.
      */
@@ -26,6 +38,12 @@ class HeuristicStatus extends GameStatus {
      * be copied in the value constructor.
      */
     private Point _lastPoint;
+    
+    /**
+     * Key with reduced size to use when inserting information to the 
+     * Transposition Table
+     */
+    private TranspositionTable.TTKey _ttKey;
     
     /**
      * Creates a HeuristicStatus based on a specific game status
@@ -58,7 +76,7 @@ class HeuristicStatus extends GameStatus {
     public HeuristicStatus(GameStatus gs, HeuristicStatus lastStatus) {
         super(gs);
         if(lastStatus == null) {
-            _zh = new HeuristicStatusZobristHash(board_occupied, board_color, currentPlayer);
+        _zh = new HeuristicStatusZobristHash(board_occupied, board_color, currentPlayer);
         } else {
             _zh = new HeuristicStatusZobristHash(lastStatus._zh);
             _zh.updateZobristHashes(board_occupied, board_color, currentPlayer);
@@ -73,7 +91,8 @@ class HeuristicStatus extends GameStatus {
      */
     public HeuristicStatus(HeuristicStatus hs) {
         super(hs);
-        _zh = new HeuristicStatusZobristHash(hs._zh);
+        _zh        = new HeuristicStatusZobristHash(hs._zh);
+        _ttKey     = new TranspositionTable.TTKey(this);
         _lastPoint = hs._lastPoint;
     }
     
@@ -114,10 +133,22 @@ class HeuristicStatus extends GameStatus {
             return Double.POSITIVE_INFINITY;
         else if (this.isGameOver())
             return Double.NEGATIVE_INFINITY;
-        else if(p.equals(CellType.PLAYER1))
-            return this.piecesCountP1 - this.piecesCountP2;
+        
+        double heuristic = 0;
+        
+        for (int i = board_occupied.nextSetBit(0); i >= 0; i = board_occupied.nextSetBit(i+1)) {            
+            double weight = diskWeights[i];
+            if(board_color.get(i)) {
+                heuristic += weight;
+            } else {
+                heuristic -= weight;
+            }
+        }
+        
+        if(p.equals(CellType.PLAYER1))
+            return heuristic;
         else
-            return this.piecesCountP2 - this.piecesCountP1;
+            return -heuristic;
     }
     
     /**
@@ -131,12 +162,21 @@ class HeuristicStatus extends GameStatus {
     }
     
     /**
-     * Get a copy of the entry representing the current status of the game
+     * Get the Zobrist hash
      * 
-     * @return The copy of the entry representing the current status of the game
+     * @return The Zobrist hash
      */
     public long getZobristHash() {
         return _zh.zobristHashCode();
+    }
+
+    /**
+     * Get a reference to the TTKey
+     * 
+     * @return The reference to the TTKey
+     */
+    public TranspositionTable.TTKey getTTKey() {
+        return _ttKey;
     }
 
     /**
@@ -148,6 +188,7 @@ class HeuristicStatus extends GameStatus {
     public void movePiece(Point point) {
         super.movePiece(point);
         _zh.updateZobristHashes(board_occupied, board_color, currentPlayer);
+        _ttKey.zobristHash = _zh.zobristHashCode();
         _lastPoint = point;
     }
 
@@ -158,10 +199,33 @@ class HeuristicStatus extends GameStatus {
     public void skipTurn() {
         super.skipTurn();
         _zh.swapPlayer();
+        _ttKey.zobristHash = _zh.zobristHashCode();
         _lastPoint = null;
     }
 
     Point getLastMovement() {
         return _lastPoint;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + (int) (_zh.zobristHashCode() ^ (_zh.zobristHashCode() >>> 32));
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final HeuristicStatus other = (HeuristicStatus) obj;
+        return Objects.equals(this._zh.zobristHashCode(), other._zh.zobristHashCode());
     }
 }
