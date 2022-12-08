@@ -28,16 +28,16 @@ public class HeadlessGame {
     private int timeout;
 
     public static void main(String[] args) {
-        IPlayer playerID = new PlayerID();
-        IPlayer playerDesDemona = new DesdemonaPlayer(2);//GB
-
-        HeadlessGame game1 = new HeadlessGame(playerID, playerDesDemona, 2, 5);
-        GameResult gr1 = game1.start();
-        System.out.println(gr1);
-
-        HeadlessGame game2 = new HeadlessGame(playerDesDemona, playerID, 2, 5);
-        GameResult gr2 = game2.start();
-        System.out.println(gr2);
+        for (int i = 0; i < 5; i++) {
+            HeadlessGame game1 = new HeadlessGame(new PlayerID(), new DesdemonaPlayer(2), 2, 1);
+            GameResult gr1 = game1.start();
+            System.out.println(gr1);
+        }
+        for (int i = 0; i < 5; i++) {
+            HeadlessGame game1 = new HeadlessGame(new DesdemonaPlayer(2), new PlayerID(), 2, 1);
+            GameResult gr1 = game1.start();
+            System.out.println(gr1);
+        }
     }
 
     //=====================================================================================0
@@ -77,7 +77,6 @@ public class HeadlessGame {
                 Thread t1 = new Thread(() -> {
 //                    System.out.println(System.currentTimeMillis() + " Start thread player " + players[status.getCurrentPlayer() == CellType.PLAYER1 ? 0 : 1].getName());
                     Move m = players[status.getCurrentPlayer() == CellType.PLAYER1 ? 0 : 1].move(new GameStatus(status));
-//                    System.out.println(System.currentTimeMillis() + " Movement returned ");
                     if (m != null) {
                         status.movePiece(m.getTo());
                     } else {
@@ -95,6 +94,7 @@ public class HeadlessGame {
                     }
                     if (!r.ok) {
                         players[status.getCurrentPlayer() == CellType.PLAYER1 ? 0 : 1].timeout();
+//                        System.out.println(System.currentTimeMillis() + " Timeout sent");
                     }
                 });
 

@@ -13,10 +13,10 @@ import java.util.Objects;
  */
 class HeuristicStatus extends GameStatus {
     private final static double[] v = {
-        100, 
-        -20, -30, 
-         20,   1,   5, 
-         20,   1,   5, 6};
+         70, 
+        -30, -40, 
+         20,  5,  10, 
+         20,  5,  0, 10};
     private final static double[] diskWeights = {
         v[0], v[1], v[3], v[6], v[6], v[3], v[1], v[0],
         v[1], v[2], v[4], v[7], v[7], v[4], v[2], v[1],
@@ -31,7 +31,7 @@ class HeuristicStatus extends GameStatus {
     /**
      * The version of the heuristic of class for debug purposes.
      */
-    public final static double HEURISTIC_VER = 1.0;
+    public final static double HEURISTIC_VER = 2.0;
     
     /**
      * Helper class instance to generate the Zobrist hash.

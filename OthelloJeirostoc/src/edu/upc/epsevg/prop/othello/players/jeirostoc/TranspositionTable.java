@@ -129,7 +129,7 @@ class TranspositionTable {
         TTValue v = _table[hs.getMovementCount()].get(hs.getTTKey());
         if(v != null && minDistanceToBottom <= v.distanceToBottom ) 
             return v;
-        else                                           
+        else
             return null;
     }
     
@@ -156,7 +156,12 @@ class TranspositionTable {
      */
     public void register(HeuristicStatus hs, double selectedHeuristic, int distanceToBottom) {
         TTValue v = _table[hs.getMovementCount()].get(hs.getTTKey());
-        if(v == null || v.distanceToBottom <= distanceToBottom) 
-            _table[hs.getMovementCount()].put(hs.getTTKey(), new TTValue(selectedHeuristic, distanceToBottom));
+        if(v == null) {
+            v = new TTValue(selectedHeuristic, distanceToBottom);
+            _table[hs.getMovementCount()].put(hs.getTTKey(), v);
+        } else if(v.distanceToBottom <= distanceToBottom) {
+            v.selectedHeuristic = selectedHeuristic;
+            v.distanceToBottom  = distanceToBottom;
+        }
     }
 }
