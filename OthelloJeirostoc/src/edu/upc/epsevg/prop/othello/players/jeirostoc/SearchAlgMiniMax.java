@@ -28,11 +28,15 @@ class SearchAlgMiniMax extends SearchAlg {
      * Transposition table.
      */
     private TranspositionTable _tp;
+    
+    /**
+     * The player's color
+     */
+    private int _playerColor;
 
     @Override
     public void searchOFF() {
         super.searchOFF();
-//        System.out.println(System.currentTimeMillis() + " Search off recieved");
     }
     
     /**
@@ -63,36 +67,37 @@ class SearchAlgMiniMax extends SearchAlg {
      * @return The selected move
      */
     @Override
-    public Move nextMove(HeuristicStatus hs) {  
+    public Move nextMove(Status s) {  
         // Init trackers
         _nodesWithComputedHeuristic = 0;
         _depthReached = 0;
         
         // Compute next point
-        Point p = minimaxNextPoint(hs);
+        Point p = minimaxNextPoint(s);
         
         // Return selected movement
         return new Move(p, _nodesWithComputedHeuristic, _depthReached, _searchType);
     }
     
-    protected Point minimaxNextPoint(HeuristicStatus hs) {
-        if (!_searchIsOn)
-            return null;
-        
-        _tp.clear();
+    protected Point minimaxNextPoint(Status s) {
+        // Init
+        _playerColor = s.getCurrentPlayerColor();
         
         // Init result
-        Point pointToMove = null;
+        Status bestNext = null;
         double bestHeuristic = Double.NEGATIVE_INFINITY;
         
         // Get moves
-        ArrayList<HeuristicStatus> nextNodes = _tp.getNextExplorableNodes(hs, true);
+        ArrayList<Status> nextNodes = new ArrayList<>();
+        s.getNextStatuses(nextNodes);
         
         // Analize skipped turn if there is no movements
         if(nextNodes.isEmpty() && _searchIsOn) {
+            bestNext = new Status(s);
+            bestNext.skipTurn();
+            
             bestHeuristic = minimax(
-                    hs.getCurrentPlayer(), 
-                    hs.getNextStatus(null), 
+                    bestNext, 
                     1, 
                     Double.NEGATIVE_INFINITY, 
                     Double.POSITIVE_INFINITY, 
@@ -101,41 +106,34 @@ class SearchAlgMiniMax extends SearchAlg {
         }
         
         // Analize moves if they exist
-        for (HeuristicStatus nextNode : nextNodes) {
+        for (Status next : nextNodes) {
             // Check if search can continue
             if(!_searchIsOn)
                 break;
             
             // Get next heuristic
             double nextHeuristic;
-            var tv = _tp.get(nextNode, _maxGlobalDepth);
-            if(tv == null) {
-                nextHeuristic = minimax(
-                    hs.getCurrentPlayer(), 
-                    nextNode, 
-                    1, 
-                    Double.NEGATIVE_INFINITY, 
-                    Double.POSITIVE_INFINITY, 
-                    false
-                );
-                
-                // Register exploration to the transposition table
-                if(_searchIsOn)
-                    _tp.register(nextNode, nextHeuristic,  _maxGlobalDepth);
-            } else {
-                nextHeuristic = tv.selectedHeuristic;
-            }
+            nextHeuristic = minimax(
+                next, 
+                1, 
+                Double.NEGATIVE_INFINITY, 
+                Double.POSITIVE_INFINITY, 
+                false
+            );
             
             // Store the found heuristic if its better
-            if(bestHeuristic < nextHeuristic || pointToMove == null) {
+            if(bestHeuristic < nextHeuristic || bestNext == null) {
                 bestHeuristic = nextHeuristic;
-                pointToMove = nextNode.getLastMovement();
+                bestNext = next;
             }
         }
         
         // Return selected point
         _lastBestHeuristic = bestHeuristic;
-        return pointToMove;
+        if(bestNext == null)
+            return null;
+        else
+            return new Point(bestNext.getLastMovement()[0], bestNext.getLastMovement()[1]);
     }
     
     /**
@@ -143,7 +141,7 @@ class SearchAlgMiniMax extends SearchAlg {
      * the bounds alpha and beta.
      * 
      * @param player The player to evaluate the game with
-     * @param hs The current game state
+     * @param s The current game state
      * @param currentDepth The depth of this call
      * @param alpha The upper bound
      * @param beta The lower bound
@@ -152,43 +150,33 @@ class SearchAlgMiniMax extends SearchAlg {
      * @return the heuristic more favorable to the current player within the 
      * bounds alpha and beta.
      */
-    protected double minimax(CellType player, HeuristicStatus hs, int currentDepth, double alpha, double beta, boolean isMax) {     
-        if (!_searchIsOn)
-            return 0;
-        
+    protected double minimax(Status s, int currentDepth, double alpha, double beta, boolean isMax) {        
         // Check if we got to a terminal state
-        if(hs.checkGameOver() || _maxGlobalDepth <= currentDepth) {
+        if(s.isTerminal()|| _maxGlobalDepth <= currentDepth) {
             _nodesWithComputedHeuristic++;
             _depthReached = Math.max(_depthReached, currentDepth);
-            return hs.getHeuristic(player);
+            return s.getHeuristic(_playerColor);
         }
         
         // Get moves
-        ArrayList<HeuristicStatus> nextNodes = _tp.getNextExplorableNodes(hs, false);
+        ArrayList<Status> nextNodes = new ArrayList<>();
+        s.getNextStatuses(nextNodes);
         
         // Analize skipped turn if there is no movements
         if(nextNodes.isEmpty() && _searchIsOn) {
-            alpha = beta = minimax(player, hs.getNextStatus(null), currentDepth+1, alpha, beta, !isMax);
+            Status next = new Status(s);
+            next.skipTurn();
+            return minimax(next, currentDepth+1, alpha, beta, !isMax);
         }
         
         // Analize moves if they exist
-        for (HeuristicStatus nextNode : nextNodes) {
+        for (Status nextNode : nextNodes) {
             // Check if search can continue
             if(!_searchIsOn)
                 break;
             
             // Get next heuristic
-            double nextHeuristic;
-            var tv = _tp.get(nextNode, _maxGlobalDepth-currentDepth);
-            if(tv == null) {
-                nextHeuristic = minimax(player, nextNode, currentDepth+1, alpha, beta, !isMax);
-                
-                // Register exploration to the transposition table
-                if(_searchIsOn)
-                    _tp.register(nextNode, nextHeuristic, _maxGlobalDepth-currentDepth);
-            } else {
-                nextHeuristic = tv.selectedHeuristic;
-            }
+            double nextHeuristic = minimax(nextNode, currentDepth+1, alpha, beta, !isMax);
             
             if(isMax) {
                 // Update lower bound

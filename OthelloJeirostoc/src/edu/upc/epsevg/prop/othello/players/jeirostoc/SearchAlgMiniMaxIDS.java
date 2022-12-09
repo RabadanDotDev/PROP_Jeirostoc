@@ -22,11 +22,11 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
     /**
      * Get next move based on the current game status
      * 
-     * @param hs The current game status
+     * @param s The current game status
      * @return The selected move
      */
     @Override
-    public Move nextMove(HeuristicStatus hs) {
+    public Move nextMove(Status s) {
         // Init trackers
         _nodesWithComputedHeuristic = 0;
         _depthReached = 0;
@@ -37,7 +37,7 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
         this._maxGlobalDepth = 0;
         while (_searchIsOn) {
             this._maxGlobalDepth++;
-            Point p = minimaxNextPoint(hs);
+            Point p = minimaxNextPoint(s);
             if(_searchIsOn)
                 bestSoFar = p;
         }

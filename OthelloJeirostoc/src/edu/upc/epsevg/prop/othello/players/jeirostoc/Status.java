@@ -362,13 +362,31 @@ public class Status {
     }
     
     /**
-     * Get the number of movements a player has made.
+     * Get the number of discs a player has.
      * 
      * @param playerBit The player bit
      * @return The number of movements a player has made.
      */
     public int getNumDiscs(boolean playerBit) {
         return playerBit ? _piecesCountP1 : _piecesCountP2;
+    }
+    
+    /**
+     * Get the number of total discs
+     * 
+     * @return The number of total discs
+     */
+    public int getNumDiscs() {
+        return _piecesCountP1 + _piecesCountP2;
+    }
+    
+    /**
+     * Get the number of total movements made in the game
+     * 
+     * @return The number of total movements made in the game
+     */
+    public int getNumMovements() {
+        return _piecesCountP1 + _piecesCountP2 - 4;
     }
     
     /**
@@ -438,6 +456,33 @@ public class Status {
             sb.append("NO");
         }
         return sb.toString();
+    }
+    
+    /**
+     * Check if the game is in a terminal state.
+     * @return True if the game is in a terminal state
+     */
+    public boolean isTerminal() {
+        return _isTerminalState;
+    }
+    
+    /**
+     * Get the heuristic of the game with the point of view of player
+     * 
+     * @param playerColor The player color to use as point of view
+     * @return The heuristic
+     */
+    double getHeuristic(int playerColor) {
+        if(_isTerminalState) {
+            if(_piecesCountP2 < _piecesCountP1)
+                return playerColor*Double.POSITIVE_INFINITY;
+            else if(_piecesCountP1 < _piecesCountP2)
+                return playerColor*Double.NEGATIVE_INFINITY;
+            else
+                return 0;
+        }
+        
+        return (_piecesCountP1 - _piecesCountP2)*playerColor;
     }
     
     ////////////////////////////////////////////////////////////////////////////

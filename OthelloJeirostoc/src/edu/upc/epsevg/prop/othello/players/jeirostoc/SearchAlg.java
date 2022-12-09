@@ -46,10 +46,10 @@ abstract class SearchAlg {
     /**
      * Get next move based on the current game status.
      * 
-     * @param hs The current game status
+     * @param s The current game status
      * @return The selected move
      */
-    public abstract Move nextMove(HeuristicStatus hs);
+    public abstract Move nextMove(Status s);
     
     /**
      * Turn on the search.

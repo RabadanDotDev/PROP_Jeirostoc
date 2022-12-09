@@ -27,8 +27,10 @@ class SearchAlgRandom extends SearchAlg {
      * @return The selected move
      */
     @Override
-    public Move nextMove(HeuristicStatus hs) {        
-        ArrayList<Point> moves = hs.getMoves();
+    public Move nextMove(Status s) {        
+        ArrayList<Point> moves = new ArrayList<>();
+        s.getNextMoves(moves);
+        
         if(moves.isEmpty()) {
             return new Move(null, 0L,0,  SearchType.RANDOM); 
         } else {
