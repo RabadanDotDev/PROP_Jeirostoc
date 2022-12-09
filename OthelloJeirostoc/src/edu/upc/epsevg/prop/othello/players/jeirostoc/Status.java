@@ -231,15 +231,21 @@ public class Status {
         _boardColor      = new BitSet(64);
         _boardNeighbours = new BitSet(64);
         
+        // Init Metadata
+        _piecesCountP1 = 0;
+        _piecesCountP2 = 0;
+        
         // Set pieces
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
                 if (board[y][x] == P1_COLOR) {
                     setCoord(_boardOccupied, x, y, true);
                     setCoord(_boardColor, x, y, P1_BIT);
+                    _piecesCountP1++;
                 } else if (board[y][x] == P2_COLOR) {
                     setCoord(_boardOccupied, x, y, true);
                     setCoord(_boardColor, x, y, P2_BIT);
+                    _piecesCountP2++;
                 }
             }
         }
@@ -249,10 +255,6 @@ public class Status {
         _isTerminalState    = computeIsTerminal();
         _currentPlayerColor = startingPlayerColor;
         _lastMovement       = new int[] {-1, -1};
-        
-        // Init Metadata
-        _piecesCountP1 = 0; /*TODO*/
-        _piecesCountP2 = 0; /*TODO*/
     }
     
     /**
@@ -357,6 +359,16 @@ public class Status {
      */
     public int[] getLastMovement() {
         return _lastMovement;
+    }
+    
+    /**
+     * Get the number of movements a player has made.
+     * 
+     * @param playerBit The player bit
+     * @return The number of movements a player has made.
+     */
+    public int getNumDiscs(boolean playerBit) {
+        return playerBit ? _piecesCountP1 : _piecesCountP2;
     }
     
     /**
@@ -566,10 +578,17 @@ public class Status {
      * @param playerBit The player bit
      */
     private void claimPosition(int x, int y, boolean playerBit) {
+        // Update board
         setCoord(_boardOccupied, x, y, true);
         setCoord(_boardColor, x, y, playerBit);
         setCoord(_boardNeighbours, x, y, false);
         updateAdjacentNeighbors(x, y);
+        
+        // Update meta
+        if(playerBit)
+            _piecesCountP1++;
+        else
+            _piecesCountP2++;
     }
 
     /**
@@ -581,7 +600,17 @@ public class Status {
      * @param playerBit The player bit
      */
     private void flipPosition(int x, int y, boolean playerBit) {
+        // Flip position
         flipCoord(_boardColor, x, y);
+        
+        // Update meta
+        if(playerBit) {
+            _piecesCountP1++;
+            _piecesCountP2--;
+        } else {
+            _piecesCountP1--;
+            _piecesCountP2++;
+        }
     }
     
     /**

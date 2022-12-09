@@ -1,5 +1,6 @@
 package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
+import edu.upc.epsevg.prop.othello.CellType;
 import edu.upc.epsevg.prop.othello.GameStatus;
 import java.awt.Point;
 import java.util.ArrayList;
@@ -196,6 +197,9 @@ public class StatusTest {
         assertEquals(reference.toString(), incremental.toString());
         assertEquals(direct.toString(true), copied.toString(true));
         assertEquals(direct.toString(true), incremental.toString(true));
+        assertEquals(reference.getScore(CellType.PLAYER1), direct.getNumDiscs(true));
+        assertEquals(reference.getScore(CellType.PLAYER1), copied.getNumDiscs(true));
+        assertEquals(reference.getScore(CellType.PLAYER1), incremental.getNumDiscs(true));
         assertEquals(referenceMoves, directMoves);
         assertEquals(referenceMoves, copiedMoves);
         assertEquals(referenceMoves, incrementalMoves);
@@ -227,6 +231,9 @@ public class StatusTest {
             assertEquals(reference.toString(), incremental.toString());
             assertEquals(direct.toString(true), copied.toString(true));
             assertEquals(direct.toString(true), incremental.toString(true));
+            assertEquals(reference.getScore(CellType.PLAYER1), direct.getNumDiscs(true));
+            assertEquals(reference.getScore(CellType.PLAYER1), copied.getNumDiscs(true));
+            assertEquals(reference.getScore(CellType.PLAYER1), incremental.getNumDiscs(true));
             assertEquals(referenceMoves, directMoves);
             assertEquals(referenceMoves, copiedMoves);
             assertEquals(referenceMoves, incrementalMoves);
@@ -263,6 +270,8 @@ public class StatusTest {
             assertEquals(reference.toString(), copied.toString());
             assertEquals(reference.toString(), incremental.toString());
             assertEquals(copied.toString(true), incremental.toString(true));
+            assertEquals(reference.getScore(CellType.PLAYER1), copied.getNumDiscs(true));
+            assertEquals(reference.getScore(CellType.PLAYER1), incremental.getNumDiscs(true));
             assertEquals(referenceMoves, copiedMoves);
             assertEquals(referenceMoves, incrementalMoves);
             
@@ -294,6 +303,8 @@ public class StatusTest {
                 assertEquals(reference.toString(), copied.toString());
                 assertEquals(reference.toString(), incremental.toString());
                 assertEquals(copied.toString(true), incremental.toString(true));
+                assertEquals(reference.getScore(CellType.PLAYER1), copied.getNumDiscs(true));
+                assertEquals(reference.getScore(CellType.PLAYER1), incremental.getNumDiscs(true));
                 assertEquals(referenceMoves, copiedMoves);
                 assertEquals(referenceMoves, incrementalMoves);
             }
