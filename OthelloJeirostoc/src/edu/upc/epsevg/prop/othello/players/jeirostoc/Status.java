@@ -13,7 +13,7 @@ import java.util.List;
  * @author raul
  * @author josep
  */
-public class Status {
+public class Status {    
     ////////////////////////////////////////////////////////////////////////////
     // Subclasses                                                             //
     ////////////////////////////////////////////////////////////////////////////
@@ -82,6 +82,11 @@ public class Status {
     ////////////////////////////////////////////////////////////////////////////
     // Static variables                                                       //
     ////////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * Heuristic version for debugging purposes
+     */
+    public static final double HEURISTIC_VER = 1.0;
     
     /**
      * The size of the board

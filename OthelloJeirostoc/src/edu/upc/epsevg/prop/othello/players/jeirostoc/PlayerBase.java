@@ -76,7 +76,7 @@ abstract class PlayerBase implements IAuto, IPlayer {
                     m.getMaxDepthReached()            + ";" +
                     m.getSearchType()                 + ";" +
                     _searchAlg.getLastBestHeuristic() + ";" +
-                    HeuristicStatus.HEURISTIC_VER     + "\n"
+                    Status.HEURISTIC_VER              + "\n"
             );
             fw.flush();
         } catch (IOException ex) {
