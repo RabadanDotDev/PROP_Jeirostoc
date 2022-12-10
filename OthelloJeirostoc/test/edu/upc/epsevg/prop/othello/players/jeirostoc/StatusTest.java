@@ -199,9 +199,9 @@ public class StatusTest {
     public void testSameResultsGuided() {        
         // Init
         GameStatus reference   = new GameStatus(sampleBoards[0]);
-        Status     direct      = new Status(sampleBoards[0], Status.P1_COLOR);
+        Status     direct      = new Status(sampleBoards[0], Status.P1_BIT);
         Status     copied      = new Status(reference);
-        Status     incremental = new Status(sampleBoards[0], Status.P1_COLOR);
+        Status     incremental = new Status(sampleBoards[0], Status.P1_BIT);
         
         ArrayList<Point> referenceMoves;
         ArrayList<Point> directMoves = new ArrayList<>();
@@ -221,6 +221,8 @@ public class StatusTest {
         incremental.getNextMoves(incrementalMoves);
         
         // Check
+        System.out.println(reference);
+        System.out.println(direct);
         assertEquals(reference.toString(), direct.toString());
         assertEquals(reference.toString(), copied.toString());
         assertEquals(reference.toString(), incremental.toString());
@@ -237,7 +239,7 @@ public class StatusTest {
             // Do movement
             System.out.println(i + ": Moving " + sampleMovements[i]);
             reference.movePiece(sampleMovements[i]);
-            direct = new Status(sampleBoards[i], (i%2==0 ? Status.P1_COLOR : Status.P2_COLOR));
+            direct = new Status(sampleBoards[i], i%2==0);
             copied = new Status(reference);
             incremental = new Status(incremental);
             incremental.movePiece(sampleMovements[i]);
@@ -276,7 +278,7 @@ public class StatusTest {
     public void testSameResultsRandom() {
         Random r = new Random();
         
-        for (int game = 0; game < 5000; game++) {
+        for (int game = 0; game < 50000; game++) {
             System.out.println("Same results game " + game);
             // Init
             GameStatus reference   = new GameStatus();
@@ -370,12 +372,12 @@ public class StatusTest {
             statuses[i] = new Status(rotateBoard(
                     sampleBoards[0], 
                     bvs[i]
-            ), Status.P1_COLOR);
+            ), Status.P1_BIT);
             
             statuses[bvs.length+i] = new Status(rotateBoard(
                     sampleBoards[0], 
                     bvs[i]
-            ), Status.P1_COLOR);
+            ), Status.P1_BIT);
         }
         assertFullEquals(statuses);
         
@@ -386,7 +388,7 @@ public class StatusTest {
                 statuses[i] = new Status(rotateBoard(
                         sampleBoards[move], 
                         bvs[i]
-                ), (move%2 == 0 ? Status.P1_COLOR : Status.P2_COLOR));
+                ), (move%2 == 0));
                 
                 // Incremental movement
                 statuses[bvs.length+i].movePiece(rotateMovement(
@@ -413,7 +415,7 @@ public class StatusTest {
                 statuses[i] = new Status(rotateBoard(
                         sampleBoards[0], 
                         bvs[i]
-                ), Status.P1_COLOR);
+                ), Status.P1_BIT);
             }
             assertFullEquals(statuses);
 
@@ -437,5 +439,13 @@ public class StatusTest {
                 assertFullEquals(statuses);
             }
         }
+    }
+    
+    
+    @Test
+    public void test() {
+        Status s = new Status(new GameStatus(sampleBoards[5]));
+        System.out.println(s);
+        System.out.println(new GameStatus(sampleBoards[5]));
     }
 }
