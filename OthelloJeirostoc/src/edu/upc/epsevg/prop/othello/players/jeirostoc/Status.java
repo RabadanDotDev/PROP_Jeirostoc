@@ -3,7 +3,9 @@ package edu.upc.epsevg.prop.othello.players.jeirostoc;
 import edu.upc.epsevg.prop.othello.CellType;
 import edu.upc.epsevg.prop.othello.GameStatus;
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -88,7 +90,7 @@ public class Status {
     /**
      * Heuristic version for debugging purposes.
      */
-    public static final double HEURISTIC_VER = 2.0;
+    public static final double HEURISTIC_VER = 2.1;
     
     /**
      * Rotation and flip independent disk weights values.
@@ -228,6 +230,11 @@ public class Status {
      */
     private long[] _zobristKeyChain;
     
+    /**
+     * The cached heuristic value from the disk weights sum.
+     */
+    private double _diskWeightsSum;
+    
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -253,20 +260,23 @@ public class Status {
         // Init zobrist keychain
         _zobristKeyChain = new long[ZobristKeyGen.BoardVariation.NUM_VARIATIONS];
         
+        // Init Metadata 1
+        _piecesCountP1 = 0;
+        _piecesCountP2 = 0;
+        
         // Set default pieces
         claimPosition(3, 3, P1_BIT);
         claimPosition(4, 3, P2_BIT);
         claimPosition(3, 4, P2_BIT);
         claimPosition(4, 4, P1_BIT);
         
+        // Init Heuristics caching
+        _diskWeightsSum = computeDiskWeights();
+        
         // Init game status
         _isTerminalState  = false;
         _currentPlayerBit = P1_BIT;
         _lastMovement     = new int[] {-1, -1};
-        
-        // Init Metadata
-        _piecesCountP1 = 2;
-        _piecesCountP2 = 2;
     }
     
     /**
@@ -285,8 +295,10 @@ public class Status {
         
         // Init zobrist keychain
         _zobristKeyChain = new long[ZobristKeyGen.BoardVariation.NUM_VARIATIONS];
+        if(startingPlayerBit == P2_BIT)
+            ZobristKeyGen.updateKeyChainPlayerSwapped(_zobristKeyChain);
         
-        // Init Metadata
+        // Init Metadata 1
         _piecesCountP1 = 0;
         _piecesCountP2 = 0;
         
@@ -300,6 +312,9 @@ public class Status {
                 }
             }
         }
+        
+        // Init Heuristics caching
+        _diskWeightsSum = computeDiskWeights();
         
         // Init game status
         _isTerminalState  = computeIsTerminal();
@@ -322,18 +337,21 @@ public class Status {
         _boardNeighbours = 0;
         regenAvailableNeighbors();
         
-        // Init zobrist keychain
-        _zobristKeyChain = new long[ZobristKeyGen.BoardVariation.NUM_VARIATIONS];
-        regenZobristKeyChain();
-        
         // Init game status
         _isTerminalState  = gse.isGameOver();
         _currentPlayerBit = gse.getCurrentPlayerBit();
         _lastMovement     = new int[] {-1, -1};
         
+        // Init zobrist keychain
+        _zobristKeyChain = new long[ZobristKeyGen.BoardVariation.NUM_VARIATIONS];
+        regenZobristKeyChain();
+        
         // Init Metadata
         _piecesCountP1 = gse.getPiecesCountP1();
         _piecesCountP2 = gse.getPiecesCountP2();
+        
+        // Init Heuristics caching
+        _diskWeightsSum = computeDiskWeights();
     }
     
     /**
@@ -358,6 +376,9 @@ public class Status {
         // Copy metadata
         _piecesCountP1 = other._piecesCountP1;
         _piecesCountP2 = other._piecesCountP2;
+        
+        // Copy Heuristics caching
+        _diskWeightsSum = other._diskWeightsSum;
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -490,7 +511,7 @@ public class Status {
         return toString(false);
     }
     
-    public String toString(boolean withNeighbors) {
+    public String toString(boolean extendedInfo) {
         StringBuilder sb = new StringBuilder();
         for (int y = 0; y < SIZE; y++) {
             sb.append('\t');
@@ -503,7 +524,7 @@ public class Status {
                         sb.append('O');
                     else
                         sb.append('@');
-                } else if(withNeighbors && ((_boardNeighbours >> bitIndex) & 1) == 1){
+                } else if(extendedInfo && ((_boardNeighbours >> bitIndex) & 1) == 1){
                     sb.append('N');
                 } else {
                     sb.append('·');
@@ -516,6 +537,14 @@ public class Status {
             sb.append("YES");
         } else {
             sb.append("NO");
+        }
+        if(extendedInfo) {
+            sb.append("\n");
+            ArrayList<Long> result = new ArrayList<>(getZobristKeyChain().length);
+            for (long item : getZobristKeyChain())
+                result.add(item);
+            Collections.sort(result);
+            sb.append(result);
         }
         return sb.toString();
     }
@@ -700,7 +729,7 @@ public class Status {
         }
         
         // Current player
-        if(_currentPlayerBit == P1_BIT)
+        if(_currentPlayerBit == P2_BIT)
             ZobristKeyGen.updateKeyChainPlayerSwapped(_zobristKeyChain);
     }
     
@@ -724,10 +753,13 @@ public class Status {
         ZobristKeyGen.updateKeyChainPositionClaim(_zobristKeyChain, toIndex(x, y), playerBit);
         
         // Update meta
-        if(playerBit == P1_BIT)
+        if(playerBit == P1_BIT) {
             _piecesCountP1++;
-        else
+            _diskWeightsSum += Status.diskWeights[toIndex(x, y)];
+        } else {
             _piecesCountP2++;
+            _diskWeightsSum -= Status.diskWeights[toIndex(x, y)];
+        }
     }
 
     /**
@@ -746,12 +778,14 @@ public class Status {
         ZobristKeyGen.updateKeyChainPositionFlip(_zobristKeyChain, toIndex(x, y));
         
         // Update meta
-        if(playerBit) {
+        if(playerBit == P1_BIT) {
             _piecesCountP1++;
             _piecesCountP2--;
+            _diskWeightsSum += Status.diskWeights[toIndex(x, y)]*2;
         } else {
             _piecesCountP1--;
             _piecesCountP2++;
+            _diskWeightsSum -= Status.diskWeights[toIndex(x, y)]*2;
         }
     }
     
@@ -882,5 +916,24 @@ public class Status {
         }
         
         return true;
+    }
+    
+    /**
+     * Compute the disk weight value from the current status.
+     */
+    private double computeDiskWeights() {
+        double dw = 0;
+        
+        for (int bitIndex = 0; bitIndex < SIZE*SIZE; bitIndex++) {
+            if (((_boardOccupied >> bitIndex) & 1) == 1) {
+                if (((_boardColor >> bitIndex) & 1) == P1_LONG_BIT) {
+                    dw += Status.diskWeights[bitIndex];
+                } else {
+                    dw -= Status.diskWeights[bitIndex];
+                }
+            }
+        }
+        
+        return dw;
     }
 }

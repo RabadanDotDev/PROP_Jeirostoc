@@ -278,7 +278,7 @@ public class StatusTest {
     public void testSameResultsRandom() {
         Random r = new Random();
         
-        for (int game = 0; game < 50000; game++) {
+        for (int game = 0; game < 5000; game++) {
             System.out.println("Same results game " + game);
             // Init
             GameStatus reference   = new GameStatus();
@@ -383,6 +383,7 @@ public class StatusTest {
         
         // Reproduce movements
         for (int move = 1; move < sampleBoards.length; move++) {
+            System.out.println("Move " + move);
             for (int i = 0; i < 8; i++) {
                 // Given board
                 statuses[i] = new Status(rotateBoard(
@@ -406,7 +407,7 @@ public class StatusTest {
         Random r = new Random();
         
         for (int game = 0; game < 5000; game++) {
-            System.out.println("Same zobrist hash game " + game);
+            System.out.println("Same zobrist hash and heuristic game " + game);
             ZobristKeyGen.BoardVariation[] bvs = ZobristKeyGen.BoardVariation.values();
 
             // Init statues
