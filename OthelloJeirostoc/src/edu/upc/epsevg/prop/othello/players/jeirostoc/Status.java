@@ -573,19 +573,7 @@ public class Status {
                 return 0;
         }
         
-        double h = 0;
-        
-        for (int bitIndex = 0; bitIndex < SIZE*SIZE; bitIndex++) {
-            if (((_boardOccupied >> bitIndex) & 1) == 1) {
-                if (((_boardColor >> bitIndex) & 1) == P1_LONG_BIT) {
-                    h += Status.diskWeights[bitIndex];
-                } else {
-                    h -= Status.diskWeights[bitIndex];
-                }
-            }
-        }
-        
-        return h*playerColor;
+        return _diskWeightsSum*playerColor;
     }
     
     /**
