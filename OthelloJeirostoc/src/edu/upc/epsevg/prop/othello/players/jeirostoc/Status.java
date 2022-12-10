@@ -82,13 +82,40 @@ public class Status {
     }
     
     ////////////////////////////////////////////////////////////////////////////
-    // Static variables                                                       //
+    // Static variables (heuristic logic)                                     //
     ////////////////////////////////////////////////////////////////////////////
     
     /**
-     * Heuristic version for debugging purposes
+     * Heuristic version for debugging purposes.
      */
-    public static final double HEURISTIC_VER = 1.0;
+    public static final double HEURISTIC_VER = 2.0;
+    
+    /**
+     * Rotation and flip independent disk weights values.
+     */
+    private final static double[] dwv = {
+    100, 
+    -30, -40, 
+     20,  5,  10, 
+     20,  5,  0, 10};
+    
+    /**
+     * Disk weights for each coordinate.
+     */
+    private final static double[] diskWeights = {
+        dwv[0], dwv[1], dwv[3], dwv[6], dwv[6], dwv[3], dwv[1], dwv[0],
+        dwv[1], dwv[2], dwv[4], dwv[7], dwv[7], dwv[4], dwv[2], dwv[1],
+        dwv[3], dwv[4], dwv[5], dwv[8], dwv[8], dwv[5], dwv[4], dwv[3],
+        dwv[6], dwv[7], dwv[8], dwv[9], dwv[9], dwv[8], dwv[7], dwv[6],
+        dwv[6], dwv[7], dwv[8], dwv[9], dwv[9], dwv[8], dwv[7], dwv[6],
+        dwv[3], dwv[4], dwv[5], dwv[8], dwv[8], dwv[5], dwv[4], dwv[3],
+        dwv[1], dwv[2], dwv[4], dwv[7], dwv[7], dwv[4], dwv[2], dwv[1],
+        dwv[0], dwv[1], dwv[3], dwv[6], dwv[6], dwv[3], dwv[1], dwv[0]
+    };
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Static variables (game logic)                                          //
+    ////////////////////////////////////////////////////////////////////////////
     
     /**
      * The size of the board
@@ -517,7 +544,19 @@ public class Status {
                 return 0;
         }
         
-        return (_piecesCountP1 - _piecesCountP2)*playerColor;
+        double h = 0;
+        
+        for (int bitIndex = 0; bitIndex < SIZE*SIZE; bitIndex++) {
+            if (((_boardOccupied >> bitIndex) & 1) == 1) {
+                if (((_boardColor >> bitIndex) & 1) == P1_LONG_BIT) {
+                    h += Status.diskWeights[bitIndex];
+                } else {
+                    h -= Status.diskWeights[bitIndex];
+                }
+            }
+        }
+        
+        return h*playerColor;
     }
     
     /**
