@@ -8,6 +8,7 @@ package edu.upc.epsevg.prop.othello;
 import edu.upc.epsevg.prop.othello.players.DesdemonaPlayer;
 import edu.upc.epsevg.prop.othello.players.RandomPlayer;
 import edu.upc.epsevg.prop.othello.players.jeirostoc.PlayerID;
+import java.lang.ref.WeakReference;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,16 +29,23 @@ public class HeadlessGame {
     private int timeout;
 
     public static void main(String[] args) {
-        for (int i = 0; i < 5; i++) {
-            HeadlessGame game1 = new HeadlessGame(new PlayerID(), new DesdemonaPlayer(2), 2, 1);
-            GameResult gr1 = game1.start();
-            System.out.println(gr1);
+
+        IPlayer playerID = new PlayerID();
+        //Player player2 = new RandomPlayer("Desdesmonasia");
+        IPlayer desdemona = new DesdemonaPlayer(2);//GB
+
+        {
+            HeadlessGame game = new HeadlessGame(playerID, desdemona, 2, 5);
+            GameResult gr = game.start();
+            System.out.println(gr);
         }
-        for (int i = 0; i < 5; i++) {
-            HeadlessGame game1 = new HeadlessGame(new DesdemonaPlayer(2), new PlayerID(), 2, 1);
-            GameResult gr1 = game1.start();
-            System.out.println(gr1);
+        
+        {
+            HeadlessGame game = new HeadlessGame(desdemona, playerID, 2, 5);
+            GameResult gr = game.start();
+            System.out.println(gr);
         }
+
     }
 
     //=====================================================================================0
@@ -74,17 +82,23 @@ public class HeadlessGame {
                 semaphore.tryAcquire();
                 //System.out.println("." + new Date());
                 final Result r = new Result();
+                CellType cp = status.getCurrentPlayer();
                 Thread t1 = new Thread(() -> {
-//                    System.out.println(System.currentTimeMillis() + " Start thread player " + players[status.getCurrentPlayer() == CellType.PLAYER1 ? 0 : 1].getName());
-                    Move m = players[status.getCurrentPlayer() == CellType.PLAYER1 ? 0 : 1].move(new GameStatus(status));
+                    Move m = null;
+                    try {
+                        m = players[cp == CellType.PLAYER1 ? 0 : 1].move(new GameStatus(status));
+                    } catch(Exception ex) {
+                        System.out.println("Excepció descontrolada al player:"+cp.name());
+                        ex.printStackTrace();
+                    }
                     if (m != null) {
                         status.movePiece(m.getTo());
                     } else {
                         status.forceLoser();
                     }
+                    System.out.print(cp==CellType.PLAYER1?"1":"2");
                     r.ok = true;
                     semaphore.release();
-//                    System.out.println(System.currentTimeMillis() + " Semaphore released");
                 });
 
                 Thread t2 = new Thread(() -> {
@@ -93,8 +107,7 @@ public class HeadlessGame {
                     } catch (InterruptedException ex) {
                     }
                     if (!r.ok) {
-                        players[status.getCurrentPlayer() == CellType.PLAYER1 ? 0 : 1].timeout();
-//                        System.out.println(System.currentTimeMillis() + " Timeout sent");
+                        players[cp == CellType.PLAYER1 ? 0 : 1].timeout();
                     }
                 });
 
@@ -104,13 +117,17 @@ public class HeadlessGame {
                 try {
                     if (!semaphore.tryAcquire(1, timeout * 1000 + WAIT_EXTRA_TIME, TimeUnit.MILLISECONDS)) {
 
-                        System.out.println("Espera il·legal !");
-                        throw new RuntimeException("Jugador trampós ! Espera il·legal !");
+                        System.out.println("Espera il·legal ! Player trampós:"+cp.name());
+                        //throw new RuntimeException("Jugador trampós ! Espera il·legal !");
+                        // Som millors persones deixant que el jugador il·legal continui jugant...
+                        semaphore.acquire();
                     }
+                    
                 } catch (InterruptedException ex) {
                     Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
                 }
-
+                // Netegem la memòria (for free!)
+                gc();
             }
         }
         return status.winnerPlayer;
@@ -170,4 +187,18 @@ public class HeadlessGame {
         }
     }
 
+    
+    /**
+     * This method guarantees that garbage collection is done unlike
+     * <code>{@link System#gc()}</code>
+     */
+    public static void gc() {
+        Object obj = new Object();
+        WeakReference ref = new WeakReference<Object>(obj);
+        obj = null;
+        while (ref.get() != null) {
+            System.gc();
+        }
+    }
 }
+    

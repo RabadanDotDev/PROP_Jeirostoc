@@ -29,12 +29,6 @@ abstract class PlayerBase implements IAuto, IPlayer {
     protected final SearchAlg _searchAlg;
     
     /**
-     * The last status from the game, used to cache heuristic computations 
-     * between turns in case it is needed
-     */
-    private HeuristicStatus _lastStatus;
-    
-    /**
      * Protected constructor. It takes a SearchAlg strategy class to use.
      * @param searchAlg The SearchAlg to use
      */
@@ -59,37 +53,32 @@ abstract class PlayerBase implements IAuto, IPlayer {
     @Override
     public Move move(GameStatus gs) {
         // Update status
-        HeuristicStatus nhs = new HeuristicStatus(gs, _lastStatus);
+        Status s = new Status(gs);
         
         // Do search
         _searchAlg.searchON();
-        Move m = _searchAlg.nextMove(nhs);
-//        System.out.println(System.currentTimeMillis() + " Movement decided");
-        
-        // Update cache status
-        _lastStatus = nhs.getNextStatus(m.getTo());
+        Move m = _searchAlg.nextMove(s);
         
         // Log selected movement
         if(LOG_MOVEMENTS)
-            logMovement(m, gs.getCurrentPlayer());
+            logMovement(m, s.getNumMovements(), gs.getCurrentPlayer());
         
         // Return result
         return m;
     }
     
-    private void logMovement(Move m, CellType p) {
+    private void logMovement(Move m, int moves, CellType p) {
         try {
             fw.append("" +
-                    _lastStatus.getMovementCount()    + ";" +
+                    moves                             + ";" +
                     m.getTo()                         + ";" +
                     m.getNumerOfNodesExplored()       + ";" +
                     m.getMaxDepthReached()            + ";" +
                     m.getSearchType()                 + ";" +
                     _searchAlg.getLastBestHeuristic() + ";" +
-                    HeuristicStatus.HEURISTIC_VER     + "\n"
+                    Status.HEURISTIC_VER              + "\n"
             );
             fw.flush();
-//            System.out.println(System.currentTimeMillis() + " log line written");
         } catch (IOException ex) {
             Logger.getLogger(PlayerBase.class.getName()).log(Level.SEVERE, "Couldn't write to csv file", ex);
         }
