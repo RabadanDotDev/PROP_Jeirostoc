@@ -14,7 +14,7 @@ public class ZobristKeyGen {
     /**
      * Enumeration to indicate the 8 possible variations of the board.
      */
-    public static enum BoardVariation{
+    public static enum BoardVariation{        
         BASE(0),
         ROT90(1),
         ROT180(2),
@@ -62,18 +62,101 @@ public class ZobristKeyGen {
     private final static int BOARD_STATE = 2;
     
     /**
-     * The number of Zobrist values one variation of the map can have.
+     * Get the Zobrist value corresponding to the position p with the 
+     * CellType c and having applied the transformation indicated by bp.
+     * 
+     * @param p The position
+     * @param c The cell type
+     * @param bp The BoardVariation
+     * @return The Zobrist value
      */
-    private final static int MAP_KEYS_COUNT = BOARD_SIZE*BOARD_SIZE*BOARD_STATE;
+    public static long getZobristValue(Point p, CellType c, BoardVariation bp) {
+        return VALUES[posToIndex(p.x, p.y, (c == CellType.PLAYER1 ? 1 : 0), bp.v)];
+    }
+    
+    /**
+     * Get the Zobrist value corresponding to the position indicated by 
+     * bitsetIndex (with the form x*SIZE + y) cell state s (0 or 1) and having 
+     * applied the transformation indicated by BoardVariation.valueOf(varNum).
+     * 
+     * @param bitsetIndex The BitSet index
+     * @param s The cell state
+     * @param varNum The BoardVariation
+     * @return The Zobrist value
+     */
+    public static long getZobristValue(int bitsetIndex, int s, int varNum) {
+        return VALUES[posToIndex(bitsetIndex, s, varNum)];
+    }
+    
+    /**
+     * Get the Zobrist value corresponding to the player 2 being the one who has
+     * to make a move.
+     * @return The Zobrist value
+     */
+    public static long getZobristValueP2() {
+        return VALUES[VALUES.length-1];
+    }
+    
+    /**
+     * Update a list of Zobrist hashes performing a XOR IN and XOR OUT of all 
+     * the variations of a specific BitSet index (with the form x*SIZE + y) and 
+     * a specific state
+     * 
+     * @param keychain The list of Zobrist hashes to update
+     * @param bitsetIndex The BitSet index
+     */
+    public static void updateKeyChainPositionFlip(long[] keychain, int bitsetIndex) {
+        int basePos = bitsetIndex*BOARD_STATE*BoardVariation.NUM_VARIATIONS;
+        
+        for (int i = 0; i < BoardVariation.NUM_VARIATIONS; i++) {
+            keychain[i] ^= VALUES[basePos + i];
+            keychain[i] ^= VALUES[basePos + i + BoardVariation.NUM_VARIATIONS];
+        }
+    }
+    
+    /**
+     * Update a list of Zobrist hashes performing a XOR IN of all the variations
+     * of a specific BitSet index (with the form x*SIZE + y) and a specific status
+     * 
+     * @param keychain The list of Zobrist hashes to update
+     * @param bitsetIndex The BitSet index
+     * @param playerBit The player bit for the state
+     */
+    public static void updateKeyChainPositionClaim(long[] keychain, int bitsetIndex, boolean playerBit) {
+        int basePos = bitsetIndex*BOARD_STATE*BoardVariation.NUM_VARIATIONS +
+                      (playerBit ? BoardVariation.NUM_VARIATIONS : 0);
+        
+        for (int i = 0; i < BoardVariation.NUM_VARIATIONS; i++) {
+            keychain[i] ^= VALUES[basePos+i];
+        }
+    }
+    
+    /**
+     * Update a list of Zobrist hashes performing a XOR IN/OUT the value of P2
+     * 
+     * @param keychain The list of Zobrist hashes to update
+     */
+    public static void updateKeyChainPlayerSwapped(long[] keychain) {
+        int basePos = VALUES.length-1;
+        
+        for (int i = 0; i < BoardVariation.NUM_VARIATIONS; i++) {
+            keychain[i] ^= VALUES[basePos];
+        }
+    }
     
     static {
         // Init
         Random r = new Random();
-        VALUES = new long[BoardVariation.values().length*MAP_KEYS_COUNT + 1];
+        VALUES = new long[
+                BOARD_SIZE*BOARD_SIZE*           // all the positions
+                BOARD_STATE*                     // 2 states by position
+                BoardVariation.NUM_VARIATIONS +  // 8 variations by position
+                1                                // 1 key to specify the player
+        ];
         
         // Generate a zobrist value for each position and state of the board
-        for (int y = 0; y < BOARD_SIZE; y++) {
-            for (int x = 0; x < BOARD_SIZE; x++) {
+        for (int x = 0; x < BOARD_SIZE; x++) {
+            for (int y = 0; y < BOARD_SIZE; y++) {
                 for (int s = 0; s < BOARD_STATE; s++) {
                     // Generate zobrist value for this position and state
                     long zv = r.nextLong();
@@ -93,43 +176,7 @@ public class ZobristKeyGen {
         
         // Generate the value to indicate that it is the turn of player 1
         long zv = r.nextLong();
-        VALUES[BoardVariation.values().length*MAP_KEYS_COUNT] = zv;
-    }
-    
-    /**
-     * Get the Zobrist value corresponding to the position p with the 
-     * CellType c and having applied the transformation indicated by bp.
-     * 
-     * @param p The position
-     * @param c The cell type
-     * @param bp The BoardVariation
-     * @return The Zobrist value
-     */
-    public static long getZobristValue(Point p, CellType c, BoardVariation bp) {
-        return VALUES[posToIndex(p.x, p.y, (c == CellType.PLAYER1 ? 1 : 0), bp.v)];
-    }
-    
-    /**
-     * Get the Zobrist value corresponding to the position indicated by 
-     * bitsetIndex (with the form y*SIZE + x) cell state s (0 or 1) and having 
-     * applied the transformation indicated by BoardVariation.valueOf(varNum).
-     * 
-     * @param bitsetIndex The BitSet index
-     * @param s The cell state
-     * @param varNum The BoardVariation
-     * @return The Zobrist value
-     */
-    public static long getZobristValue(int bitsetIndex, int s, int varNum) {
-        return VALUES[MAP_KEYS_COUNT*varNum + bitsetIndex*BOARD_STATE + s];
-    }
-    
-    /**
-     * Get the Zobrist value corresponding to the player 2 being the one who has
-     * to make a move.
-     * @return The Zobrist value
-     */
-    public static long getZobristValueP2() {
-        return VALUES[VALUES.length-1];
+        VALUES[VALUES.length-1] = zv;
     }
     
     /**
@@ -144,7 +191,7 @@ public class ZobristKeyGen {
      * @return The index
      */
     private static int posToIndex(int x, int y, int s, int varNum) {
-        return posToIndex(y*BOARD_SIZE + x, s, varNum);
+        return posToIndex(x*BOARD_SIZE + y, s, varNum);
     }
     
     /**
@@ -159,7 +206,9 @@ public class ZobristKeyGen {
      * @return The index
      */
     private static int posToIndex(int bitsetIndex, int s, int varNum) {
-        return MAP_KEYS_COUNT*varNum+ bitsetIndex*BOARD_STATE + s;
+        return bitsetIndex*BOARD_STATE*BoardVariation.NUM_VARIATIONS +
+                                     s*BoardVariation.NUM_VARIATIONS +
+                                                              varNum;
     }
     
     /**
@@ -188,6 +237,8 @@ public class ZobristKeyGen {
             default         -> {invX = x;              invY = y;              }
         }
         
-        return MAP_KEYS_COUNT*bp.v + (invY*BOARD_SIZE + invX)*BOARD_STATE + s;
+        return (invX*BOARD_SIZE + invY)*BOARD_STATE*BoardVariation.NUM_VARIATIONS +
+                                                  s*BoardVariation.NUM_VARIATIONS +
+                                                                            bp.v;
     }
 }

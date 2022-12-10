@@ -13,7 +13,7 @@ import java.util.List;
  * @author raul
  * @author josep
  */
-public class Status {    
+public class Status {
     ////////////////////////////////////////////////////////////////////////////
     // Subclasses                                                             //
     ////////////////////////////////////////////////////////////////////////////
@@ -184,6 +184,11 @@ public class Status {
      */
     private int _piecesCountP2;
     
+    /**
+     * The zobrist hashes for each rotation of the board.
+     */
+    private long[] _zobristKeyChain;
+    
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -205,6 +210,9 @@ public class Status {
         _boardOccupied   = new BitSet(64);
         _boardColor      = new BitSet(64);
         _boardNeighbours = new BitSet(64);
+        
+        // Init zobrist keychain
+        _zobristKeyChain = new long[ZobristKeyGen.BoardVariation.NUM_VARIATIONS];
         
         // Set default pieces
         claimPosition(3, 3, P1_BIT);
@@ -236,6 +244,9 @@ public class Status {
         _boardColor      = new BitSet(64);
         _boardNeighbours = new BitSet(64);
         
+        // Init zobrist keychain
+        _zobristKeyChain = new long[ZobristKeyGen.BoardVariation.NUM_VARIATIONS];
+        
         // Init Metadata
         _piecesCountP1 = 0;
         _piecesCountP2 = 0;
@@ -244,17 +255,12 @@ public class Status {
         for (int y = 0; y < SIZE; y++) {
             for (int x = 0; x < SIZE; x++) {
                 if (board[y][x] == P1_COLOR) {
-                    setCoord(_boardOccupied, x, y, true);
-                    setCoord(_boardColor, x, y, P1_BIT);
-                    _piecesCountP1++;
+                    claimPosition(x, y, P1_BIT);
                 } else if (board[y][x] == P2_COLOR) {
-                    setCoord(_boardOccupied, x, y, true);
-                    setCoord(_boardColor, x, y, P2_BIT);
-                    _piecesCountP2++;
+                    claimPosition(x, y, P2_BIT);
                 }
             }
         }
-        regenAvailableNeighbors();
         
         // Init game status
         _isTerminalState    = computeIsTerminal();
@@ -277,6 +283,10 @@ public class Status {
         _boardNeighbours = new BitSet(64);
         regenAvailableNeighbors();
         
+        // Init zobrist keychain
+        _zobristKeyChain = new long[ZobristKeyGen.BoardVariation.NUM_VARIATIONS];
+        regenZobristKeyChain();
+        
         // Init game status
         _isTerminalState    = gse.isGameOver();
         _currentPlayerColor = gse.getCurrentPlayerColor();
@@ -298,6 +308,9 @@ public class Status {
         _boardColor      = (BitSet) other._boardColor.clone();
         _boardNeighbours = (BitSet) other._boardNeighbours.clone();
         
+        // Copy zobrist keychain
+        _zobristKeyChain = other._zobristKeyChain;
+        
         // Copy game status
         _isTerminalState    = other._isTerminalState;
         _currentPlayerColor = other._currentPlayerColor;
@@ -313,7 +326,8 @@ public class Status {
     ////////////////////////////////////////////////////////////////////////////
     
     /**
-     * Make a movement using the current player at the given point.
+     * Make a movement using the current player at the given point. Point is 
+     * assumed not to be null
      * 
      * @param point The position to make a movement in
      */
@@ -477,7 +491,7 @@ public class Status {
      * @param playerColor The player color to use as point of view
      * @return The heuristic
      */
-    double getHeuristic(int playerColor) {
+    public double getHeuristic(int playerColor) {
         if(_isTerminalState) {
             if(_piecesCountP2 < _piecesCountP1)
                 return playerColor*Double.POSITIVE_INFINITY;
@@ -488,6 +502,28 @@ public class Status {
         }
         
         return (_piecesCountP1 - _piecesCountP2)*playerColor;
+    }
+    
+    /**
+     * Find the lowest value Zobrist key in the keychain and return it.
+     * @return The minimum Zobrist key
+     */
+    public long getMinZobristKey() {
+        long min = _zobristKeyChain[0];
+        for (int i = 1; i < _zobristKeyChain.length; i++) {
+            if(min < _zobristKeyChain[i])
+                min = _zobristKeyChain[i];
+        }
+        return min;
+    }
+    
+    /**
+     * Get a reference to the Zobrist keychain.
+     * 
+     * @return The Zobrist keychain
+     */
+    public long[] getZobristKeyChain() {
+        return _zobristKeyChain;
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -620,6 +656,20 @@ public class Status {
     }
     
     /**
+     * Regenerate Zobrist keychain.
+     */
+    private void regenZobristKeyChain() {        
+        // Board positions
+        for (int i = _boardOccupied.nextSetBit(0); i >= 0; i = _boardOccupied.nextSetBit(i+1)) {
+            ZobristKeyGen.updateKeyChainPositionClaim(_zobristKeyChain, i, _boardColor.get(i));
+        }
+        
+        // Current player
+        if(_currentPlayerColor == P1_COLOR)
+            ZobristKeyGen.updateKeyChainPlayerSwapped(_zobristKeyChain);
+    }
+    
+    /**
      * Claim position (x,y) for player. The position is assumed to 
      * canMovePiece(x, y) or being called from the constructor
      * 
@@ -633,6 +683,9 @@ public class Status {
         setCoord(_boardColor, x, y, playerBit);
         setCoord(_boardNeighbours, x, y, false);
         updateAdjacentNeighbors(x, y);
+        
+        // Update zobrist keychain
+        ZobristKeyGen.updateKeyChainPositionClaim(_zobristKeyChain, toIndex(x, y), playerBit);
         
         // Update meta
         if(playerBit)
@@ -652,6 +705,9 @@ public class Status {
     private void flipPosition(int x, int y, boolean playerBit) {
         // Flip position
         flipCoord(_boardColor, x, y);
+        
+        // Update zobrist keychain
+        ZobristKeyGen.updateKeyChainPositionFlip(_zobristKeyChain, toIndex(x, y));
         
         // Update meta
         if(playerBit) {
