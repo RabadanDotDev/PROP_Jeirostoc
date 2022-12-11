@@ -21,7 +21,7 @@ class SearchAlgMiniMax extends SearchAlg {
     /**
      * Toggle to select to cut when getting a isExact entry
      */
-    private static final boolean CUT_IS_EXACT_TT = false;
+    private static final boolean CUT_IS_EXACT_TT = true;
     
     /**
      * The number of nodes which the current search has computed their 
@@ -43,6 +43,12 @@ class SearchAlgMiniMax extends SearchAlg {
      * The player's color
      */
     private int _playerColor;
+    
+    /**
+     * The array to indicate between recursion levels if the current level has 
+     * been pruned or not.
+     */
+    private boolean[] _isExact;
 
     @Override
     public void searchOFF() {
@@ -57,6 +63,7 @@ class SearchAlgMiniMax extends SearchAlg {
     public SearchAlgMiniMax(int maxDepth) {
         super(maxDepth, SearchType.MINIMAX);
         _tt = new TT();
+        _isExact = new boolean[Status.SIZE*Status.SIZE];
     }
     
     /**
@@ -68,6 +75,7 @@ class SearchAlgMiniMax extends SearchAlg {
     protected SearchAlgMiniMax(int maxGlobalDepth, SearchType searchType) {
         super(maxGlobalDepth, searchType);
         _tt = new TT();
+        _isExact = new boolean[Status.SIZE*Status.SIZE];
     }
     
     /**
@@ -92,6 +100,7 @@ class SearchAlgMiniMax extends SearchAlg {
     protected Point minimaxNextPoint(Status s) {
         // Init
         _playerColor = s.getCurrentPlayerColor();
+        _isExact[0] = true;
         
         // Init result
         byte bestNextMove = -1;
@@ -142,6 +151,9 @@ class SearchAlgMiniMax extends SearchAlg {
                 bestHeuristic = nextHeuristic;
                 bestNextMove = next.getLastMovement();
             }
+            
+            // Check if an alpha-beta pruning has happend in a deeper level
+            _isExact[0] = _isExact[0] && _isExact[1];
         }
         
         // Analize skipped turn if there is no movements
@@ -156,6 +168,9 @@ class SearchAlgMiniMax extends SearchAlg {
                     Float.POSITIVE_INFINITY, 
                     false
             );
+            
+            // Check if an alpha-beta pruning has happend in a deeper level
+            _isExact[0] = _isExact[0] && _isExact[1];
         }
         
         // Register result to the transposition table
@@ -165,7 +180,7 @@ class SearchAlgMiniMax extends SearchAlg {
                     bestHeuristic, 
                     bestNextMove, 
                     (byte)_maxGlobalDepth, 
-                    false, 
+                    _isExact[0], 
                     true
             );
         }
@@ -193,7 +208,9 @@ class SearchAlgMiniMax extends SearchAlg {
      * @return the heuristic more favorable to the current player within the 
      * bounds alpha and beta.
      */
-    protected float minimax(Status s, int currentDepth, float alpha, float beta, boolean isMax) {        
+    protected float minimax(Status s, int currentDepth, float alpha, float beta, boolean isMax) {
+        _isExact[currentDepth] = true;
+        
         // Check if we got to a terminal state
         if(s.isTerminal()|| _maxGlobalDepth <= currentDepth) {
             _nodesWithComputedHeuristic++;
@@ -226,6 +243,12 @@ class SearchAlgMiniMax extends SearchAlg {
                 if (TT.extractIsExact(entry) && CUT_IS_EXACT_TT) {
                     return isMax ? alpha : beta;
                 }
+                
+                // Prune if we exceeded lower or upper bound
+                if(beta <= alpha) {
+                    _isExact[currentDepth] = false;
+                    return isMax ? alpha : beta;
+                }
             }
         }
         
@@ -252,16 +275,24 @@ class SearchAlgMiniMax extends SearchAlg {
                 selectedNextMove = nextNode.getLastMovement();
             }
             
+            // Check if an alpha-beta pruning has happend in a deeper level
+            _isExact[currentDepth] = _isExact[currentDepth] && _isExact[currentDepth+1];
+            
             // Prune if we exceeded lower or upper bound
-            if(beta <= alpha)
+            if(beta <= alpha) {
+                _isExact[currentDepth] = false;
                 break;
+            }
         }
         
         // Analize skipped turn if there is no movements
         if(nextNodes.isEmpty() && _searchIsOn) {
             Status next = new Status(s);
             next.skipTurn();
-            return minimax(next, currentDepth+1, alpha, beta, !isMax);
+            alpha = beta = minimax(next, currentDepth+1, alpha, beta, !isMax);
+            
+            // Check if an alpha-beta pruning has happend in a deeper level
+            _isExact[currentDepth] = _isExact[currentDepth] && _isExact[currentDepth+1];
         }
         
         // Register result to the transposition table
@@ -271,7 +302,7 @@ class SearchAlgMiniMax extends SearchAlg {
                     isMax ? alpha : beta,
                     selectedNextMove, 
                     (byte)(_maxGlobalDepth-currentDepth), 
-                    false, 
+                    _isExact[currentDepth], 
                     isMax
             );
         }
