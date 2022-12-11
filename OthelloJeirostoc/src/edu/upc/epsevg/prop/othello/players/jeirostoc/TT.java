@@ -7,7 +7,7 @@ package edu.upc.epsevg.prop.othello.players.jeirostoc;
  * 
  * @author raul
  */
-class TranspositionTable {
+class TT {
     /**
      * Mask to extract the "selected heuristic" from the 8 lower bytes of the
      * entry.
@@ -67,7 +67,7 @@ class TranspositionTable {
     /**
      * Default constructor.
      */
-    public TranspositionTable() {
+    public TT() {
         _numEntries = DEF_NUM_ENTRIES;
         _table = new long[(int)_numEntries*2];
     }
@@ -77,7 +77,7 @@ class TranspositionTable {
      * 
      * @param numEntries The number of entries in the table
      */
-    public TranspositionTable(int numEntries) {
+    public TT(int numEntries) {
         _numEntries = numEntries;
         _table = new long[(int)_numEntries*2];
     }
@@ -94,12 +94,12 @@ class TranspositionTable {
      * @param depthBelow The depth explored below s
      * @param isExact The flag to indicate if the heuristic is exact (true) or 
      * was calculated with pruning (false)
-     * @param isAlpha The flag to indicate if the heuristic is an upper bound 
+     * @param isAlpha The flag to indicate if the heuristic is an lower bound 
      * (true) or a lower bound (false).
      */
     public void register(Status s, float selectedHeuristic, byte selectedMovementBitIndex, byte depthBelow, boolean isExact, boolean isAlpha) {
         long key = s.getMinZobristKey();
-        int index = (int) (key%_numEntries)*2;
+        int index = (int) Long.remainderUnsigned(key, _numEntries)*2;
         
         long currentKey   = _table[index];
         long currentEntry = _table[index+1];
@@ -119,7 +119,7 @@ class TranspositionTable {
      */
     public long readEntry(Status s) {
         long key = s.getMinZobristKey();
-        int index = (int) (key%_numEntries)*2;
+        int index = (int) Long.remainderUnsigned(key, _numEntries)*2;
         
         long currentKey   = _table[index];
         long currentEntry = _table[index+1];

@@ -471,8 +471,8 @@ public class Status {
     /**
      * Get a list of the next possible statuses starting from this position.
      * 
-     * @param result The array to deposit the new point objects. The Array
-     * list should be empty.
+     * @param result The array to deposit the new statuses objects at the end of
+     * the list.
      */
     public void getNextMoves(List<Point> result) {        
         for (int bitIndex = 0; bitIndex < SIZE*SIZE; bitIndex++) {
@@ -492,9 +492,29 @@ public class Status {
      * @param result The array to deposit the new statuses objects. The Array
      * list should be empty.
      */
-    public void getNextStatuses(List<Status> result) {        
+    public void getNextStatuses(List<Status> result) {  
+        getNextStatuses(result, -1);
+    }
+    
+    /**
+     * Get a list of the next possible statuses starting from this position.
+     * 
+     * @param result The array to deposit the new statuses objects at the end of
+     * the list
+     * @param bitIndexFirst The movement's BitIndex of the form SIZE*x + y that
+     * should be added first to the list. It should be a correct position or -1
+     */
+    public void getNextStatuses(List<Status> result, int bitIndexFirst) {
+        // Check first the given movement
+        if(bitIndexFirst != -1 && canMovePiece(bitIndexFirst/SIZE, bitIndexFirst%SIZE)) {
+            Status s = new Status(this);
+            s.movePiece(bitIndexFirst/SIZE, bitIndexFirst%SIZE);
+            result.add(s);
+        }
+        
+        // Get the next statuses
         for (int bitIndex = 0; bitIndex < SIZE*SIZE; bitIndex++) {
-            if (((_boardNeighbours >> bitIndex) & 1) == 1) {
+            if (((_boardNeighbours >> bitIndex) & 1) == 1 && bitIndex != bitIndexFirst) {
                 int x = bitIndex/SIZE;
                 int y = bitIndex%SIZE;
                 if(canMovePiece(x, y, _currentPlayerBit)) {

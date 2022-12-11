@@ -130,6 +130,8 @@ public class HeadlessGame {
                 gc();
             }
         }
+        System.out.print("\n");
+        System.out.println(players[status.winnerPlayer == CellType.PLAYER1 ? 0 : 1].getName() + " ("  + status.winnerPlayer + ") has won!");
         return status.winnerPlayer;
     }
 

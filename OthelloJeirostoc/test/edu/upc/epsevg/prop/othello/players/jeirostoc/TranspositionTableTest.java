@@ -46,6 +46,9 @@ public class TranspositionTableTest {
         assertEquals(bitIndexMovement, extractedBitIndexMovement, 0.0);
         assertEquals(depthBelow, extractedDepthBelow, 0.0);
         assertEquals(flags, extractedFlags, 0.0);
+        
+        assertTrue(0 < Long.remainderUnsigned(-1L, 100));
+        assertTrue(0 < Long.remainderUnsigned(-184496264L, 134204621));
     }
     
     @Test
@@ -56,14 +59,14 @@ public class TranspositionTableTest {
         boolean isExact = true;
         boolean isAlpha = true;
         
-        long entry = TranspositionTable.toEntry(selectedHeuristic, selectedMovementBitIndex, depthBelow, isExact, isAlpha);
+        long entry = TT.toEntry(selectedHeuristic, selectedMovementBitIndex, depthBelow, isExact, isAlpha);
         
-        assertEquals(TranspositionTable.extractSelectedHeuristic(entry), selectedHeuristic, 0.0f);
-        assertEquals(TranspositionTable.extractSelectedMovement(entry),  selectedMovementBitIndex);
-        assertEquals(TranspositionTable.extractDepthBelow(entry),        depthBelow);
-        assertEquals(TranspositionTable.extractIsExact(entry),           isExact);
-        assertEquals(TranspositionTable.extractIsAlpha(entry),           isAlpha);
-        assertEquals(TranspositionTable.extractIsValidEntry(entry),      true);
+        assertEquals(TT.extractSelectedHeuristic(entry), selectedHeuristic, 0.0f);
+        assertEquals(TT.extractSelectedMovement(entry),  selectedMovementBitIndex);
+        assertEquals(TT.extractDepthBelow(entry),        depthBelow);
+        assertEquals(TT.extractIsExact(entry),           isExact);
+        assertEquals(TT.extractIsAlpha(entry),           isAlpha);
+        assertEquals(TT.extractIsValidEntry(entry),      true);
     }
     
     @Test
@@ -74,14 +77,14 @@ public class TranspositionTableTest {
         boolean isExact = false;
         boolean isAlpha = false;
         
-        long entry = TranspositionTable.toEntry(selectedHeuristic, selectedMovementBitIndex, depthBelow, isExact, isAlpha);
+        long entry = TT.toEntry(selectedHeuristic, selectedMovementBitIndex, depthBelow, isExact, isAlpha);
         
-        assertEquals(TranspositionTable.extractSelectedHeuristic(entry), selectedHeuristic, 0.0f);
-        assertEquals(TranspositionTable.extractSelectedMovement(entry),  selectedMovementBitIndex);
-        assertEquals(TranspositionTable.extractDepthBelow(entry),        depthBelow);
-        assertEquals(TranspositionTable.extractIsExact(entry),           isExact);
-        assertEquals(TranspositionTable.extractIsAlpha(entry),           isAlpha);
-        assertEquals(TranspositionTable.extractIsValidEntry(entry),      true);
+        assertEquals(TT.extractSelectedHeuristic(entry), selectedHeuristic, 0.0f);
+        assertEquals(TT.extractSelectedMovement(entry),  selectedMovementBitIndex);
+        assertEquals(TT.extractDepthBelow(entry),        depthBelow);
+        assertEquals(TT.extractIsExact(entry),           isExact);
+        assertEquals(TT.extractIsAlpha(entry),           isAlpha);
+        assertEquals(TT.extractIsValidEntry(entry),      true);
     }
     
     @Test

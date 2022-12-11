@@ -14,6 +14,11 @@ import java.util.ArrayList;
  */
 class SearchAlgMiniMax extends SearchAlg {
     /**
+     * Toggle to select to use the heuristic from the TT
+     */
+    private static final boolean USE_HEURISTIC_TT = false;
+    
+    /**
      * The number of nodes which the current search has computed their 
      * heuristic.
      */
@@ -27,7 +32,7 @@ class SearchAlgMiniMax extends SearchAlg {
     /**
      * Transposition table.
      */
-    private TranspositionTable _tp;
+    private final TT _tt;
     
     /**
      * The player's color
@@ -46,7 +51,7 @@ class SearchAlgMiniMax extends SearchAlg {
      */
     public SearchAlgMiniMax(int maxDepth) {
         super(maxDepth, SearchType.MINIMAX);
-        _tp = new TranspositionTable();
+        _tt = new TT();
     }
     
     /**
@@ -57,7 +62,7 @@ class SearchAlgMiniMax extends SearchAlg {
      */
     protected SearchAlgMiniMax(int maxGlobalDepth, SearchType searchType) {
         super(maxGlobalDepth, searchType);
-        _tp = new TranspositionTable();
+        _tt = new TT();
     }
     
     /**
@@ -84,26 +89,33 @@ class SearchAlgMiniMax extends SearchAlg {
         _playerColor = s.getCurrentPlayerColor();
         
         // Init result
-        Status bestNext = null;
+        byte bestNextMove = -1;
         float bestHeuristic = Float.NEGATIVE_INFINITY;
+        
+        // Retrieve entry from transposition table
+        long entry = _tt.readEntry(s);
+        if (TT.extractIsValidEntry(entry)) {
+            // Extract last selected movement
+            bestNextMove = TT.extractSelectedMovement(entry);
+            
+            // Extract last heuristic if its more deep
+            if (USE_HEURISTIC_TT &&
+                _maxGlobalDepth <= TT.extractDepthBelow(entry) &&
+                TT.extractIsAlpha(entry)
+            ) {
+                
+                bestHeuristic = TT.extractSelectedHeuristic(entry);
+                
+                if (TT.extractIsExact(entry)) {
+                    _lastBestHeuristic = bestHeuristic;
+                    return new Point(bestNextMove/Status.SIZE, bestNextMove%Status.SIZE);
+                }
+            }
+        }
         
         // Get moves
         ArrayList<Status> nextNodes = new ArrayList<>();
-        s.getNextStatuses(nextNodes);
-        
-        // Analize skipped turn if there is no movements
-        if(nextNodes.isEmpty() && _searchIsOn) {
-            bestNext = new Status(s);
-            bestNext.skipTurn();
-            
-            bestHeuristic = minimax(
-                    bestNext, 
-                    1, 
-                    Float.NEGATIVE_INFINITY, 
-                    Float.POSITIVE_INFINITY, 
-                    false
-            );
-        }
+        s.getNextStatuses(nextNodes, bestNextMove);
         
         // Analize moves if they exist
         for (Status next : nextNodes) {
@@ -112,28 +124,53 @@ class SearchAlgMiniMax extends SearchAlg {
                 break;
             
             // Get next heuristic
-            float nextHeuristic;
-            nextHeuristic = minimax(
+            float nextHeuristic = minimax(
                 next, 
                 1, 
-                Float.NEGATIVE_INFINITY, 
+                bestHeuristic, 
                 Float.POSITIVE_INFINITY, 
                 false
             );
             
             // Store the found heuristic if its better
-            if(bestHeuristic < nextHeuristic || bestNext == null) {
+            if(bestHeuristic < nextHeuristic || bestNextMove == -1) {
                 bestHeuristic = nextHeuristic;
-                bestNext = next;
+                bestNextMove = next.getLastMovement();
             }
         }
         
+        // Analize skipped turn if there is no movements
+        if(nextNodes.isEmpty() && _searchIsOn) {
+            Status next = new Status(s);
+            next.skipTurn();
+            
+            bestHeuristic = minimax(
+                    next, 
+                    1, 
+                    bestHeuristic, 
+                    Float.POSITIVE_INFINITY, 
+                    false
+            );
+        }
+        
+        // Register result to the transposition table
+        if(_searchIsOn) {
+            _tt.register(
+                    s, 
+                    bestHeuristic, 
+                    bestNextMove, 
+                    (byte)_maxGlobalDepth, 
+                    false, 
+                    true
+            );
+        }
+        
         // Return selected point
-        if(bestNext == null) {
+        if(bestNextMove == -1) {
             return null;
         } else {
             _lastBestHeuristic = bestHeuristic;
-            return new Point(bestNext.getLastMovement()/Status.SIZE, bestNext.getLastMovement()%Status.SIZE);
+            return new Point(bestNextMove/Status.SIZE, bestNextMove%Status.SIZE);
         }
     }
     
@@ -144,8 +181,8 @@ class SearchAlgMiniMax extends SearchAlg {
      * @param player The player to evaluate the game with
      * @param s The current game state
      * @param currentDepth The depth of this call
-     * @param alpha The upper bound
-     * @param beta The lower bound
+     * @param alpha The lower bound
+     * @param beta The upper bound
      * @param isMax True if the heuristic has to be maximized and false if it 
      * has to be minimized.
      * @return the heuristic more favorable to the current player within the 
@@ -159,16 +196,37 @@ class SearchAlgMiniMax extends SearchAlg {
             return s.getHeuristic(_playerColor);
         }
         
+        // Retrieve entry from transposition table
+        long entry = _tt.readEntry(s);
+        byte selectedNextMove = -1;
+        if (TT.extractIsValidEntry(entry)) {
+            // Extract last selected movement
+            selectedNextMove = TT.extractSelectedMovement(entry);
+            
+            // Extract last heuristic if its more deep
+            if (USE_HEURISTIC_TT &&
+                _maxGlobalDepth <= TT.extractDepthBelow(entry) &&
+                TT.extractIsAlpha(entry) == isMax
+            ) {
+                float nextHeuristic = TT.extractSelectedHeuristic(entry);
+                
+                if(isMax) {
+                    // Update lower bound
+                    alpha = Math.max(alpha, nextHeuristic);
+                } else {
+                    // Update upper bound
+                    beta = Math.min(beta, nextHeuristic);
+                }
+                
+                if (TT.extractIsExact(entry)) {
+                    return isMax ? alpha : beta;
+                }
+            }
+        }
+        
         // Get moves
         ArrayList<Status> nextNodes = new ArrayList<>();
-        s.getNextStatuses(nextNodes);
-        
-            // Analize skipped turn if there is no movements
-        if(nextNodes.isEmpty() && _searchIsOn) {
-            Status next = new Status(s);
-            next.skipTurn();
-            return minimax(next, currentDepth+1, alpha, beta, !isMax);
-        }
+        s.getNextStatuses(nextNodes, selectedNextMove);
         
         // Analize moves if they exist
         for (Status nextNode : nextNodes) {
@@ -179,17 +237,38 @@ class SearchAlgMiniMax extends SearchAlg {
             // Get next heuristic
             float nextHeuristic = minimax(nextNode, currentDepth+1, alpha, beta, !isMax);
             
-            if(isMax) {
+            if(isMax && alpha < nextHeuristic) {
                 // Update lower bound
-                alpha = Math.max(alpha, nextHeuristic);
-            } else {
+                alpha = nextHeuristic;
+                selectedNextMove = nextNode.getLastMovement();
+            } else if(!isMax && nextHeuristic < beta) {
                 // Update upper bound
-                beta = Math.min(beta, nextHeuristic);
+                beta = nextHeuristic;
+                selectedNextMove = nextNode.getLastMovement();
             }
             
             // Prune if we exceeded lower or upper bound
             if(beta <= alpha)
                 break;
+        }
+        
+        // Analize skipped turn if there is no movements
+        if(nextNodes.isEmpty() && _searchIsOn) {
+            Status next = new Status(s);
+            next.skipTurn();
+            return minimax(next, currentDepth+1, alpha, beta, !isMax);
+        }
+        
+        // Register result to the transposition table
+        if(_searchIsOn) {
+            _tt.register(
+                    s,
+                    isMax ? alpha : beta,
+                    selectedNextMove, 
+                    (byte)(_maxGlobalDepth-currentDepth), 
+                    false, 
+                    isMax
+            );
         }
         
         // Return the maxmimized or minimized bound
