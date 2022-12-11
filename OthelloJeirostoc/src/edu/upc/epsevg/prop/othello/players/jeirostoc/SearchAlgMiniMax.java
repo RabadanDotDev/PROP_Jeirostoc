@@ -16,7 +16,12 @@ class SearchAlgMiniMax extends SearchAlg {
     /**
      * Toggle to select to use the heuristic from the TT
      */
-    private static final boolean USE_HEURISTIC_TT = false;
+    private static final boolean USE_HEURISTIC_TT = true;
+    
+    /**
+     * Toggle to select to cut when getting a isExact entry
+     */
+    private static final boolean CUT_IS_EXACT_TT = false;
     
     /**
      * The number of nodes which the current search has computed their 
@@ -106,7 +111,7 @@ class SearchAlgMiniMax extends SearchAlg {
                 
                 bestHeuristic = TT.extractSelectedHeuristic(entry);
                 
-                if (TT.extractIsExact(entry)) {
+                if (TT.extractIsExact(entry) && CUT_IS_EXACT_TT) {
                     _lastBestHeuristic = bestHeuristic;
                     return new Point(bestNextMove/Status.SIZE, bestNextMove%Status.SIZE);
                 }
@@ -218,7 +223,7 @@ class SearchAlgMiniMax extends SearchAlg {
                     beta = Math.min(beta, nextHeuristic);
                 }
                 
-                if (TT.extractIsExact(entry)) {
+                if (TT.extractIsExact(entry) && CUT_IS_EXACT_TT) {
                     return isMax ? alpha : beta;
                 }
             }
