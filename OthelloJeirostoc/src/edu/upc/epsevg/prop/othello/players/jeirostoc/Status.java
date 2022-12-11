@@ -201,9 +201,9 @@ public class Status {
     private long _boardNeighbours;
     
     /**
-     * The last movement made in the game, expressed in the form {x, y}
+     * The last movement made in the game, expressed in the form SIZE*x + y
      */
-    private int[] _lastMovement;
+    private byte _lastMovement;
     
     /**
      * Boolean indicating if the game is in a terminal state.
@@ -276,7 +276,7 @@ public class Status {
         // Init game status
         _isTerminalState  = false;
         _currentPlayerBit = P1_BIT;
-        _lastMovement     = new int[] {-1, -1};
+        _lastMovement     = -1;
     }
     
     /**
@@ -319,7 +319,7 @@ public class Status {
         // Init game status
         _isTerminalState  = computeIsTerminal();
         _currentPlayerBit = startingPlayerBit;
-        _lastMovement     = new int[] {-1, -1};
+        _lastMovement     = -1;
     }
     
     /**
@@ -340,7 +340,7 @@ public class Status {
         // Init game status
         _isTerminalState  = gse.isGameOver();
         _currentPlayerBit = gse.getCurrentPlayerBit();
-        _lastMovement     = new int[] {-1, -1};
+        _lastMovement     = -1;
         
         // Init zobrist keychain
         _zobristKeyChain = new long[ZobristKeyGen.BoardVariation.NUM_VARIATIONS];
@@ -371,7 +371,7 @@ public class Status {
         // Copy game status
         _isTerminalState  = other._isTerminalState;
         _currentPlayerBit = other._currentPlayerBit;
-        _lastMovement     = other._lastMovement.clone();
+        _lastMovement     = other._lastMovement;
         
         // Copy metadata
         _piecesCountP1 = other._piecesCountP1;
@@ -434,9 +434,9 @@ public class Status {
     /**
      * Get a reference to the last movement.
      * 
-     * @return A reference to the last movement, expressed in the form int[]{x,y}
+     * @return A reference to the last movement, expressed in the form SIZE*x+y
      */
-    public int[] getLastMovement() {
+    public byte getLastMovement() {
         return _lastMovement;
     }
     
@@ -615,7 +615,7 @@ public class Status {
     }
     
     /**
-     * Convert (x, y) to bit index with the form y*SIZE + x
+     * Convert (x, y) to bit index with the form x*SIZE + y
      * 
      * @param x The x coordinate
      * @param y The y coordinate
@@ -881,8 +881,7 @@ public class Status {
         ZobristKeyGen.updateKeyChainPlayerSwapped(_zobristKeyChain);
         
         // Store movement
-        _lastMovement[0] = x;
-        _lastMovement[1] = y;
+        _lastMovement = (byte)toIndex(x, y);
         
         // Update terminal state
         _isTerminalState = computeIsTerminal();

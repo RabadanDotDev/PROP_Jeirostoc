@@ -268,6 +268,8 @@ public class StatusTest {
             assertEquals(referenceMoves, directMoves);
             assertEquals(referenceMoves, copiedMoves);
             assertEquals(referenceMoves, incrementalMoves);
+            assertEquals(sampleMovements[i].x, incremental.getLastMovement()/Status.SIZE);
+            assertEquals(sampleMovements[i].y, incremental.getLastMovement()%Status.SIZE);
         }
     }
     
@@ -309,13 +311,14 @@ public class StatusTest {
             
             for (int i = 1; i < 64; i++) {
                 // Do movement
+                Point p = null;
                 if(referenceMoves.isEmpty()) {
                     reference.skipTurn();
                     copied = new Status(reference);
                     incremental = new Status(incremental);
                     incremental.skipTurn();
                 } else {
-                    Point p = referenceMoves.get(r.nextInt(referenceMoves.size()));
+                    p = referenceMoves.get(r.nextInt(referenceMoves.size()));
                     reference.movePiece(p);
                     copied = new Status(reference);
                     incremental = new Status(incremental);
@@ -339,6 +342,10 @@ public class StatusTest {
                 assertEquals(reference.getScore(CellType.PLAYER1), incremental.getNumDiscs(true));
                 assertEquals(referenceMoves, copiedMoves);
                 assertEquals(referenceMoves, incrementalMoves);
+                if(p != null) {
+                    assertEquals(p.x, incremental.getLastMovement()/Status.SIZE);
+                    assertEquals(p.y, incremental.getLastMovement()%Status.SIZE);
+                }
             }
         }
     }

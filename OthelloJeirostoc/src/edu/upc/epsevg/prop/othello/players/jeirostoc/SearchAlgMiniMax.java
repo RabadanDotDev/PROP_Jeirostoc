@@ -133,7 +133,7 @@ class SearchAlgMiniMax extends SearchAlg {
             return null;
         } else {
             _lastBestHeuristic = bestHeuristic;
-            return new Point(bestNext.getLastMovement()[0], bestNext.getLastMovement()[1]);
+            return new Point(bestNext.getLastMovement()/Status.SIZE, bestNext.getLastMovement()%Status.SIZE);
         }
     }
     
