@@ -35,12 +35,14 @@ public class HeadlessGame {
         IPlayer desdemona = new DesdemonaPlayer(2);//GB
 
         {
+            System.out.println("PlayerID vs Desdemona");
             HeadlessGame game = new HeadlessGame(playerID, desdemona, 2, 5);
             GameResult gr = game.start();
             System.out.println(gr);
         }
         
         {
+            System.out.println("Desdemona vs PlayerID");
             HeadlessGame game = new HeadlessGame(desdemona, playerID, 2, 5);
             GameResult gr = game.start();
             System.out.println(gr);
@@ -61,7 +63,7 @@ public class HeadlessGame {
     public GameResult start() {
         GameResult gr = new GameResult();
         for (int i = 0; i < gameCount; i++) {
-            //System.out.println(">" + i);
+            System.out.println("Playing game nº " + i);
             gr.update(play(players[0], players[1]));
         }
         return gr;
