@@ -29,7 +29,7 @@ abstract class SearchAlg {
     /**
      * Stores the best heuristic of the last movement for debug purposes.
      */
-    protected double _lastBestHeuristic;
+    protected float _lastBestHeuristic;
 
     /**
      * Create a MiniMax search algorithm with a given max global length

@@ -90,12 +90,12 @@ public class Status {
     /**
      * Heuristic version for debugging purposes.
      */
-    public static final double HEURISTIC_VER = 2.1;
+    public static final float HEURISTIC_VER = 2.1f;
     
     /**
      * Rotation and flip independent disk weights values.
      */
-    private final static double[] dwv = {
+    private final static float[] dwv = {
     100, 
     -30, -40, 
      20,  5,  10, 
@@ -104,7 +104,7 @@ public class Status {
     /**
      * Disk weights for each coordinate.
      */
-    private final static double[] diskWeights = {
+    private final static float[] diskWeights = {
         dwv[0], dwv[1], dwv[3], dwv[6], dwv[6], dwv[3], dwv[1], dwv[0],
         dwv[1], dwv[2], dwv[4], dwv[7], dwv[7], dwv[4], dwv[2], dwv[1],
         dwv[3], dwv[4], dwv[5], dwv[8], dwv[8], dwv[5], dwv[4], dwv[3],
@@ -233,7 +233,7 @@ public class Status {
     /**
      * The cached heuristic value from the disk weights sum.
      */
-    private double _diskWeightsSum;
+    private float _diskWeightsSum;
     
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -563,12 +563,12 @@ public class Status {
      * @param playerColor The player color to use as point of view
      * @return The heuristic
      */
-    public double getHeuristic(int playerColor) {
+    public float getHeuristic(int playerColor) {
         if(_isTerminalState) {
             if(_piecesCountP2 < _piecesCountP1)
-                return playerColor*Double.POSITIVE_INFINITY;
+                return playerColor*Float.POSITIVE_INFINITY;
             else if(_piecesCountP1 < _piecesCountP2)
-                return playerColor*Double.NEGATIVE_INFINITY;
+                return playerColor*Float.NEGATIVE_INFINITY;
             else
                 return 0;
         }
@@ -909,8 +909,8 @@ public class Status {
     /**
      * Compute the disk weight value from the current status.
      */
-    private double computeDiskWeights() {
-        double dw = 0;
+    private float computeDiskWeights() {
+        float dw = 0;
         
         for (int bitIndex = 0; bitIndex < SIZE*SIZE; bitIndex++) {
             if (((_boardOccupied >> bitIndex) & 1) == 1) {

@@ -85,7 +85,7 @@ class SearchAlgMiniMax extends SearchAlg {
         
         // Init result
         Status bestNext = null;
-        double bestHeuristic = Double.NEGATIVE_INFINITY;
+        float bestHeuristic = Float.NEGATIVE_INFINITY;
         
         // Get moves
         ArrayList<Status> nextNodes = new ArrayList<>();
@@ -99,8 +99,8 @@ class SearchAlgMiniMax extends SearchAlg {
             bestHeuristic = minimax(
                     bestNext, 
                     1, 
-                    Double.NEGATIVE_INFINITY, 
-                    Double.POSITIVE_INFINITY, 
+                    Float.NEGATIVE_INFINITY, 
+                    Float.POSITIVE_INFINITY, 
                     false
             );
         }
@@ -112,12 +112,12 @@ class SearchAlgMiniMax extends SearchAlg {
                 break;
             
             // Get next heuristic
-            double nextHeuristic;
+            float nextHeuristic;
             nextHeuristic = minimax(
                 next, 
                 1, 
-                Double.NEGATIVE_INFINITY, 
-                Double.POSITIVE_INFINITY, 
+                Float.NEGATIVE_INFINITY, 
+                Float.POSITIVE_INFINITY, 
                 false
             );
             
@@ -151,7 +151,7 @@ class SearchAlgMiniMax extends SearchAlg {
      * @return the heuristic more favorable to the current player within the 
      * bounds alpha and beta.
      */
-    protected double minimax(Status s, int currentDepth, double alpha, double beta, boolean isMax) {        
+    protected float minimax(Status s, int currentDepth, float alpha, float beta, boolean isMax) {        
         // Check if we got to a terminal state
         if(s.isTerminal()|| _maxGlobalDepth <= currentDepth) {
             _nodesWithComputedHeuristic++;
@@ -163,7 +163,7 @@ class SearchAlgMiniMax extends SearchAlg {
         ArrayList<Status> nextNodes = new ArrayList<>();
         s.getNextStatuses(nextNodes);
         
-        // Analize skipped turn if there is no movements
+            // Analize skipped turn if there is no movements
         if(nextNodes.isEmpty() && _searchIsOn) {
             Status next = new Status(s);
             next.skipTurn();
@@ -177,7 +177,7 @@ class SearchAlgMiniMax extends SearchAlg {
                 break;
             
             // Get next heuristic
-            double nextHeuristic = minimax(nextNode, currentDepth+1, alpha, beta, !isMax);
+            float nextHeuristic = minimax(nextNode, currentDepth+1, alpha, beta, !isMax);
             
             if(isMax) {
                 // Update lower bound
