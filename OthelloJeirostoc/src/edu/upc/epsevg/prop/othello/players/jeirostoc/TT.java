@@ -52,7 +52,7 @@ class TT {
     /**
      * Longs per entry.
      */
-    private static final long LONGS_PER_ENTRY = 4;
+    private static final long LONGS_PER_ENTRY = 2;
     
     /**
      * Default number of entries in the transposition table.
@@ -109,14 +109,11 @@ class TT {
         
         long currentKey      = _table[index];
         long currentEntry    = _table[index+1];
-        long currentOccupied = _table[index+2];
-        long currentColor    = _table[index+3];
         
         if (!extractIsValidEntry(currentEntry) ||
             currentKey != key || 
-            currentOccupied != s.getCurrentOccupied() || 
-            currentColor != s.getCurrentColor() || 
             extractDepthBelow(currentEntry) <= depthBelow) {
+            
             _table[index  ] = key;
             _table[index+1] = toEntry(
                     selectedHeuristic, 
@@ -125,14 +122,12 @@ class TT {
                     isExact, 
                     isAlpha
             );
-            _table[index+2] = s.getCurrentOccupied();
-            _table[index+3] = s.getCurrentColor();
         }
     }
     
     /**
      * Read the entry in the bitpacked format from the transposition table. If a
-     * registered entry can't be found, it returns 0.
+     * registered entry with a valid movement or -1 can't be found, it returns 0.
      * 
      * @param s The status to register
      * @return The entry
@@ -143,13 +138,18 @@ class TT {
         
         long currentKey      = _table[index];
         long currentEntry    = _table[index+1];
-        long currentOccupied = _table[index+2];
-        long currentColor    = _table[index+3];
         
-        if(extractIsValidEntry(currentEntry) && currentKey == key && currentOccupied == s.getCurrentOccupied() && currentColor == s.getCurrentColor())
-            return currentEntry;
-        else
-            return 0;
+        byte extractedMove = extractSelectedMovement(s, currentEntry);
+        if(extractIsValidEntry(currentEntry) && currentKey == key) {
+            if(extractedMove == -1 || s.canMovePiece(extractedMove/Status.SIZE, extractedMove%Status.SIZE)) {
+                return currentEntry;
+            } else {
+                System.out.println("[JeiroWarning] Extracted invalid movement. Current entry:");
+                System.out.println(entryToString(currentEntry));
+            }
+        }
+        
+        return 0;
     }
     
     /**

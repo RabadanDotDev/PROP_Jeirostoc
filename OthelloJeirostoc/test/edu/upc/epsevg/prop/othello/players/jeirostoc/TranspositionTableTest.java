@@ -79,6 +79,7 @@ public class TranspositionTableTest {
         
         assertTrue(0 < Long.remainderUnsigned(-1L, 100));
         assertTrue(0 < Long.remainderUnsigned(-184496264L, 134204621));
+        assertTrue(-1 == (byte)-1);
     }
     
     @Test

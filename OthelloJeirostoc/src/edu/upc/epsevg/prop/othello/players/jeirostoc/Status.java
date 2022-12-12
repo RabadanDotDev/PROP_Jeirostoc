@@ -133,7 +133,7 @@ public class Status {
     /**
      * The size of the board
      */
-    public static final int SIZE = 8;
+    public static final byte SIZE = 8;
     
     /**
      * The color of P1
