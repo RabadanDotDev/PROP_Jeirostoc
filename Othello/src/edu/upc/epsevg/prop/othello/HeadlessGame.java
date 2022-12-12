@@ -34,20 +34,17 @@ public class HeadlessGame {
         //Player player2 = new RandomPlayer("Desdesmonasia");
         IPlayer desdemona = new DesdemonaPlayer(2);//GB
 
-        {
-            System.out.println("PlayerID vs Desdemona");
-            HeadlessGame game = new HeadlessGame(playerID, desdemona, 2, 5);
-            GameResult gr = game.start();
-            System.out.println(gr);
-        }
         
-        {
-            System.out.println("Desdemona vs PlayerID");
-            HeadlessGame game = new HeadlessGame(desdemona, playerID, 2, 5);
-            GameResult gr = game.start();
-            System.out.println(gr);
-        }
+        HeadlessGame game1 = new HeadlessGame(playerID, desdemona, 2, 5);
+        GameResult gr1 = game1.start();
+        
+        HeadlessGame game2 = new HeadlessGame(desdemona, playerID, 2, 5);
+        GameResult gr2 = game2.start();
 
+        System.out.println("-------------------------------------------------------------");
+        System.out.println(gr1);
+        System.out.println(gr2);
+        System.out.println("-------------------------------------------------------------");
     }
 
     //=====================================================================================0
@@ -63,6 +60,7 @@ public class HeadlessGame {
     public GameResult start() {
         GameResult gr = new GameResult();
         for (int i = 0; i < gameCount; i++) {
+            System.out.println("-------------------------------------------------------------");
             System.out.println("Playing game nº " + i);
             gr.update(play(players[0], players[1]));
         }
@@ -85,6 +83,8 @@ public class HeadlessGame {
                 //System.out.println("." + new Date());
                 final Result r = new Result();
                 CellType cp = status.getCurrentPlayer();
+                System.out.println(status);
+                
                 Thread t1 = new Thread(() -> {
                     Move m = null;
                     try {
@@ -95,10 +95,10 @@ public class HeadlessGame {
                     }
                     if (m != null) {
                         status.movePiece(m.getTo());
+                        System.out.println(players[cp == CellType.PLAYER1 ? 0 : 1].getName() + " moves " + m.getTo() + " ("  + cp + ")");
                     } else {
                         status.forceLoser();
                     }
-                    System.out.print(cp==CellType.PLAYER1?"1":"2");
                     r.ok = true;
                     semaphore.release();
                 });
@@ -132,8 +132,21 @@ public class HeadlessGame {
                 gc();
             }
         }
-        System.out.print("\n");
-        System.out.println(players[status.winnerPlayer == CellType.PLAYER1 ? 0 : 1].getName() + " ("  + status.winnerPlayer + ") has won!");
+        
+        if (null == status.winnerPlayer ) {
+            System.out.println("Tie.");
+        } else switch (status.winnerPlayer) {
+            case PLAYER1:
+                System.out.println(players[0].getName() + " ("  + status.winnerPlayer + ") has won!");
+                break;
+            case PLAYER2:
+                System.out.println(players[1].getName() + " ("  + status.winnerPlayer + ") has won!");
+                break;
+            default:
+                System.out.println("Tie.");
+                break;
+
+        }
         return status.winnerPlayer;
     }
 
