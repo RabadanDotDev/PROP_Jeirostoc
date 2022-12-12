@@ -610,6 +610,34 @@ public class Status {
     }
     
     /**
+     * Find the variation index of the lowest value Zobrist key in the keychain 
+     * and return it.
+     * @return The minimum Zobrist key's variation index
+     */
+    public int getMinZobristKeyVariationIndex() {
+        long min = _zobristKeyChain[0];
+        int minI = 0;
+        for (int i = 1; i < _zobristKeyChain.length; i++) {
+            if(min < _zobristKeyChain[i]) {
+                min = _zobristKeyChain[i];
+                minI = i;
+            }
+        }
+        return minI;
+    }
+    
+    /**
+     * Get the zobrist key corresponding to 
+     * BoardVariation.valueof(variationIndex)
+     * 
+     * @param variationIndex The index of the variation
+     * @return The Zobrist key
+     */
+    public long getZobristKey(int variationIndex) {
+        return _zobristKeyChain[variationIndex];
+    }
+    
+    /**
      * Get a reference to the Zobrist keychain.
      * 
      * @return The Zobrist keychain

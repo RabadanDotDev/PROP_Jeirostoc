@@ -57,4 +57,33 @@ public enum BoardVariation{
             default         -> null;
         };
     }
+    
+    /**
+     * Apply transformation at point indexed by bitsetIndex with the form x*SIZE
+     * +y by the variation BoardVariation.valueof(variationIndex)
+     * 
+     * @param bitsetIndex The bitsetIndex index to transform
+     * @param variationIndex The index of the variation to transform with
+     * @return The bitsetIndex with the transformation applied
+     */
+    public static byte applyTransformation(byte bitsetIndex, int variationIndex) {
+        int x = bitsetIndex/Status.SIZE;
+        int y = bitsetIndex%Status.SIZE;
+        
+        int x2, y2;
+        
+        switch (variationIndex) {
+            case 0  -> {x2 = x;               y2 = y;              } // BASE
+            case 1  -> {x2 = y;               y2 = Status.SIZE-x-1;} // ROT90
+            case 2  -> {x2 = Status.SIZE-x-1; y2 = Status.SIZE-y-1;} // ROT180
+            case 3  -> {x2 = Status.SIZE-y-1; y2 = x;              } // ROT270
+            case 4  -> {x2 = x;               y2 = Status.SIZE-y-1;} // FLIP
+            case 5  -> {x2 = y;               y2 = x;              } // FLIPROT90
+            case 6  -> {x2 = Status.SIZE-x-1; y2 = y;              } // FLIPROT180
+            case 7  -> {x2 = Status.SIZE-y-1; y2 = Status.SIZE-x-1;} // FLIOROT270
+            default -> {x2 = x;               y2 = y;              }
+        }
+        
+        return (byte)(x2*Status.SIZE+y2);
+    }
 }

@@ -98,7 +98,8 @@ class TT {
      * (true) or a lower bound (false).
      */
     public void register(Status s, float selectedHeuristic, byte selectedMovementBitIndex, byte depthBelow, boolean isExact, boolean isAlpha) {
-        long key = s.getMinZobristKey();
+        int variationIndex = s.getMinZobristKeyVariationIndex();
+        long key = s.getZobristKey(variationIndex);
         int index = (int) Long.remainderUnsigned(key, _numEntries)*2;
         
         long currentKey   = _table[index];
@@ -106,7 +107,13 @@ class TT {
         
         if (!extractIsValidEntry(currentEntry) || currentKey != key || extractDepthBelow(currentEntry) <= depthBelow) {
             _table[index  ] = key;
-            _table[index+1] = toEntry(selectedHeuristic, selectedMovementBitIndex, depthBelow, isExact, isAlpha);
+            _table[index+1] = toEntry(
+                    selectedHeuristic, 
+                    BoardVariation.applyTransformation(selectedMovementBitIndex, variationIndex), 
+                    depthBelow, 
+                    isExact, 
+                    isAlpha
+            );
         }
     }
     
@@ -163,13 +170,28 @@ class TT {
     }
     
     /**
-     * Extract the selected movement from the entry.
+     * Extract the selected movement from the entry
      * 
      * @param entry The entry to extract from
      * @return The selected movement
      */
     public static byte extractSelectedMovement(long entry) {
         return (byte)((entry >> SELECTED_MOVEMENT_SHIFT) & BYTE_MASK);
+    }
+    
+    /**
+     * Extract the selected movement from the entry with the Variation that 
+     * corresponds to s
+     * 
+     * @param s The status 
+     * @param entry The entry to extract from
+     * @return The selected movement with the correct orientation
+     */
+    public static byte extractSelectedMovement(Status s, long entry) {
+        return BoardVariation.applyTransformation(
+                (byte)((entry >> SELECTED_MOVEMENT_SHIFT) & BYTE_MASK),
+                s.getMinZobristKeyVariationIndex()
+        );
     }
     
     /**

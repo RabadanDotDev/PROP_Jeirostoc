@@ -110,7 +110,7 @@ class SearchAlgMiniMax extends SearchAlg {
         long entry = _tt.readEntry(s);
         if (TT.extractIsValidEntry(entry)) {
             // Extract last selected movement
-            bestNextMove = TT.extractSelectedMovement(entry);
+            bestNextMove = TT.extractSelectedMovement(s, entry);
             
             // Extract last heuristic if its more deep
             if (USE_HEURISTIC_TT &&
@@ -120,7 +120,10 @@ class SearchAlgMiniMax extends SearchAlg {
                 
                 bestHeuristic = TT.extractSelectedHeuristic(entry);
                 
-                if (TT.extractIsExact(entry) && CUT_IS_EXACT_TT) {
+                if (CUT_IS_EXACT_TT &&
+                    TT.extractIsExact(entry) &&
+                    s.canMovePiece(bestNextMove/Status.SIZE, bestNextMove%Status.SIZE)
+                ) {
                     _lastBestHeuristic = bestHeuristic;
                     return new Point(bestNextMove/Status.SIZE, bestNextMove%Status.SIZE);
                 }
@@ -223,7 +226,7 @@ class SearchAlgMiniMax extends SearchAlg {
         byte selectedNextMove = -1;
         if (TT.extractIsValidEntry(entry)) {
             // Extract last selected movement
-            selectedNextMove = TT.extractSelectedMovement(entry);
+            selectedNextMove = TT.extractSelectedMovement(s, entry);
             
             // Extract last heuristic if its more deep
             if (USE_HEURISTIC_TT &&
