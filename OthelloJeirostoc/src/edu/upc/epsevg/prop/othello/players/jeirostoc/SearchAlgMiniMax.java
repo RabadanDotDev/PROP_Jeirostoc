@@ -109,21 +109,21 @@ class SearchAlgMiniMax extends SearchAlg {
         // Retrieve entry from transposition table
         long entry = _tt.readEntry(s);
         if (TT.extractIsValidEntry(entry)) {
-            // Extract last selected movement
-            bestNextMove = TT.extractSelectedMovement(s, entry);
+            // Extract selected movement
+            byte extractedMovement = TT.extractSelectedMovement(s, entry);
+            if(s.canMovePiece(extractedMovement/Status.SIZE, extractedMovement%Status.SIZE))
+                bestNextMove = extractedMovement;
             
-            // Extract last heuristic if its more deep
+            // Extract last heuristic if its more deep and the move is valid
             if (USE_HEURISTIC_TT &&
                 _maxGlobalDepth <= TT.extractDepthBelow(entry) &&
                 TT.extractIsAlpha(entry)
             ) {
-                
                 bestHeuristic = TT.extractSelectedHeuristic(entry);
                 
                 if (CUT_IS_EXACT_TT &&
-                    TT.extractIsExact(entry) &&
-                    s.canMovePiece(bestNextMove/Status.SIZE, bestNextMove%Status.SIZE)
-                ) {
+                    bestNextMove != -1 &&
+                    TT.extractIsExact(entry)) {
                     _lastBestHeuristic = bestHeuristic;
                     return new Point(bestNextMove/Status.SIZE, bestNextMove%Status.SIZE);
                 }
@@ -225,7 +225,7 @@ class SearchAlgMiniMax extends SearchAlg {
         long entry = _tt.readEntry(s);
         byte selectedNextMove = -1;
         if (TT.extractIsValidEntry(entry)) {
-            // Extract last selected movement
+            // Extract selected movement
             selectedNextMove = TT.extractSelectedMovement(s, entry);
             
             // Extract last heuristic if its more deep
@@ -243,7 +243,7 @@ class SearchAlgMiniMax extends SearchAlg {
                     beta = Math.min(beta, nextHeuristic);
                 }
                 
-                if (TT.extractIsExact(entry) && CUT_IS_EXACT_TT) {
+                if (CUT_IS_EXACT_TT && TT.extractIsExact(entry)) {
                     return isMax ? alpha : beta;
                 }
                 
