@@ -10,42 +10,7 @@ import java.util.Random;
  * @author raul
  * @author josep
  */
-public class ZobristKeyGen {    
-    /**
-     * Enumeration to indicate the 8 possible variations of the board.
-     */
-    public static enum BoardVariation{        
-        BASE(0),
-        ROT90(1),
-        ROT180(2),
-        ROT270(3),
-        FLIP(4),
-        FLIPROT90(5),
-        FLIPROT180(6),
-        FLIPROT270(7);
-        
-        public final int v;
-        public final static int NUM_VARIATIONS = BoardVariation.values().length;
-        
-        private BoardVariation(int v) {
-            this.v = v;
-        }
-        
-        public static BoardVariation valueOf(int v) {
-            return switch (v) {
-                case 0  -> BASE;
-                case 1  -> ROT90;
-                case 2  -> ROT180;
-                case 3  -> ROT270;
-                case 4  -> FLIP;
-                case 5  -> FLIPROT90;
-                case 6  -> FLIPROT180;
-                case 7  -> FLIPROT270;
-                default -> BASE;
-            };
-        }
-    }
-    
+public class ZobristKeyGen {
     /**
      * The table containing all the Zobrist values in the 8 variations.
      */

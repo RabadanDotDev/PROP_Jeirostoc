@@ -167,25 +167,11 @@ public class StatusTest {
     
     private final int SIZE = 8;
     
-    private Point rotateMovement(Point p, ZobristKeyGen.BoardVariation bv) {
-        return switch (bv) {
-            case BASE       -> new Point(p);
-            case ROT90      -> new Point(p.y, SIZE-p.x-1);
-            case ROT180     -> new Point(SIZE-p.x-1, SIZE-p.y-1);
-            case ROT270     -> new Point(SIZE-p.y-1, p.x);
-            case FLIP       -> new Point(p.x, SIZE-p.y-1);
-            case FLIPROT90  -> new Point(p.y, p.x);
-            case FLIPROT180 -> new Point(SIZE-p.x-1, p.y);
-            case FLIPROT270 -> new Point(SIZE-p.y-1, SIZE-p.x-1);
-            default         -> null;
-        };
-    }
-    
-    private int[][] rotateBoard(int[][] board, ZobristKeyGen.BoardVariation bv) {
+    private int[][] rotateBoard(int[][] board, BoardVariation bv) {
         int[][] rotatedBoard = new int[SIZE][SIZE];
         for (int x = 0; x < SIZE; x++) {
             for (int y = 0; y < SIZE; y++) {
-                Point p = rotateMovement(new Point(x, y), bv);
+                Point p = BoardVariation.applyTransformation(new Point(x, y), bv);
                 rotatedBoard[p.x][p.y] = board[x][y];
             }
         }
@@ -371,7 +357,7 @@ public class StatusTest {
     
     @Test
     public void testZobristHashGuided() {
-        ZobristKeyGen.BoardVariation[] bvs = ZobristKeyGen.BoardVariation.values();
+        BoardVariation[] bvs = BoardVariation.values();
         
         // Init statues
         Status[] statuses = new Status[bvs.length*2];
@@ -399,7 +385,7 @@ public class StatusTest {
                 ), (move%2 == 0));
                 
                 // Incremental movement
-                statuses[bvs.length+i].movePiece(rotateMovement(
+                statuses[bvs.length+i].movePiece(BoardVariation.applyTransformation(
                         sampleMovements[move],
                         bvs[i]
                 ));
@@ -415,7 +401,7 @@ public class StatusTest {
         
         for (int game = 0; game < 5000; game++) {
             System.out.println("Same zobrist hash and heuristic game " + game);
-            ZobristKeyGen.BoardVariation[] bvs = ZobristKeyGen.BoardVariation.values();
+            BoardVariation[] bvs = BoardVariation.values();
 
             // Init statues
             Status[] statuses = new Status[bvs.length];
@@ -437,7 +423,7 @@ public class StatusTest {
                 } else {
                     Point p = nextMoves.get(r.nextInt(nextMoves.size()));
                     for (int i = 0; i < 8; i++) {
-                        statuses[i].movePiece(rotateMovement(
+                        statuses[i].movePiece(BoardVariation.applyTransformation(
                                 p,
                                 bvs[i]
                         ));

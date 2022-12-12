@@ -20,7 +20,7 @@ public class ZobristKeyGenTest {
     Point pFlipRot180 = new Point(6, 0);
     Point pFlipRot270 = new Point(7, 6);
 
-    private Point getPos(ZobristKeyGen.BoardVariation bv) {
+    private Point getPos(BoardVariation bv) {
         return switch (bv) {
             case BASE       -> pBase;
             case ROT90      -> pRot90;
@@ -34,7 +34,7 @@ public class ZobristKeyGenTest {
         };
     }
     
-    private void assertEqualZobristKeyWith(CellType cellType, ZobristKeyGen.BoardVariation bv) {
+    private void assertEqualZobristKeyWith(CellType cellType, BoardVariation bv) {
         long k1,k2;
         
         // Test 
@@ -42,26 +42,26 @@ public class ZobristKeyGenTest {
                 pBase, cellType, bv
         );
         k2 = ZobristKeyGen.getZobristValue(
-                getPos(bv), cellType, ZobristKeyGen.BoardVariation.BASE
+                getPos(bv), cellType, BoardVariation.BASE
         );
         
         assertEquals(k1, k2);
     }
     
-    private void assertEqualZobristKeyWith(ZobristKeyGen.BoardVariation bv) {
+    private void assertEqualZobristKeyWith(BoardVariation bv) {
         assertEqualZobristKeyWith(CellType.PLAYER1, bv);
         assertEqualZobristKeyWith(CellType.PLAYER2, bv);
     }
     
     @Test
     public void testGetZobristValue() {
-        assertEqualZobristKeyWith(ZobristKeyGen.BoardVariation.BASE);
-        assertEqualZobristKeyWith(ZobristKeyGen.BoardVariation.ROT90);
-        assertEqualZobristKeyWith(ZobristKeyGen.BoardVariation.ROT180);
-        assertEqualZobristKeyWith(ZobristKeyGen.BoardVariation.ROT270);
-        assertEqualZobristKeyWith(ZobristKeyGen.BoardVariation.FLIP);
-        assertEqualZobristKeyWith(ZobristKeyGen.BoardVariation.FLIPROT90);
-        assertEqualZobristKeyWith(ZobristKeyGen.BoardVariation.FLIPROT180);
-        assertEqualZobristKeyWith(ZobristKeyGen.BoardVariation.FLIPROT270);
+        assertEqualZobristKeyWith(BoardVariation.BASE);
+        assertEqualZobristKeyWith(BoardVariation.ROT90);
+        assertEqualZobristKeyWith(BoardVariation.ROT180);
+        assertEqualZobristKeyWith(BoardVariation.ROT270);
+        assertEqualZobristKeyWith(BoardVariation.FLIP);
+        assertEqualZobristKeyWith(BoardVariation.FLIPROT90);
+        assertEqualZobristKeyWith(BoardVariation.FLIPROT180);
+        assertEqualZobristKeyWith(BoardVariation.FLIPROT270);
     }
 }

@@ -258,7 +258,7 @@ public class Status {
         _boardNeighbours = 0;
         
         // Init zobrist keychain
-        _zobristKeyChain = new long[ZobristKeyGen.BoardVariation.NUM_VARIATIONS];
+        _zobristKeyChain = new long[BoardVariation.NUM_VARIATIONS];
         
         // Init Metadata 1
         _piecesCountP1 = 0;
@@ -294,7 +294,7 @@ public class Status {
         _boardNeighbours = 0;
         
         // Init zobrist keychain
-        _zobristKeyChain = new long[ZobristKeyGen.BoardVariation.NUM_VARIATIONS];
+        _zobristKeyChain = new long[BoardVariation.NUM_VARIATIONS];
         if(startingPlayerBit == P2_BIT)
             ZobristKeyGen.updateKeyChainPlayerSwapped(_zobristKeyChain);
         
@@ -343,7 +343,7 @@ public class Status {
         _lastMovement     = -1;
         
         // Init zobrist keychain
-        _zobristKeyChain = new long[ZobristKeyGen.BoardVariation.NUM_VARIATIONS];
+        _zobristKeyChain = new long[BoardVariation.NUM_VARIATIONS];
         regenZobristKeyChain();
         
         // Init Metadata
