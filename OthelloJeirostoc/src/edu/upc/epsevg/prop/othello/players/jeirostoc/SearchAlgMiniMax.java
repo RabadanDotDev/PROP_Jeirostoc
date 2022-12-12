@@ -110,20 +110,37 @@ class SearchAlgMiniMax extends SearchAlg {
         long entry = _tt.readEntry(s);
         if (TT.extractIsValidEntry(entry)) {
             // Extract selected movement
-            bestNextMove = TT.extractSelectedMovement(s, entry);
+            byte extractedMove = TT.extractSelectedMovement(s, entry);
+            if(extractedMove != -1 && !s.canMovePiece(extractedMove/Status.SIZE, extractedMove%Status.SIZE)) {
+                System.out.println("Tried to use an invalid move! Unresolved collision? Invalidating entry...");
+                System.out.println("Entry to invalidate:");
+                System.out.println(TT.entryToString(entry)); 
+                _tt.invalidateEntry(s);
+                System.out.println("Status:");
+                System.out.println(s.toString(true));
+                System.out.println("Depth");
+                System.out.println(0);
+            } else {
+                bestHeuristic = extractedMove;
+            }
             
             // Extract last heuristic if its more deep and the move is valid
-            if (USE_HEURISTIC_TT &&
+            if (USE_HEURISTIC_TT && 
+                bestNextMove == extractedMove &&
                 _maxGlobalDepth <= TT.extractDepthBelow(entry) &&
                 TT.extractIsAlpha(entry)
             ) {
-                bestHeuristic = TT.extractSelectedHeuristic(entry);
-                
-                if (CUT_IS_EXACT_TT &&
-                    bestNextMove != -1 &&
-                    TT.extractIsExact(entry)) {
-                    _lastBestHeuristic = bestHeuristic;
-                    return new Point(bestNextMove/Status.SIZE, bestNextMove%Status.SIZE);
+                if (s.canMovePiece(bestNextMove/Status.SIZE, bestNextMove%Status.SIZE)) {
+                    bestHeuristic = TT.extractSelectedHeuristic(entry);
+                    
+                    if (CUT_IS_EXACT_TT &&
+                        bestNextMove != -1 &&
+                        TT.extractIsExact(entry)) {
+                        if (s.canMovePiece(bestNextMove/Status.SIZE, bestNextMove%Status.SIZE)) {
+                            _lastBestHeuristic = bestHeuristic;
+                            return new Point(bestNextMove/Status.SIZE, bestNextMove%Status.SIZE);
+                        }
+                    }
                 }
             }
         }
@@ -224,10 +241,23 @@ class SearchAlgMiniMax extends SearchAlg {
         byte selectedNextMove = -1;
         if (TT.extractIsValidEntry(entry)) {
             // Extract selected movement
-            selectedNextMove = TT.extractSelectedMovement(s, entry);
+            byte extractedMove = TT.extractSelectedMovement(s, entry);
+            if(extractedMove != -1 && !s.canMovePiece(extractedMove/Status.SIZE, extractedMove%Status.SIZE)) {
+                System.out.println("Tried to use an invalid move! Unresolved collision? Invalidating entry...");
+                System.out.println("Entry to invalidate:");
+                System.out.println(TT.entryToString(entry)); 
+                _tt.invalidateEntry(s);
+                System.out.println("Status:");
+                System.out.println(s.toString(true));
+                System.out.println("Depth");
+                System.out.println(currentDepth);
+            } else {
+                selectedNextMove = extractedMove;
+            }
             
-            // Extract last heuristic if its more deep
+            // Extract last heuristic if its more deep and the move is valid
             if (USE_HEURISTIC_TT &&
+                selectedNextMove == extractedMove &&
                 _maxGlobalDepth <= TT.extractDepthBelow(entry) &&
                 TT.extractIsAlpha(entry) == isMax
             ) {

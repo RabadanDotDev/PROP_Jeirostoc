@@ -16,9 +16,20 @@ import java.util.List;
  * @author josep
  */
 public class Status {
+
+    long getCurrentOccupied() {
+        return _boardOccupied;
+    }
+    
+    long getCurrentColor() {
+        return _boardColor;
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // Subclasses                                                             //
     ////////////////////////////////////////////////////////////////////////////
+
+
     
     /**
      * Class to extract the relevant information from a given GameStatus.

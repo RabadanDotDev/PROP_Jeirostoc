@@ -94,8 +94,8 @@ public class HeadlessGame {
                         ex.printStackTrace();
                     }
                     if (m != null) {
-                        status.movePiece(m.getTo());
                         System.out.println(players[cp == CellType.PLAYER1 ? 0 : 1].getName() + " moves " + m.getTo() + " ("  + cp + ")");
+                        status.movePiece(m.getTo());
                     } else {
                         status.forceLoser();
                     }

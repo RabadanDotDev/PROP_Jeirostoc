@@ -50,6 +50,11 @@ class TT {
     private static final long FLAG_IS_VALID_ENTRY_MASK = 1L << (50);
     
     /**
+     * Longs per entry.
+     */
+    private static final long LONGS_PER_ENTRY = 4;
+    
+    /**
      * Default number of entries in the transposition table.
      */
     private static final long DEF_NUM_ENTRIES = 134204621;
@@ -69,7 +74,7 @@ class TT {
      */
     public TT() {
         _numEntries = DEF_NUM_ENTRIES;
-        _table = new long[(int)_numEntries*2];
+        _table = new long[(int)(_numEntries*LONGS_PER_ENTRY)];
     }
     
     /**
@@ -79,7 +84,7 @@ class TT {
      */
     public TT(int numEntries) {
         _numEntries = numEntries;
-        _table = new long[(int)_numEntries*2];
+        _table = new long[(int)(_numEntries*LONGS_PER_ENTRY)];
     }
     
     /**
@@ -100,12 +105,18 @@ class TT {
     public void register(Status s, float selectedHeuristic, byte selectedMovementBitIndex, byte depthBelow, boolean isExact, boolean isAlpha) {
         int variationIndex = s.getMinZobristKeyVariationIndex();
         long key = s.getZobristKey(variationIndex);
-        int index = (int) Long.remainderUnsigned(key, _numEntries)*2;
+        int index = (int) (Long.remainderUnsigned(key, _numEntries)*LONGS_PER_ENTRY);
         
-        long currentKey   = _table[index];
-        long currentEntry = _table[index+1];
+        long currentKey      = _table[index];
+        long currentEntry    = _table[index+1];
+        long currentOccupied = _table[index+2];
+        long currentColor    = _table[index+3];
         
-        if (!extractIsValidEntry(currentEntry) || currentKey != key || extractDepthBelow(currentEntry) <= depthBelow) {
+        if (!extractIsValidEntry(currentEntry) ||
+            currentKey != key || 
+            currentOccupied != s.getCurrentOccupied() || 
+            currentColor != s.getCurrentColor() || 
+            extractDepthBelow(currentEntry) <= depthBelow) {
             _table[index  ] = key;
             _table[index+1] = toEntry(
                     selectedHeuristic, 
@@ -114,6 +125,8 @@ class TT {
                     isExact, 
                     isAlpha
             );
+            _table[index+2] = s.getCurrentOccupied();
+            _table[index+3] = s.getCurrentColor();
         }
     }
     
@@ -126,15 +139,30 @@ class TT {
      */
     public long readEntry(Status s) {
         long key = s.getMinZobristKey();
-        int index = (int) Long.remainderUnsigned(key, _numEntries)*2;
+        int index = (int) (Long.remainderUnsigned(key, _numEntries)*LONGS_PER_ENTRY);
         
-        long currentKey   = _table[index];
-        long currentEntry = _table[index+1];
+        long currentKey      = _table[index];
+        long currentEntry    = _table[index+1];
+        long currentOccupied = _table[index+2];
+        long currentColor    = _table[index+3];
         
-        if(extractIsValidEntry(currentEntry) && currentKey == key) 
+        if(extractIsValidEntry(currentEntry) && currentKey == key && currentOccupied == s.getCurrentOccupied() && currentColor == s.getCurrentColor())
             return currentEntry;
         else
             return 0;
+    }
+    
+    /**
+     * Invalidate the entry where s should go
+     * 
+     * @param s The status to register
+     * @return The entry
+     */
+    public void invalidateEntry(Status s) {
+        long key = s.getMinZobristKey();
+        int index = (int) (Long.remainderUnsigned(key, _numEntries)*LONGS_PER_ENTRY);
+        
+        _table[index] = _table[index+1] = 0;
     }
     
     /**
@@ -239,6 +267,9 @@ class TT {
      */
     public static String entryToString(long entry) {
         StringBuilder sb = new StringBuilder();
+        sb.append("Raw: ");
+        sb.append(String.format("%64s", Long.toBinaryString(entry)).replace(' ', '0'));
+        sb.append('\n');
         sb.append("selectedHeuristic: "); 
         sb.append(extractSelectedHeuristic(entry));
         sb.append('\n');
