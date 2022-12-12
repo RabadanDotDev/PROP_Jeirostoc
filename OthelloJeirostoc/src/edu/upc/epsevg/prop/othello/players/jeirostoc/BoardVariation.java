@@ -47,9 +47,9 @@ public enum BoardVariation{
     public static Point applyTransformation(Point p, BoardVariation bv) {
         return switch (bv) {
             case BASE       -> new Point(p);
-            case ROT90      -> new Point(p.y, Status.SIZE-p.x-1);
+            case ROT90      -> new Point(Status.SIZE-p.y-1, p.x);
             case ROT180     -> new Point(Status.SIZE-p.x-1, Status.SIZE-p.y-1);
-            case ROT270     -> new Point(Status.SIZE-p.y-1, p.x);
+            case ROT270     -> new Point(p.y, Status.SIZE-p.x-1);
             case FLIP       -> new Point(p.x, Status.SIZE-p.y-1);
             case FLIPROT90  -> new Point(p.y, p.x);
             case FLIPROT180 -> new Point(Status.SIZE-p.x-1, p.y);
@@ -74,9 +74,9 @@ public enum BoardVariation{
         
         switch (variationIndex) {
             case 0  -> {x2 = x;               y2 = y;              } // BASE
-            case 1  -> {x2 = y;               y2 = Status.SIZE-x-1;} // ROT90
+            case 1  -> {x2 = Status.SIZE-y-1; y2 = x;              } // ROT90
             case 2  -> {x2 = Status.SIZE-x-1; y2 = Status.SIZE-y-1;} // ROT180
-            case 3  -> {x2 = Status.SIZE-y-1; y2 = x;              } // ROT270
+            case 3  -> {x2 = y;               y2 = Status.SIZE-x-1;} // ROT270
             case 4  -> {x2 = x;               y2 = Status.SIZE-y-1;} // FLIP
             case 5  -> {x2 = y;               y2 = x;              } // FLIPROT90
             case 6  -> {x2 = Status.SIZE-x-1; y2 = y;              } // FLIPROT180
@@ -85,5 +85,33 @@ public enum BoardVariation{
         }
         
         return (byte)(x2*Status.SIZE+y2);
+    }
+    
+    /**
+     * Apply the inverse transformation at point indexed by bitsetIndex with the
+     * form x*SIZE+y by the variation BoardVariation.valueof(variationIndex)
+     * 
+     * @param bitsetIndex The bitsetIndex index to transform
+     * @param variationIndex The index of the variation to transform with
+     * @return The bitsetIndex with the inverse transformation applied
+     */
+    public static byte applyInverseTransformation(byte bitsetIndex, int variationIndex) {
+        int x = bitsetIndex/Status.SIZE;
+        int y = bitsetIndex%Status.SIZE;
+        
+        int invX, invY;
+        switch (variationIndex) {
+            case 0  -> {invX = x;               invY = y;              } // BASE
+            case 1  -> {invX = y;               invY = Status.SIZE-x-1;} // ROT90
+            case 2  -> {invX = Status.SIZE-x-1; invY = Status.SIZE-y-1;} // ROT180
+            case 3  -> {invX = Status.SIZE-y-1; invY = x;              } // ROT270
+            case 4  -> {invX = x;               invY = Status.SIZE-y-1;} // FLIP
+            case 5  -> {invX = y;               invY = x;              } // FLIPROT90
+            case 6  -> {invX = Status.SIZE-x-1; invY = y;              } // FLIPROT180
+            case 7  -> {invX = Status.SIZE-y-1; invY = Status.SIZE-x-1;} // FLIPROT270
+            default -> {invX = x;               invY = y;              }
+        }
+        
+        return (byte)(invX*Status.SIZE+invY);   
     }
 }

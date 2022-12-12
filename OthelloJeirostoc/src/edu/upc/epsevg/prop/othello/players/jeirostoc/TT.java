@@ -188,7 +188,7 @@ class TT {
      * @return The selected movement with the correct orientation
      */
     public static byte extractSelectedMovement(Status s, long entry) {
-        return BoardVariation.applyTransformation(
+        return BoardVariation.applyInverseTransformation(
                 (byte)((entry >> SELECTED_MOVEMENT_SHIFT) & BYTE_MASK),
                 s.getMinZobristKeyVariationIndex()
         );

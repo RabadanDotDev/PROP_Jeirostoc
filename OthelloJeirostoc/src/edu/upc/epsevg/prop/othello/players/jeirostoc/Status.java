@@ -603,7 +603,7 @@ public class Status {
     public long getMinZobristKey() {
         long min = _zobristKeyChain[0];
         for (int i = 1; i < _zobristKeyChain.length; i++) {
-            if(min < _zobristKeyChain[i])
+            if(_zobristKeyChain[i] < min)
                 min = _zobristKeyChain[i];
         }
         return min;
@@ -618,7 +618,7 @@ public class Status {
         long min = _zobristKeyChain[0];
         int minI = 0;
         for (int i = 1; i < _zobristKeyChain.length; i++) {
-            if(min < _zobristKeyChain[i]) {
+            if(_zobristKeyChain[i] < min) {
                 min = _zobristKeyChain[i];
                 minI = i;
             }

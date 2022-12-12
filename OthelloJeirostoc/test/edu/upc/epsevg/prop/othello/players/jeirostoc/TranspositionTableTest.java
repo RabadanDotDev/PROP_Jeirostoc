@@ -1,5 +1,9 @@
 package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Random;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -7,7 +11,33 @@ import static org.junit.Assert.*;
  *
  * @author raul
  */
-public class TranspositionTableTest {    
+public class TranspositionTableTest {
+    int[][] sampleBoard = {
+        { 0,  0,  0,  0,  0,  0,  0,  0},
+        { 0,  0,  0,  0,  0,  0,  0,  0},
+        { 0,  0,  0,  0,  0,  0,  0,  0},
+        { 0,  0,  0,  1, -1,  0,  0,  0},
+        { 0,  0,  0, -1,  1,  0,  0,  0},
+        { 0,  0,  0,  0,  0,  0,  0,  0},
+        { 0,  0,  0,  0,  0,  0,  0,  0},
+        { 0,  0,  0,  0,  0,  0,  0,  0}
+    };
+    
+    private final int SIZE = 8;
+    
+    private int[][] rotateBoard(int[][] board, BoardVariation bv) {
+        int[][] rotatedBoard = new int[SIZE][SIZE];
+        for (int x = 0; x < SIZE; x++) {
+            for (int y = 0; y < SIZE; y++) {
+                Point p = BoardVariation.applyTransformation(new Point(x, y), bv);
+                rotatedBoard[p.x][p.y] = board[x][y];
+            }
+        }
+        return rotatedBoard;
+    }
+    
+    private TT tt;
+    
     @Test
     public void testSupositionsBitPacking() {
         float heuristic        = 7;
@@ -88,7 +118,61 @@ public class TranspositionTableTest {
     }
     
     @Test
-    public void testEmptyEntry() {
+    public void testTTCorrectMovementEntries() {
+        Random r = new Random();
+        tt = new TT();
         
+        for (int game = 0; game < 5000; game++) {
+            System.out.println("Test TT correct movement entries " + game);
+            BoardVariation[] bvs = BoardVariation.values();
+
+            // Init statues
+            Status[] statuses = new Status[bvs.length];
+            for (int i = 0; i < bvs.length; i++) {
+                statuses[i] = new Status(rotateBoard(
+                        sampleBoard, 
+                        bvs[i]
+                ), Status.P1_BIT);
+            }
+
+            // Generate random movements
+            while (!statuses[0].isTerminal()) {
+                ArrayList<Point> nextMoves = new ArrayList<>();
+                statuses[0].getNextMoves(nextMoves);
+                if(nextMoves.isEmpty()) {
+                    for (int i = 0; i < 8; i++)
+                        statuses[i].skipTurn();
+                } else {
+                    Point p = nextMoves.get(r.nextInt(nextMoves.size()));
+                    for (int i = 0; i < 8; i++) {
+                        Point rotatedP = BoardVariation.applyTransformation(
+                                p,
+                                bvs[i]
+                        );
+                        
+                        // Write movement to TT
+                        tt.register(
+                                statuses[i], 
+                                (byte)0, 
+                                (byte)(rotatedP.x*SIZE+rotatedP.y), 
+                                (byte)0, true, true
+                        );
+                        
+                        
+                        // Check
+                        long entry = tt.readEntry(statuses[i]);
+                        byte bitIndex = TT.extractSelectedMovement(statuses[i], entry);
+                        Point extractedP = new Point(bitIndex/SIZE, bitIndex%SIZE);
+                        assertEquals(rotatedP, extractedP);
+                        assertEquals(bitIndex, rotatedP.x*SIZE+rotatedP.y);
+                        assertTrue(statuses[i].canMovePiece(extractedP.x, extractedP.y));
+                        
+                        
+                        // Move
+                        statuses[i].movePiece(rotatedP);
+                    }
+                }
+            }
+        }
     }
 }
