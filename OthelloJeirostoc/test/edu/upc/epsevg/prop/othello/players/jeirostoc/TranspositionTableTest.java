@@ -97,6 +97,7 @@ public class TranspositionTableTest {
         assertEquals(TT.extractIsExact(entry),           isExact);
         assertEquals(TT.extractIsAlpha(entry),           isAlpha);
         assertEquals(TT.extractIsValidEntry(entry),      true);
+        System.out.println(String.format("%64s", Long.toBinaryString(entry)).replace(' ', '0'));
     }
     
     @Test

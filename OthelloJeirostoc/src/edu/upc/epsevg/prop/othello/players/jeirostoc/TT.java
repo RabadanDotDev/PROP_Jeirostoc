@@ -151,11 +151,11 @@ class TT {
      * @return 
      */
     public static long toEntry(float selectedHeuristic, byte selectedMovementBitIndex, byte depthBelow, boolean isExact, boolean isAlpha) {
-        return ((long)Float.floatToRawIntBits(selectedHeuristic))          |
-               ((long)selectedMovementBitIndex) << SELECTED_MOVEMENT_SHIFT |
-               ((long)depthBelow)               <<       DEPTH_BELOW_SHIFT |
-               (isExact ? FLAG_IS_EXACT_MASK  : 0L)                        |
-               (isAlpha ? FLAG_IS_ALPHA_MASK  : 0L)                        |
+        return ((long)Float.floatToRawIntBits(selectedHeuristic) & SELECTED_HEURISTIC_MASK)                      |
+               ((long)selectedMovementBitIndex & BYTE_MASK) << SELECTED_MOVEMENT_SHIFT |
+               ((long)depthBelow               & BYTE_MASK) <<       DEPTH_BELOW_SHIFT |
+               (isExact ? FLAG_IS_EXACT_MASK  : 0L)                                    |
+               (isAlpha ? FLAG_IS_ALPHA_MASK  : 0L)                                    |
                (FLAG_IS_VALID_ENTRY_MASK);
     }
     
@@ -232,5 +232,30 @@ class TT {
      */
     public static boolean extractIsValidEntry(long entry) {
         return (entry & FLAG_IS_VALID_ENTRY_MASK) != 0;
+    }
+    
+    /**
+     * Express the entry as a string.
+     */
+    public static String entryToString(long entry) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("selectedHeuristic: "); 
+        sb.append(extractSelectedHeuristic(entry));
+        sb.append('\n');
+        sb.append("selectedMovement:  ");
+        sb.append(extractSelectedMovement(entry));
+        sb.append('\n');
+        sb.append("depthBelow:        ");
+        sb.append(extractDepthBelow(entry));
+        sb.append('\n');
+        sb.append("isExact:           ");
+        sb.append(extractIsExact(entry));
+        sb.append('\n');
+        sb.append("isAlpha:           ");
+        sb.append(extractIsAlpha(entry));
+        sb.append('\n');
+        sb.append("isValidEntry:      ");
+        sb.append(extractIsValidEntry(entry));
+        return sb.toString();
     }
 }

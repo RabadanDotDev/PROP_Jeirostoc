@@ -110,9 +110,7 @@ class SearchAlgMiniMax extends SearchAlg {
         long entry = _tt.readEntry(s);
         if (TT.extractIsValidEntry(entry)) {
             // Extract selected movement
-            byte extractedMovement = TT.extractSelectedMovement(s, entry);
-            if(s.canMovePiece(extractedMovement/Status.SIZE, extractedMovement%Status.SIZE))
-                bestNextMove = extractedMovement;
+            bestNextMove = TT.extractSelectedMovement(s, entry);
             
             // Extract last heuristic if its more deep and the move is valid
             if (USE_HEURISTIC_TT &&
