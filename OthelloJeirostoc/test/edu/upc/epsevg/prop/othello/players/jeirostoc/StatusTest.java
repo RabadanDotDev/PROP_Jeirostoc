@@ -4,18 +4,20 @@ import edu.upc.epsevg.prop.othello.CellType;
 import edu.upc.epsevg.prop.othello.GameStatus;
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Random;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- *
+ * Test status class.
+ * 
  * @author raul
+ * @author josep
  */
 public class StatusTest {
+    /**
+     * Sample movements to have a guided test case.
+     */
     Point[] sampleMovements = {
         null,
         new Point(2, 4),
@@ -32,6 +34,9 @@ public class StatusTest {
         new Point(7, 2)
     };
 
+    /**
+     * Sample boards to have a guided test case.
+     */
     int[][][] sampleBoards = {
         {
             { 0,  0,  0,  0,  0,  0,  0,  0},
@@ -165,12 +170,17 @@ public class StatusTest {
         }
     };
     
-    private final int SIZE = 8;
-    
+    /**
+     * Rotate a board by the variation bv.
+     * 
+     * @param board The board to rotate.
+     * @param bv The variation.
+     * @return The new rotated board.
+     */
     private int[][] rotateBoard(int[][] board, BoardVariation bv) {
-        int[][] rotatedBoard = new int[SIZE][SIZE];
-        for (int x = 0; x < SIZE; x++) {
-            for (int y = 0; y < SIZE; y++) {
+        int[][] rotatedBoard = new int[Status.SIZE][Status.SIZE];
+        for (int x = 0; x < Status.SIZE; x++) {
+            for (int y = 0; y < Status.SIZE; y++) {
                 Point p = BoardVariation.applyTransformation(new Point(x, y), bv);
                 rotatedBoard[p.x][p.y] = board[x][y];
             }
@@ -179,7 +189,8 @@ public class StatusTest {
     }
     
     /**
-     * Test of status.
+     * Test that Status gets the same results as GameStatus independently how is
+     * it initialized (guided version).
      */
     @Test
     public void testSameResultsGuided() {        
@@ -207,8 +218,6 @@ public class StatusTest {
         incremental.getNextMoves(incrementalMoves);
         
         // Check
-        System.out.println(reference);
-        System.out.println(direct);
         assertEquals(reference.toString(), direct.toString());
         assertEquals(reference.toString(), copied.toString());
         assertEquals(reference.toString(), incremental.toString());
@@ -223,7 +232,6 @@ public class StatusTest {
         
         for (int i = 1; i < sampleMovements.length; i++) {
             // Do movement
-            System.out.println(i + ": Moving " + sampleMovements[i]);
             reference.movePiece(sampleMovements[i]);
             direct = new Status(sampleBoards[i], i%2==0);
             copied = new Status(reference);
@@ -260,14 +268,14 @@ public class StatusTest {
     }
     
     /**
-     * Test of status.
+     * Test that Status gets the same results as GameStatus independently how is
+     * it initialized (random movements version).
      */
     @Test
     public void testSameResultsRandom() {
         Random r = new Random();
         
-        for (int game = 0; game < 5000; game++) {
-            System.out.println("Same results game " + game);
+        for (int game = 0; game < 50000; game++) {
             // Init
             GameStatus reference   = new GameStatus();
             Status     copied      = new Status(reference);
@@ -336,6 +344,12 @@ public class StatusTest {
         }
     }
     
+    /**
+     * Assert that all the status in hss have the same heuristic and Zobrist
+     * keys.
+     * 
+     * @param hss The array of Status to check.
+     */
     private void assertFullEquals(Status[] hss) {
         for (int i = 0; i < hss.length; i++) {
             for (int j = 0; j < hss.length; j++) {
@@ -355,8 +369,12 @@ public class StatusTest {
         }
     }
     
+    /**
+     * Test that boards have the same zobrist hash and heuristic independently 
+     * of their variation (guided version).
+     */
     @Test
-    public void testZobristHashGuided() {
+    public void testSimetricBoardGuided() {
         BoardVariation[] bvs = BoardVariation.values();
         
         // Init statues
@@ -376,7 +394,6 @@ public class StatusTest {
         
         // Reproduce movements
         for (int move = 1; move < sampleBoards.length; move++) {
-            System.out.println("Move " + move);
             for (int i = 0; i < 8; i++) {
                 // Given board
                 statuses[i] = new Status(rotateBoard(
@@ -395,12 +412,15 @@ public class StatusTest {
         }
     }
     
+    /**
+     * Test that boards have the same zobrist hash and heuristic independently 
+     * of their variation (random movements version).
+     */
     @Test
-    public void testZobristHashRandom() {
+    public void testSimetricBoardRandom() {
         Random r = new Random();
         
-        for (int game = 0; game < 5000; game++) {
-            System.out.println("Same zobrist hash and heuristic game " + game);
+        for (int game = 0; game < 50000; game++) {
             BoardVariation[] bvs = BoardVariation.values();
 
             // Init statues
@@ -433,13 +453,5 @@ public class StatusTest {
                 assertFullEquals(statuses);
             }
         }
-    }
-    
-    
-    @Test
-    public void test() {
-        Status s = new Status(new GameStatus(sampleBoards[5]));
-        System.out.println(s);
-        System.out.println(new GameStatus(sampleBoards[5]));
     }
 }

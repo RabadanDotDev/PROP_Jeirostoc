@@ -71,11 +71,11 @@ public class ZobristKeyGen {
      * @param bitsetIndex The BitSet index
      */
     public static void updateKeyChainPositionFlip(long[] keychain, int bitsetIndex) {
-        int basePos = bitsetIndex*BOARD_STATE*BoardVariation.NUM_VARIATIONS;
+        int basePos = bitsetIndex*BOARD_STATE*BoardVariation.NUMBER;
         
-        for (int i = 0; i < BoardVariation.NUM_VARIATIONS; i++) {
+        for (int i = 0; i < BoardVariation.NUMBER; i++) {
             keychain[i] ^= VALUES[basePos + i];
-            keychain[i] ^= VALUES[basePos + i + BoardVariation.NUM_VARIATIONS];
+            keychain[i] ^= VALUES[basePos + i + BoardVariation.NUMBER];
         }
     }
     
@@ -88,10 +88,10 @@ public class ZobristKeyGen {
      * @param playerBit The player bit for the state
      */
     public static void updateKeyChainPositionClaim(long[] keychain, int bitsetIndex, boolean playerBit) {
-        int basePos = bitsetIndex*BOARD_STATE*BoardVariation.NUM_VARIATIONS +
-                      (playerBit ? BoardVariation.NUM_VARIATIONS : 0);
+        int basePos = bitsetIndex*BOARD_STATE*BoardVariation.NUMBER +
+                      (playerBit ? BoardVariation.NUMBER : 0);
         
-        for (int i = 0; i < BoardVariation.NUM_VARIATIONS; i++) {
+        for (int i = 0; i < BoardVariation.NUMBER; i++) {
             keychain[i] ^= VALUES[basePos+i];
         }
     }
@@ -104,7 +104,7 @@ public class ZobristKeyGen {
     public static void updateKeyChainPlayerSwapped(long[] keychain) {
         int basePos = VALUES.length-1;
         
-        for (int i = 0; i < BoardVariation.NUM_VARIATIONS; i++) {
+        for (int i = 0; i < BoardVariation.NUMBER; i++) {
             keychain[i] ^= VALUES[basePos];
         }
     }
@@ -115,7 +115,7 @@ public class ZobristKeyGen {
         VALUES = new long[
                 BOARD_SIZE*BOARD_SIZE*           // all the positions
                 BOARD_STATE*                     // 2 states by position
-                BoardVariation.NUM_VARIATIONS +  // 8 variations by position
+                BoardVariation.NUMBER +  // 8 variations by position
                 1                                // 1 key to specify the player
         ];
         
@@ -139,7 +139,7 @@ public class ZobristKeyGen {
             }
         }
         
-        // Generate the value to indicate that it is the turn of player 1
+        // Generate the value to indicate that it is the turn of player 2
         long zv = r.nextLong();
         VALUES[VALUES.length-1] = zv;
     }
@@ -171,8 +171,8 @@ public class ZobristKeyGen {
      * @return The index
      */
     private static int posToIndex(int bitsetIndex, int s, int varNum) {
-        return bitsetIndex*BOARD_STATE*BoardVariation.NUM_VARIATIONS +
-                                     s*BoardVariation.NUM_VARIATIONS +
+        return bitsetIndex*BOARD_STATE*BoardVariation.NUMBER +
+                                     s*BoardVariation.NUMBER +
                                                               varNum;
     }
     
@@ -202,8 +202,8 @@ public class ZobristKeyGen {
             default         -> {invX = x;              invY = y;              }
         }
         
-        return (invX*BOARD_SIZE + invY)*BOARD_STATE*BoardVariation.NUM_VARIATIONS +
-                                                  s*BoardVariation.NUM_VARIATIONS +
+        return (invX*BOARD_SIZE + invY)*BOARD_STATE*BoardVariation.NUMBER +
+                                                  s*BoardVariation.NUMBER +
                                                                             bp.v;
     }
 }

@@ -2,16 +2,20 @@ package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Random;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- *
+ * Transposition table tests.
+ * 
  * @author raul
+ * @author josep
  */
-public class TranspositionTableTest {
+public class TTTest {
+    /**
+     * The starting board to make tests with.
+     */
     int[][] sampleBoard = {
         { 0,  0,  0,  0,  0,  0,  0,  0},
         { 0,  0,  0,  0,  0,  0,  0,  0},
@@ -23,12 +27,17 @@ public class TranspositionTableTest {
         { 0,  0,  0,  0,  0,  0,  0,  0}
     };
     
-    private final int SIZE = 8;
-    
+    /**
+     * Rotate a board by the variation bv.
+     * 
+     * @param board The board to rotate.
+     * @param bv The variation.
+     * @return The new rotated board.
+     */
     private int[][] rotateBoard(int[][] board, BoardVariation bv) {
-        int[][] rotatedBoard = new int[SIZE][SIZE];
-        for (int x = 0; x < SIZE; x++) {
-            for (int y = 0; y < SIZE; y++) {
+        int[][] rotatedBoard = new int[Status.SIZE][Status.SIZE];
+        for (int x = 0; x < Status.SIZE; x++) {
+            for (int y = 0; y < Status.SIZE; y++) {
                 Point p = BoardVariation.applyTransformation(new Point(x, y), bv);
                 rotatedBoard[p.x][p.y] = board[x][y];
             }
@@ -36,8 +45,9 @@ public class TranspositionTableTest {
         return rotatedBoard;
     }
     
-    private TT tt;
-    
+    /**
+     * Test to check suposition of the bitpacking for the TT.
+     */
     @Test
     public void testSupositionsBitPacking() {
         float heuristic        = 7;
@@ -82,6 +92,10 @@ public class TranspositionTableTest {
         assertTrue(-1 == (byte)-1);
     }
     
+    /**
+     * Check that we can retrieve the same results of an entry in the TT. 
+     * Version 1.
+     */
     @Test
     public void testToEntryAndExtract1() {
         float selectedHeuristic = 1.051f;
@@ -98,9 +112,12 @@ public class TranspositionTableTest {
         assertEquals(TT.extractIsExact(entry),           isExact);
         assertEquals(TT.extractIsAlpha(entry),           isAlpha);
         assertEquals(TT.extractIsValidEntry(entry),      true);
-        System.out.println(String.format("%64s", Long.toBinaryString(entry)).replace(' ', '0'));
     }
     
+    /**
+     * Check that we can retrieve the same results of an entry in the TT. 
+     * Version 2.
+     */
     @Test
     public void testToEntryAndExtract2() {
         float selectedHeuristic = Float.POSITIVE_INFINITY;
@@ -119,13 +136,15 @@ public class TranspositionTableTest {
         assertEquals(TT.extractIsValidEntry(entry),      true);
     }
     
+    /**
+     * Test in random games that the entries in the TT are consistent.
+     */
     @Test
     public void testTTCorrectMovementEntries() {
         Random r = new Random();
-        tt = new TT();
+        TT tt = new TT();
         
-        for (int game = 0; game < 5000; game++) {
-            System.out.println("Test TT correct movement entries " + game);
+        for (int game = 0; game < 50000; game++) {
             BoardVariation[] bvs = BoardVariation.values();
 
             // Init statues
@@ -155,25 +174,55 @@ public class TranspositionTableTest {
                         // Write movement to TT
                         tt.register(
                                 statuses[i], 
-                                (byte)0, 
-                                (byte)(rotatedP.x*SIZE+rotatedP.y), 
+                                (byte)0,
+                                (byte)(rotatedP.x*Status.SIZE+rotatedP.y), 
                                 (byte)0, true, true
                         );
-                        
                         
                         // Check
                         long entry = tt.readEntry(statuses[i]);
                         byte bitIndex = TT.extractSelectedMovement(statuses[i], entry);
-                        Point extractedP = new Point(bitIndex/SIZE, bitIndex%SIZE);
+                        Point extractedP = new Point(bitIndex/Status.SIZE, bitIndex%Status.SIZE);
                         assertEquals(rotatedP, extractedP);
-                        assertEquals(bitIndex, rotatedP.x*SIZE+rotatedP.y);
+                        assertEquals(bitIndex, rotatedP.x*Status.SIZE+rotatedP.y);
                         assertTrue(statuses[i].canMovePiece(extractedP.x, extractedP.y));
-                        
                         
                         // Move
                         statuses[i].movePiece(rotatedP);
                     }
                 }
+            }
+        }
+    }
+    
+    /**
+     * Test prevention of extraction of invalid movements and correction of 
+     * insertion of invalid movements.
+     */
+    @Test
+    public void testTTinvalidMove() {
+        Status s = new Status();
+        TT tt = new TT();
+        
+        for (byte move = Byte.MIN_VALUE; move < Byte.MAX_VALUE; move++) {
+            tt.register(
+                    s, 
+                    0, 
+                    (byte)move,
+                    (byte)1, 
+                    true, 
+                    true
+            );
+            
+            long entry = tt.readEntry(s);
+            if (-1 < move && move < Status.SIZE*Status.SIZE) {
+                if (s.canMovePiece(move/Status.SIZE, move%Status.SIZE)) {
+                    assertEquals(move, TT.extractSelectedMovement(s, entry));
+                } else {
+                    assertEquals(0, entry);
+                }
+            } else {
+                assertEquals(-1, TT.extractSelectedMovement(s, entry));
             }
         }
     }

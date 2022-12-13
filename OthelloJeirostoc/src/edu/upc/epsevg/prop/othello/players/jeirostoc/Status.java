@@ -4,48 +4,38 @@ import edu.upc.epsevg.prop.othello.CellType;
 import edu.upc.epsevg.prop.othello.GameStatus;
 import java.awt.Point;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 
 /**
  * Status based on edu.upc.epsevg.prop.othello.Status with custom implementation
- * and limited memory allocation
+ * and limited memory allocation.
  * 
  * @author raul
  * @author josep
  */
-public class Status {
-
-    long getCurrentOccupied() {
-        return _boardOccupied;
-    }
-    
-    long getCurrentColor() {
-        return _boardColor;
-    }
-    
+public class Status {    
     ////////////////////////////////////////////////////////////////////////////
-    // Subclasses                                                             //
+    // GameStatusExtractor subclass                                           //
     ////////////////////////////////////////////////////////////////////////////
-
-
     
     /**
      * Class to extract the relevant information from a given GameStatus.
      */
     private class GameStatusExtractor extends GameStatus {
         /**
-         * Copy constructor
-         * @param gs The Game status to copy
+         * Copy constructor.
+         * 
+         * @param gs The Game status to copy.
          */
         public GameStatusExtractor(GameStatus gs) {
             super(gs);
         }
 
         /**
-         * Get a reference to the internal board_occupied
-         * @return The reference to the internal board_occupied 
+         * Get the internal board occupied state as a long.
+         * 
+         * @return The internal board occupied state as a long.
          */
         public long getBoard_occupied() {
             long[] la = board_occupied.toLongArray();
@@ -53,8 +43,9 @@ public class Status {
         }
 
         /**
-         * Get a reference to the internal board_occupied
-         * @return The reference to the internal board_occupied 
+         * Get the internal board color state as a long.
+         * 
+         * @return The internal board color state as a long.
          */
         public long getBoard_color() {
             long[] la = board_color.toLongArray();
@@ -62,32 +53,36 @@ public class Status {
         }
 
         /**
-         * Get the number of pieces of P1
-         * @return The number of pieces of P1
+         * Get the number of pieces of P1.
+         * 
+         * @return The number of pieces of P1.
          */
         public int getPiecesCountP1() {
             return piecesCountP1;
         }
 
         /**
-         * Get the number of pieces of P2
-         * @return The number of pieces of P2
+         * Get the number of pieces of P2.
+         * 
+         * @return The number of pieces of P2.
          */
         public int getPiecesCountP2() {
             return piecesCountP2;
         }
 
         /**
-         * Get the current player color
-         * @return The current player color
+         * Get the current player color.
+         * 
+         * @return The current player color.
          */
         public boolean getCurrentPlayerBit() {
             return (currentPlayer == CellType.PLAYER1 ? P1_BIT : P2_BIT);
         }
 
         /**
-         * Get the winner player color
-         * @return The winner player color
+         * Get the winner player color.
+         * 
+         * @return The winner player color.
          */
         public int getWinnerPlayerColor() {
             return winnerPlayer == CellType.PLAYER1 ? P1_COLOR : winnerPlayer == CellType.PLAYER2 ? P2_COLOR : NONE_COLOR;
@@ -131,48 +126,48 @@ public class Status {
     ////////////////////////////////////////////////////////////////////////////
     
     /**
-     * The size of the board
+     * The size of the board.
      */
     public static final byte SIZE = 8;
     
     /**
-     * The color of P1
+     * The color of P1.
      */
     public static final int P1_COLOR = 1;
     
     /**
-     * The bit status for P1
+     * The bit status for P1 in a boolean.
      */
     public static final boolean P1_BIT = true;
     
     /**
-     * The bit status for P1 expressed in a long
+     * The bit status (0 or 1) for P1 in a long.
      */
     public static final long P1_LONG_BIT = 1;
     
     /**
-     * The color of P2
+     * The color of P2.
      */
     public static final int P2_COLOR = -1;
     
     /**
-     * The bit status for P2
+     * The bit status for P2 in a boolean.
      */
     public static final boolean P2_BIT = false;
     
     /**
-     * The bit status for P2 expressed in a long
+     * The bit status (0 or 1) for P2 in a long.
      */
     public static final long P2_LONG_BIT = 0;
     
     /**
-     * The color of an empty position
+     * The color of an empty position.
      */
     public static final int NONE_COLOR = 0;
     
     /**
      * X increment to go to directions UP_LEFT, UP, UP_RIGHT, LEFT, RIGHT, 
-     * BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT (in that order)
+     * BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT.
      */
     private static int[] XINCR = {
         -1,  0,  1, 
@@ -182,7 +177,7 @@ public class Status {
     
     /**
      * Y increment to go to directions UP_LEFT, UP, UP_RIGHT, LEFT, RIGHT, 
-     * BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT (in that order)
+     * BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT.
      */
     private static int[] YINCR = {
         -1, -1, -1, 
@@ -195,14 +190,14 @@ public class Status {
     ////////////////////////////////////////////////////////////////////////////
     
     /**
-     * Positions of the game with a disc of a player. The bits are ordered in 
+     * Positions of the game with a disc of any player. The bits are ordered in 
      * the form x*SIZE + y.
      */
     private long _boardOccupied;
     
     /**
-     * The color of the disc of each occupied position. The bits with 1 
-     * correspond to the P1 or black discs.
+     * The color of the disc of each occupied position. The bits are ordered in 
+     * the form x*SIZE + y.
      */
     private long _boardColor;
     
@@ -212,7 +207,28 @@ public class Status {
     private long _boardNeighbours;
     
     /**
-     * The last movement made in the game, expressed in the form SIZE*x + y
+     * The number of pieces of P1.
+     */
+    private int _piecesCountP1;
+    
+    /**
+     * The number of pieces of P2.
+     */
+    private int _piecesCountP2;
+    
+    /**
+     * The Zobrist hashes for each rotation of the board.
+     */
+    private final long[] _zobristKeyChain;
+    
+    /**
+     * The cached heuristic value from the disk weights sum.
+     */
+    private float _diskWeightsSum;
+    
+    /**
+     * The last recorded movement made in the game, expressed in the form SIZE*x
+     * + y.
      */
     private byte _lastMovement;
     
@@ -222,29 +238,9 @@ public class Status {
     private boolean _isTerminalState;
     
     /**
-     * Current player bit.
+     * The current player bit.
      */
     private boolean _currentPlayerBit;
-    
-    /**
-     * The number of pieces of the P1.
-     */
-    private int _piecesCountP1;
-    
-    /**
-     * The number of pieces of the P2.
-     */
-    private int _piecesCountP2;
-    
-    /**
-     * The zobrist hashes for each rotation of the board.
-     */
-    private long[] _zobristKeyChain;
-    
-    /**
-     * The cached heuristic value from the disk weights sum.
-     */
-    private float _diskWeightsSum;
     
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -268,12 +264,12 @@ public class Status {
         _boardColor      = 0;
         _boardNeighbours = 0;
         
-        // Init zobrist keychain
-        _zobristKeyChain = new long[BoardVariation.NUM_VARIATIONS];
-        
-        // Init Metadata 1
+        // Init Metadata
         _piecesCountP1 = 0;
         _piecesCountP2 = 0;
+        
+        // Init zobrist keychain
+        _zobristKeyChain = new long[BoardVariation.NUMBER];
         
         // Set default pieces
         claimPosition(3, 3, P1_BIT);
@@ -281,13 +277,13 @@ public class Status {
         claimPosition(3, 4, P2_BIT);
         claimPosition(4, 4, P1_BIT);
         
-        // Init Heuristics caching
+        // Init Heuristics cache
         _diskWeightsSum = computeDiskWeights();
         
         // Init game status
+        _lastMovement     = -1;
         _isTerminalState  = false;
         _currentPlayerBit = P1_BIT;
-        _lastMovement     = -1;
     }
     
     /**
@@ -295,8 +291,8 @@ public class Status {
      * starting player.
      * 
      * @param board The board. 1 means a disc of P1, -1 means a disc of P2 and 
-     * 0 an empty space
-     * @param startingPlayerBit The bit of the starting player
+     * 0 an empty space.
+     * @param startingPlayerBit The bit of the starting player.
      */
     public Status(int[][] board, boolean startingPlayerBit) {
         // Init board
@@ -304,14 +300,14 @@ public class Status {
         _boardColor      = 0;
         _boardNeighbours = 0;
         
-        // Init zobrist keychain
-        _zobristKeyChain = new long[BoardVariation.NUM_VARIATIONS];
-        if(startingPlayerBit == P2_BIT)
-            ZobristKeyGen.updateKeyChainPlayerSwapped(_zobristKeyChain);
-        
-        // Init Metadata 1
+        // Init number of pieces
         _piecesCountP1 = 0;
         _piecesCountP2 = 0;
+        
+        // Init Zobrist keychain
+        _zobristKeyChain = new long[BoardVariation.NUMBER];
+        if(startingPlayerBit == P2_BIT)
+            ZobristKeyGen.updateKeyChainPlayerSwapped(_zobristKeyChain);
         
         // Set pieces
         for (int y = 0; y < SIZE; y++) {
@@ -324,7 +320,7 @@ public class Status {
             }
         }
         
-        // Init Heuristics caching
+        // Init heuristics caching
         _diskWeightsSum = computeDiskWeights();
         
         // Init game status
@@ -336,39 +332,39 @@ public class Status {
     /**
      * Constructor from a Game status.
      * 
-     * @param gs The game status to copy from
+     * @param gs The game status to copy from.
      */
     public Status(GameStatus gs) {
         // Create the extractor
         GameStatusExtractor gse = new GameStatusExtractor(gs);
         
-        // Get a reference to the cloned board
+        // Copy board
         _boardOccupied   = gse.getBoard_occupied();
         _boardColor      = gse.getBoard_color();
         _boardNeighbours = 0;
         regenAvailableNeighbors();
         
-        // Init game status
+        // Copy number of pieces
+        _piecesCountP1 = gse.getPiecesCountP1();
+        _piecesCountP2 = gse.getPiecesCountP2();
+        
+        // Init heuristics caching
+        _diskWeightsSum = computeDiskWeights();
+        
+        // Init/Copy game status
         _isTerminalState  = gse.isGameOver();
         _currentPlayerBit = gse.getCurrentPlayerBit();
         _lastMovement     = -1;
         
-        // Init zobrist keychain
-        _zobristKeyChain = new long[BoardVariation.NUM_VARIATIONS];
+        // Init Zobrist keychain
+        _zobristKeyChain = new long[BoardVariation.NUMBER];
         regenZobristKeyChain();
-        
-        // Init Metadata
-        _piecesCountP1 = gse.getPiecesCountP1();
-        _piecesCountP2 = gse.getPiecesCountP2();
-        
-        // Init Heuristics caching
-        _diskWeightsSum = computeDiskWeights();
     }
     
     /**
      * Copy constructor.
      * 
-     * @param other The Status to copy
+     * @param other The Status to copy.
      */
     public Status(Status other) {
         // Copy board
@@ -376,20 +372,20 @@ public class Status {
         _boardColor      = other._boardColor;
         _boardNeighbours = other._boardNeighbours;
         
-        // Copy zobrist keychain
+        // Copy number of pieces
+        _piecesCountP1 = other._piecesCountP1;
+        _piecesCountP2 = other._piecesCountP2;
+        
+        // Copy Zobrist keychain
         _zobristKeyChain = other._zobristKeyChain.clone();
+        
+        // Copy heuristics caching
+        _diskWeightsSum = other._diskWeightsSum;
         
         // Copy game status
         _isTerminalState  = other._isTerminalState;
         _currentPlayerBit = other._currentPlayerBit;
         _lastMovement     = other._lastMovement;
-        
-        // Copy metadata
-        _piecesCountP1 = other._piecesCountP1;
-        _piecesCountP2 = other._piecesCountP2;
-        
-        // Copy Heuristics caching
-        _diskWeightsSum = other._diskWeightsSum;
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -398,9 +394,9 @@ public class Status {
     
     /**
      * Make a movement using the current player at the given point. Point is 
-     * assumed not to be null
+     * assumed not to be null and to be valid.
      * 
-     * @param point The position to make a movement in
+     * @param point The position to make a movement in.
      */
     public void movePiece(Point point) {
         if(canMovePiece(point.x, point.y))
@@ -410,12 +406,12 @@ public class Status {
     }
     
     /**
-     * Check if a movement at (x,y) can be made with currentPlayerColor
+     * Check if a movement at (x,y) can be made with currentPlayerColor.
      * 
-     * @param x The x coordinate
-     * @param y The y coordinate
+     * @param x The x coordinate.
+     * @param y The y coordinate.
      * @return True if only if a movement can be made at (x, y) with 
-     * currentPlayerColor
+     * currentPlayerColor.
      */
     public boolean canMovePiece(int x, int y) {
         // Check if the position is a valid neighbor
@@ -434,18 +430,18 @@ public class Status {
     }
     
     /**
-     * Get the current player's color. 1 for P1 and -1 for P2.
+     * Get the current player's color.
      * 
-     * @return The player's color
+     * @return The player's color.
      */
     public int getCurrentPlayerColor() {
         return _currentPlayerBit == P1_BIT ? P1_COLOR : P2_COLOR;
     }
     
     /**
-     * Get a reference to the last movement.
+     * Get the last movement.
      * 
-     * @return A reference to the last movement, expressed in the form SIZE*x+y
+     * @return The last movement, expressed in the form SIZE*x+y.
      */
     public byte getLastMovement() {
         return _lastMovement;
@@ -454,7 +450,7 @@ public class Status {
     /**
      * Get the number of discs a player has.
      * 
-     * @param playerBit The player bit
+     * @param playerBit The player bit.
      * @return The number of movements a player has made.
      */
     public int getNumDiscs(boolean playerBit) {
@@ -462,18 +458,18 @@ public class Status {
     }
     
     /**
-     * Get the number of total discs
+     * Get the number of total discs.
      * 
-     * @return The number of total discs
+     * @return The number of total discs.
      */
     public int getNumDiscs() {
         return _piecesCountP1 + _piecesCountP2;
     }
     
     /**
-     * Get the number of total movements made in the game
+     * Get the number of total movements made in the game.
      * 
-     * @return The number of total movements made in the game
+     * @return The number of total movements made in the game.
      */
     public int getNumMovements() {
         return _piecesCountP1 + _piecesCountP2 - 4;
@@ -487,9 +483,9 @@ public class Status {
      */
     public void getNextMoves(List<Point> result) {        
         for (int bitIndex = 0; bitIndex < SIZE*SIZE; bitIndex++) {
-            if (((_boardNeighbours >> bitIndex) & 1) == 1) {
-                int x = bitIndex/SIZE;
-                int y = bitIndex%SIZE;
+            if (isSetAt(_boardNeighbours, bitIndex)) {
+                int x = bitIndex/SIZE, y = bitIndex%SIZE;
+                
                 if(canMovePiece(x, y, _currentPlayerBit)) {
                     result.add(new Point(x, y));
                 }
@@ -500,24 +496,24 @@ public class Status {
     /**
      * Get a list of the next possible statuses starting from this position.
      * 
-     * @param result The array to deposit the new statuses objects. The Array
-     * list should be empty.
+     * @param result The array to deposit the new statuses objects. 
      */
     public void getNextStatuses(List<Status> result) {  
         getNextStatuses(result, -1);
     }
     
     /**
-     * Get a list of the next possible statuses starting from this position.
+     * Get a list of the next possible statuses starting from this position with
+     * one specific movement at the front if possible.
      * 
      * @param result The array to deposit the new statuses objects at the end of
-     * the list
+     * the list.
      * @param bitIndexFirst The movement's BitIndex of the form SIZE*x + y that
-     * should be added first to the list. It should be a correct position or -1
+     * should be added first to the list. It should be a correct position or -1.
      */
     public void getNextStatuses(List<Status> result, int bitIndexFirst) {
-        // Check first the given movement
-        if(bitIndexFirst != -1 && canMovePiece(bitIndexFirst/SIZE, bitIndexFirst%SIZE)) {
+        // Generate the given movement if possible
+        if(bitIndexFirst != -1) {
             Status s = new Status(this);
             s.movePiece(bitIndexFirst/SIZE, bitIndexFirst%SIZE);
             result.add(s);
@@ -525,9 +521,9 @@ public class Status {
         
         // Get the next statuses
         for (int bitIndex = 0; bitIndex < SIZE*SIZE; bitIndex++) {
-            if (((_boardNeighbours >> bitIndex) & 1) == 1 && bitIndex != bitIndexFirst) {
-                int x = bitIndex/SIZE;
-                int y = bitIndex%SIZE;
+            if (isSetAt(_boardNeighbours, bitIndex) && bitIndex != bitIndexFirst) {
+                int x = bitIndex/SIZE, y = bitIndex%SIZE;
+                
                 if(canMovePiece(x, y, _currentPlayerBit)) {
                     Status s = new Status(this);
                     s.movePiece(x, y);
@@ -537,25 +533,38 @@ public class Status {
         }
     }
 
+    /**
+     * Return a string representation of the class.
+     * 
+     * @return The string representation of the class.
+     */
     @Override
     public String toString() {
         return toString(false);
     }
     
+    /**
+     * Return a string representation of the class.
+     * 
+     * @param extendedInfo Show extra information.
+     * @return The string representation of the class.
+     */
     public String toString(boolean extendedInfo) {
         StringBuilder sb = new StringBuilder();
+        
+        // Board
         for (int y = 0; y < SIZE; y++) {
             sb.append('\t');
             for (int x = 0; x < SIZE; x++) {
                 int bitIndex = toIndex(x, y);
                 
                 sb.append(' ');
-                if (((_boardOccupied >> bitIndex) & 1) == 1) {
-                    if(((_boardColor >> bitIndex) & 1) == P1_LONG_BIT)
+                if (isSetAt(_boardOccupied, bitIndex)) {
+                    if(hasAt(_boardColor, bitIndex, P1_LONG_BIT))
                         sb.append('O');
                     else
                         sb.append('@');
-                } else if(extendedInfo && ((_boardNeighbours >> bitIndex) & 1) == 1){
+                } else if(extendedInfo && isSetAt(_boardNeighbours, bitIndex)){
                     sb.append('N');
                 } else {
                     sb.append('·');
@@ -564,35 +573,41 @@ public class Status {
             }
             sb.append('\n');
         }
+        
+        // Terminal state
         if(_isTerminalState) {
             sb.append("YES");
         } else {
             sb.append("NO");
         }
+        
+        // Zobrist keychain
         if(extendedInfo) {
             sb.append("\n");
-            ArrayList<Long> result = new ArrayList<>(getZobristKeyChain().length);
-            for (long item : getZobristKeyChain())
+            ArrayList<Long> result = new ArrayList<>(_zobristKeyChain.length);
+            for (long item : _zobristKeyChain)
                 result.add(item);
             Collections.sort(result);
             sb.append(result);
         }
+        
         return sb.toString();
     }
     
     /**
      * Check if the game is in a terminal state.
-     * @return True if the game is in a terminal state
+     * 
+     * @return True if the game is in a terminal state.
      */
     public boolean isTerminal() {
         return _isTerminalState;
     }
     
     /**
-     * Get the heuristic of the game with the point of view of player
+     * Get the heuristic of the game with the point of view of player.
      * 
-     * @param playerColor The player color to use as point of view
-     * @return The heuristic
+     * @param playerColor The player color to use as the point of view.
+     * @return The heuristic.
      */
     public float getHeuristic(int playerColor) {
         if(_isTerminalState) {
@@ -609,7 +624,8 @@ public class Status {
     
     /**
      * Find the lowest value Zobrist key in the keychain and return it.
-     * @return The minimum Zobrist key
+     * 
+     * @return The minimum Zobrist key.
      */
     public long getMinZobristKey() {
         long min = _zobristKeyChain[0];
@@ -623,7 +639,8 @@ public class Status {
     /**
      * Find the variation index of the lowest value Zobrist key in the keychain 
      * and return it.
-     * @return The minimum Zobrist key's variation index
+     * 
+     * @return The minimum Zobrist key's variation index.
      */
     public int getMinZobristKeyVariationIndex() {
         long min = _zobristKeyChain[0];
@@ -638,23 +655,13 @@ public class Status {
     }
     
     /**
-     * Get the zobrist key corresponding to 
-     * BoardVariation.valueof(variationIndex)
+     * Get the zobrist key corresponding to BoardVariation.valueof(variationIndex).
      * 
-     * @param variationIndex The index of the variation
-     * @return The Zobrist key
+     * @param variationIndex The index of the variation.
+     * @return The Zobrist key.
      */
     public long getZobristKey(int variationIndex) {
         return _zobristKeyChain[variationIndex];
-    }
-    
-    /**
-     * Get a reference to the Zobrist keychain.
-     * 
-     * @return The Zobrist keychain
-     */
-    public long[] getZobristKeyChain() {
-        return _zobristKeyChain;
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -662,11 +669,40 @@ public class Status {
     ////////////////////////////////////////////////////////////////////////////
     
     /**
-     * Check if (x, y) is in bounds
+     * Check if bit at a specific index in long is in the same status as the
+     * given.
      * 
-     * @param x The x coordinate
-     * @param y The y coordinate
-     * @return True if (x, y) is in bounds
+     * @return True if the bitSet has a bit equal to status at bitsetIndex.
+     */
+    private static boolean hasAt(long bitSet, int bitIndex, long status) {
+        return ((bitSet >> bitIndex) & 1L) == status;
+    }
+    
+    /**
+     * Check if bit at a specific index in long is set.
+     * 
+     * @return True if the bitSet has a set bit at bitsetIndex.
+     */
+    private static boolean isSetAt(long bitSet, int bitIndex) {
+        return ((bitSet >> bitIndex) & 1L) == 1L;
+    }
+    
+    
+    /**
+     * Check if bit at a specific index in long is unset.
+     * 
+     * @return True if the bitSet has a unset bit at bitsetIndex.
+     */
+    private static boolean isUnsetAt(long bitSet, int bitIndex) {
+        return ((bitSet >> bitIndex) & 1L) == 0L;
+    }
+    
+    /**
+     * Check if (x, y) is in bounds.
+     * 
+     * @param x The x coordinate.
+     * @param y The y coordinate.
+     * @return True if (x, y) is in bounds.
      */
     private static boolean inBounds(int x, int y) {
         return -1 < x && x < SIZE &&
@@ -674,11 +710,12 @@ public class Status {
     }
     
     /**
-     * Convert (x, y) to bit index with the form x*SIZE + y
+     * Convert (x, y) to a bit index with the form x*SIZE + y. It is assumed 
+     * that inBounds(x, y).
      * 
-     * @param x The x coordinate
-     * @param y The y coordinate
-     * @return The bit index
+     * @param x The x coordinate.
+     * @param y The y coordinate.
+     * @return The bit index.
      */
     private static int toIndex(int x, int y) {
         return x*SIZE + y;
@@ -687,41 +724,41 @@ public class Status {
     /**
      * Check if there is a disc at (x, y).
      * 
-     * @param x The x coordinate, not necessarily valid
-     * @param y The y coordinate, not necessarily valid
-     * @return True if there is a valid disc at (x, y)
+     * @param x The x coordinate, not necessarily valid.
+     * @param y The y coordinate, not necessarily valid.
+     * @return True if there is a valid disc at (x, y).
      */
     private boolean hasDisc(int x, int y) {
-        return inBounds(x, y) &&
-               ((_boardOccupied >> toIndex(x, y)) & 1) == 1;
+        return inBounds(x, y) && 
+               isSetAt(_boardOccupied, toIndex(x, y));
     }
     
     /**
      * Check if there is a empty pos at (x, y).
      * 
-     * @param x The x coordinate, not necessarily valid
-     * @param y The y coordinate, not necessarily valid
-     * @return True if there is a valid empty pos at (x, y)
+     * @param x The x coordinate, not necessarily valid.
+     * @param y The y coordinate, not necessarily valid.
+     * @return True if there is a valid empty pos at (x, y).
      */
     private boolean isEmpty(int x, int y) {
-        return inBounds(x, y) &&
-               ((_boardOccupied >> toIndex(x, y)) & 1) == 0;
+        return inBounds(x, y) && 
+               isUnsetAt(_boardOccupied, toIndex(x, y));
     }
     
     /**
      * Checks if a disc is a neighbor from _boardNeighbours.
      * 
-     * @param x The x coordinate, not necessarily valid
-     * @param y The y coordinate, not necessarily valid
-     * @return True if there is a valid neighbor at (x, y)
+     * @param x The x coordinate, not necessarily valid.
+     * @param y The y coordinate, not necessarily valid.
+     * @return True if there is a valid neighbor at (x, y).
      */
     private boolean isNeighbor(int x, int y) {
-        return inBounds(x, y) &&
-               ((_boardNeighbours >> toIndex(x, y)) & 1) == 1;
+        return inBounds(x, y) && 
+               isSetAt(_boardNeighbours, toIndex(x, y));
     }
     
     /**
-     * Set bitIndex if it is a neighbor of a occupied disc.
+     * Set (x, y) if it is a neighbor of a occupied disc.
      */
     private void setIfItsNeighbor(int x, int y) {
         if(!isEmpty(x, y))
@@ -757,8 +794,8 @@ public class Status {
     private void regenAvailableNeighbors() {
         _boardNeighbours = 0;
         
-        for (int y = 0; y < SIZE; y++) {
-            for (int x = 0; x < SIZE; x++) {
+        for (int x = 0; x < SIZE; x++) {
+            for (int y = 0; y < SIZE; y++) {
                 setIfItsNeighbor(x, y);
             }
         }
@@ -770,8 +807,12 @@ public class Status {
     private void regenZobristKeyChain() {        
         // Board positions
         for (int bitIndex = 0; bitIndex < SIZE*SIZE; bitIndex++) {
-            if (((_boardOccupied >> bitIndex) & 1) == 1) {
-                ZobristKeyGen.updateKeyChainPositionClaim(_zobristKeyChain, bitIndex, ((_boardColor >> bitIndex) & 1) == 1);
+            if (isSetAt(_boardOccupied, bitIndex)) {
+                ZobristKeyGen.updateKeyChainPositionClaim(
+                        _zobristKeyChain, 
+                        bitIndex, 
+                        isSetAt(_boardColor, bitIndex)
+                );
             }
         }
         
@@ -782,22 +823,26 @@ public class Status {
     
     /**
      * Claim position (x,y) for player. The position is assumed to 
-     * canMovePiece(x, y) or being called from the constructor
+     * canMovePiece(x, y) or being called from the constructor.
      * 
-     * @param x The x coordinate
-     * @param y The y coordinate
-     * @param playerBit The player bit
+     * @param x The x coordinate.
+     * @param y The y coordinate.
+     * @param playerBit The player bit.
      */
     private void claimPosition(int x, int y, boolean playerBit) {
         // Update board
         long playerLongBit = (playerBit == P1_BIT ? P1_LONG_BIT : P2_LONG_BIT);
-        _boardOccupied   |= 1L << toIndex(x, y);
+        _boardOccupied   |= 1L            << toIndex(x, y);
         _boardColor      |= playerLongBit << toIndex(x, y);
-        _boardNeighbours &= ~(1L << toIndex(x, y));
+        _boardNeighbours &= ~(1L          << toIndex(x, y));
         updateAdjacentNeighbors(x, y);
         
         // Update zobrist keychain
-        ZobristKeyGen.updateKeyChainPositionClaim(_zobristKeyChain, toIndex(x, y), playerBit);
+        ZobristKeyGen.updateKeyChainPositionClaim(
+                _zobristKeyChain, 
+                toIndex(x, y), 
+                playerBit
+        );
         
         // Update meta
         if(playerBit == P1_BIT) {
@@ -811,11 +856,11 @@ public class Status {
 
     /**
      * Flip position (x,y). The position is assumed to hasDisc(x, y) and to have
-     * !playerBit
+     * !playerBit.
      * 
-     * @param x The x coordinate
-     * @param y The y coordinate
-     * @param playerBit The player bit
+     * @param x The x coordinate.
+     * @param y The y coordinate.
+     * @param playerBit The player bit.
      */
     private void flipPosition(int x, int y, boolean playerBit) {
         // Flip position
@@ -838,16 +883,17 @@ public class Status {
     
     /**
      * Check if a movement at (x,y) would envelop enemies pieces at (dx, dy) 
-     * direction. The position is assumed to isNeighbor(x, y)
+     * direction. The position is assumed to isNeighbor(x, y).
      * 
-     * @param x The x coordinate
-     * @param y The y coordinate
-     * @param dx The x coordinate increment
-     * @param dy The y coordinate increment
-     * @param playerBit The player bit
+     * @param x The x coordinate.
+     * @param y The y coordinate.
+     * @param dx The x coordinate increment.
+     * @param dy The y coordinate increment.
+     * @param playerBit The player bit.
      */
     private boolean envelops(int x, int y, int dx, int dy, boolean playerBit) {
         long playerLongBit = (playerBit == P1_BIT ? P1_LONG_BIT : P2_LONG_BIT);
+        long otherLongBit  = (playerBit == P1_BIT ? P2_LONG_BIT : P1_LONG_BIT);
         
         // Go to the specified direction until out of bounds or finding a free 
         // position or a player's disc
@@ -857,28 +903,26 @@ public class Status {
             y+=dy;
             positionsSeen++;
         } while (
-            inBounds(x, y)                                       && 
-            ((_boardOccupied >> toIndex(x, y)) & 1) == 1         &&
-            ((_boardColor    >> toIndex(x, y)) & 1) != playerLongBit
+            inBounds(x, y) && 
+            isSetAt(_boardOccupied, toIndex(x, y)) && 
+            hasAt(_boardColor, toIndex(x, y), otherLongBit)
         );
         
         // Return true if an envelop is possible
-        return 
-            1 < positionsSeen                                    && 
-            inBounds(x, y)                                       && 
-            ((_boardOccupied >> toIndex(x, y)) & 1) == 1         &&
-            ((_boardColor    >> toIndex(x, y)) & 1) == playerLongBit;
+        return 1 < positionsSeen && 
+               inBounds(x, y) && 
+               isSetAt(_boardOccupied, toIndex(x, y)) &&
+               hasAt(_boardColor, toIndex(x, y), playerLongBit);
     }
     
     /**
      * Check if a movement at (x,y) can be made with the given playerBit. 
-     * Assumes isNeighbor(x, y)
+     * Assumes isNeighbor(x, y).
      * 
-     * @param x The x coordinate
-     * @param y The y coordinate     
-     * @param playerBit The playerBit coordinate
-     * @return True if only if a movement can be made at (x, y) with 
-     * playerBit
+     * @param x The x coordinate.
+     * @param y The y coordinate    . 
+     * @param playerBit The playerBit coordinate.
+     * @return True if only if a movement can be made at (x, y) with playerBit.
      */
     private boolean canMovePiece(int x, int y, boolean playerBit) {       
         return envelops(x, y, XINCR[0], YINCR[0], playerBit) || // UP_LEFT
@@ -893,16 +937,16 @@ public class Status {
     
     /**
      * Make a movement at (x,y) with direction (dx, dy). The position, bit and 
-     * direction are assumed to be correct
+     * direction are assumed to be correct.
      * 
-     * @param x The x coordinate
-     * @param y The y coordinate
-     * @param dx The x coordinate increment
-     * @param dy The y coordinate increment
-     * @param playerBit The player bit
+     * @param x The x coordinate.
+     * @param y The y coordinate.
+     * @param dx The x coordinate increment.
+     * @param dy The y coordinate increment.
+     * @param playerBit The player bit.
      */
     private void flipEnveloped(int x, int y, int dx, int dy, boolean playerBit) {
-        long playerLongBit = (playerBit == P1_BIT ? P1_LONG_BIT : P2_LONG_BIT);
+        long otherLongBit  = (playerBit == P1_BIT ? P2_LONG_BIT : P1_LONG_BIT);
         
         // Align to the first disc to flip
         x+=dx;
@@ -914,16 +958,16 @@ public class Status {
             x+=dx;
             y+=dy;
         } while (
-            ((_boardColor >> toIndex(x, y)) & 1) != playerLongBit
+            hasAt(_boardColor, toIndex(x, y), otherLongBit)
         );
     }
     
     /**
      * Make a movement using the current player at the given point. The position
-     * is assumed to canMovePiece(x, y)
+     * is assumed to canMovePiece(x, y).
      * 
-     * @param x The x coordinate
-     * @param y The y coordinate
+     * @param x The x coordinate.
+     * @param y The y coordinate.
      */
     private void movePiece(int x, int y) {                
         // Claim position
@@ -952,9 +996,9 @@ public class Status {
      */
     private boolean computeIsTerminal() {
         for (int bitIndex = 0; bitIndex < SIZE*SIZE; bitIndex++) {
-            if (((_boardNeighbours >> bitIndex) & 1) == 1) {
-                int x = bitIndex/SIZE;
-                int y = bitIndex%SIZE;
+            if (isSetAt(_boardNeighbours, bitIndex)) {
+                int x = bitIndex/SIZE, y = bitIndex%SIZE;
+                
                 if(canMovePiece(x, y, P1_BIT) || canMovePiece(x, y, P2_BIT)) {
                     return false;
                 }
@@ -971,8 +1015,8 @@ public class Status {
         float dw = 0;
         
         for (int bitIndex = 0; bitIndex < SIZE*SIZE; bitIndex++) {
-            if (((_boardOccupied >> bitIndex) & 1) == 1) {
-                if (((_boardColor >> bitIndex) & 1) == P1_LONG_BIT) {
+            if (isSetAt(_boardOccupied, bitIndex)) {
+                if (hasAt(_boardColor, bitIndex, P1_LONG_BIT)) {
                     dw += Status.diskWeights[bitIndex];
                 } else {
                     dw -= Status.diskWeights[bitIndex];

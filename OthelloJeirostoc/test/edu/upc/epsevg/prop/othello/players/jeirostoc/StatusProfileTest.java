@@ -5,15 +5,16 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Random;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 /**
- *
+ * Test to profile the difference in efficiency between Status and GameStatus.
+ * 
  * @author raul
+ * @author josep
  */
 public class StatusProfileTest {   
     /**
-     * Test of status.
+     * Test to profile the difference in efficiency between Status and GameStatus.
      */
     @Test
     public void testSameResultsRandomToProfile() {

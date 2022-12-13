@@ -1,12 +1,10 @@
 package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
-import edu.upc.epsevg.prop.othello.Move;
 import edu.upc.epsevg.prop.othello.SearchType;
-import java.awt.Point;
 
 /**
  * Search algorithm that chooses a move based on MiniMax with iterative 
- * deepening
+ * deepening.
  * 
  * @author raul
  * @author josep
@@ -16,33 +14,56 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
      * Create a MiniMax search algorithm with iterative deepening.
      */
     public SearchAlgMiniMaxIDS() {
-        super(0, SearchType.MINIMAX_IDS);
+        super(1, SearchType.MINIMAX_IDS);
     }
     
     /**
-     * Get next move based on the current game status
+    * Create a MiniMax search algorithm with iterative deepening with a 
+    * different number of entries in the TT from the default.
+     */
+    public SearchAlgMiniMaxIDS(int numEntries) {
+        super(1, SearchType.MINIMAX_IDS, numEntries);
+    }
+    
+    /**
+     * Do the search for a movement based on the status s and deposit the 
+     * selected movement in _lastMovementSelected, the heuristic of the movement
+     * in _lastBestHeuristic, the depth reached in _depthReached and the nodes 
+     * whose heuristic has been obtained in _nodesWithComputedHeuristic . It 
+     * assumes that _nodesWithComputedHeuristic, _depthReached, _playerColor, 
+     * _lastMovementSelected have been correctly initialized.
      * 
-     * @param s The current game status
-     * @return The selected move
+     * @param s The status to base the search on.
      */
     @Override
-    public Move nextMove(Status s) {
-        // Init trackers
-        _nodesWithComputedHeuristic = 0;
-        _depthReached = 0;
+    public void doSearch(Status s) {
+        // Init ID
+        float lastHeuristicSoFar = 0.0f;
+        byte lastMovementSoFar = -1;
+        _maxGlobalDepth = 1;
         
-        // Do a minimax search incrementing the maxDepth until the search is
-        // stopped
-        Point bestSoFar = null;
-        this._maxGlobalDepth = 0;
         while (_searchIsOn) {
-            this._maxGlobalDepth++;
-            Point p = minimaxNextPoint(s);
-            if(_searchIsOn)
-                bestSoFar = p;
+            // Do search at the current depth
+            float heuristic = minimax(
+                s,
+                0,
+                Float.NEGATIVE_INFINITY, 
+                Float.POSITIVE_INFINITY, 
+                true
+            );
+            
+            if(_searchIsOn) {
+                // Store results
+                lastHeuristicSoFar = heuristic;
+                lastMovementSoFar = _lastSelectedMovement;
+                
+                // Next depth
+                _maxGlobalDepth++;
+            }
         }
         
-        // Return selected movement
-        return new Move(bestSoFar, _nodesWithComputedHeuristic, _depthReached, _searchType);
+        // Store the last complete values
+        _lastSelectedHeuristic = lastHeuristicSoFar;
+        _lastSelectedMovement = lastMovementSoFar;
     }
 }

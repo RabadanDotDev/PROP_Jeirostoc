@@ -1,8 +1,6 @@
 package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
-import edu.upc.epsevg.prop.othello.Move;
 import edu.upc.epsevg.prop.othello.SearchType;
-import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -14,29 +12,40 @@ import java.util.Random;
  */
 class SearchAlgRandom extends SearchAlg {
     /**
-     * Create a SearchAlgthat just chooses a random move
+     * The random instance.
+     */
+    private Random _rand;
+    
+    /**
+     * Create a SearchAlg that just chooses a random move.
      */
     public SearchAlgRandom() {
         super(-1, SearchType.RANDOM);
+        _rand = new Random();
     }
     
     /**
-     * Get a random next move
+     * Do the search for a movement based on the status s and deposit the 
+     * selected movement in _lastMovementSelected, the heuristic of the movement
+     * in _lastBestHeuristic, the depth reached in _depthReached and the nodes 
+     * whose heuristic has been obtained in _nodesWithComputedHeuristic . It 
+     * assumes that _nodesWithComputedHeuristic, _depthReached, _playerColor, 
+     * _lastMovementSelected have been correctly initialized.
      * 
-     * @param hs The current game status
-     * @return The selected move
+     * @param s The status to base the search on
      */
     @Override
-    public Move nextMove(Status s) {        
-        ArrayList<Point> moves = new ArrayList<>();
-        s.getNextMoves(moves);
+    public void doSearch(Status s) {
+        _depthReached = -1;
         
-        if(moves.isEmpty()) {
-            return new Move(null, 0L,0,  SearchType.RANDOM); 
+        ArrayList<Status> statuses = new ArrayList<>();
+        s.getNextStatuses(statuses);
+        
+        if(statuses.isEmpty()) {
+            _lastSelectedMovement = -1;
         } else {
-            Random rand = new Random();
-            int q = rand.nextInt(moves.size());
-            return new Move(moves.get(q), 0L, 0, SearchType.RANDOM);         
+            int q = _rand.nextInt(statuses.size());
+            _lastSelectedMovement = statuses.get(q).getLastMovement();
         }
     }
 }

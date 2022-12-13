@@ -2,27 +2,78 @@ package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
 import java.awt.Point;
 
-
 /**
  * Enumeration to indicate the 8 possible variations of the board.
+ * 
+ * @author raul
+ * @author josep
  */
-public enum BoardVariation{        
+public enum BoardVariation {
+    /**
+     * Board without rotation nor flipping.
+     */
     BASE(0),
+    
+    /**
+     * Board rotated 90 degrees.
+     */
     ROT90(1),
+    
+    /**
+     * Board rotated 180 degrees.
+     */
     ROT180(2),
+    
+    /**
+     * Board rotated 270 degrees.
+     */
     ROT270(3),
+    
+    /**
+     * Board flipped.
+     */
     FLIP(4),
+    
+    /**
+     * Board flipped and rotated 90 degrees.
+     */
     FLIPROT90(5),
+    
+    /**
+     * Board flipped and rotated 180 degrees.
+     */
     FLIPROT180(6),
+    
+    /**
+     * Board flipped and rotated 270 degrees.
+     */
     FLIPROT270(7);
 
+    /**
+     * Number of total variations.
+     */
+    public final static int NUMBER = BoardVariation.values().length;
+    
+    /**
+     * Index of the variation.
+     */
     public final int v;
-    public final static int NUM_VARIATIONS = BoardVariation.values().length;
 
+    /**
+     * Default constructor.
+     * 
+     * @param v Index of the variation.
+     */
     private BoardVariation(int v) {
         this.v = v;
     }
 
+    /**
+     * Get the respective enum from an index.
+     * 
+     * @param v The index.
+     * @return The respective enum from an index.
+     */
     public static BoardVariation valueOf(int v) {
         return switch (v) {
             case 0  -> BASE;
@@ -38,13 +89,17 @@ public enum BoardVariation{
     }
     
     /**
-     * Apply transformation at point p by the variation bv
+     * Apply transformation at point p by the variation bv. If it is an invalid 
+     * point or variation, it returns null.
      * 
-     * @param p The point to transform
-     * @param bv The variation to transform with
-     * @return The point with the transformation applied
+     * @param p The point to transform.
+     * @param bv The variation to transform with.
+     * @return The point with the transformation applied.
      */
     public static Point applyTransformation(Point p, BoardVariation bv) {
+        if(p.x < 0 || Status.SIZE <= p.x || p.y < 0 || Status.SIZE <= p.y)
+            return null;
+        
         return switch (bv) {
             case BASE       -> new Point(p);
             case ROT90      -> new Point(Status.SIZE-p.y-1, p.x);
@@ -60,17 +115,16 @@ public enum BoardVariation{
     
     /**
      * Apply transformation at point indexed by bitsetIndex with the form x*SIZE
-     * +y by the variation BoardVariation.valueof(variationIndex). If 
-     * bitsetIndex is -1 it will return -1.
+     * +y by the variation BoardVariation.valueof(variationIndex). If the
+     * bitsetIndex is invalid, it will return -1
      * 
-     * @param bitsetIndex The bitsetIndex index to transform
-     * @param variationIndex The index of the variation to transform with
-     * @return The bitsetIndex with the transformation applied
+     * @param bitsetIndex The bitsetIndex index to transform.
+     * @param variationIndex The index of the variation to transform with.
+     * @return The bitsetIndex with the transformation applied.
      */
     public static byte applyTransformation(byte bitsetIndex, int variationIndex) {
-        if (bitsetIndex == -1) {
+        if (bitsetIndex < 0 || Status.SIZE*Status.SIZE <= bitsetIndex)
             return -1;
-        }
         
         int x = bitsetIndex/Status.SIZE;
         int y = bitsetIndex%Status.SIZE;
@@ -94,17 +148,16 @@ public enum BoardVariation{
     
     /**
      * Apply the inverse transformation at point indexed by bitsetIndex with the
-     * form x*SIZE+y by the variation BoardVariation.valueof(variationIndex). If 
-     * bitsetIndex is -1 it will return -1.
+     * form x*SIZE+y by the variation BoardVariation.valueof(variationIndex). If the
+     * bitsetIndex is invalid, it will return -1
      * 
      * @param bitsetIndex The bitsetIndex index to transform
      * @param variationIndex The index of the variation to transform with
      * @return The bitsetIndex with the inverse transformation applied
      */
     public static byte applyInverseTransformation(byte bitsetIndex, int variationIndex) {
-        if (bitsetIndex == -1) {
+        if (bitsetIndex < 0 || Status.SIZE*Status.SIZE <= bitsetIndex)
             return -1;
-        }
         
         int x = bitsetIndex/Status.SIZE;
         int y = bitsetIndex%Status.SIZE;
