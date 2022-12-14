@@ -207,6 +207,16 @@ public class Status {
     private long _boardNeighbours;
     
     /**
+     * Number of neighbours which benefits P1
+     */
+    private int _neighboursP1;
+    
+    /**
+     * Number of neighbours which benefits P2
+     */
+    private int _neighboursP2;
+    
+    /**
      * The number of pieces of P1.
      */
     private int _piecesCountP1;
@@ -267,6 +277,8 @@ public class Status {
         // Init Metadata
         _piecesCountP1 = 0;
         _piecesCountP2 = 0;
+        _neighboursP1  = 0;
+        _neighboursP2  = 0;
         
         // Init zobrist keychain
         _zobristKeyChain = new long[BoardVariation.NUMBER];
@@ -299,6 +311,10 @@ public class Status {
         _boardOccupied   = 0;
         _boardColor      = 0;
         _boardNeighbours = 0;
+        
+        // Init neighbours count
+        _neighboursP1 = 0;
+        _neighboursP2 = 0;
         
         // Init number of pieces
         _piecesCountP1 = 0;
@@ -342,6 +358,8 @@ public class Status {
         _boardOccupied   = gse.getBoard_occupied();
         _boardColor      = gse.getBoard_color();
         _boardNeighbours = 0;
+        _neighboursP1    = 0;
+        _neighboursP2    = 0;
         regenAvailableNeighbors();
         
         // Copy number of pieces
@@ -371,6 +389,10 @@ public class Status {
         _boardOccupied   = other._boardOccupied;
         _boardColor      = other._boardColor;
         _boardNeighbours = other._boardNeighbours;
+        
+        // Copy neighbours player's count
+        _neighboursP1 = other._neighboursP1;
+        _neighboursP2 = other._neighboursP2;
         
         // Copy number of pieces
         _piecesCountP1 = other._piecesCountP1;
@@ -769,6 +791,10 @@ public class Status {
             int y2 = y + YINCR[dir];
             if(hasDisc(x2, y2)) {
                 _boardNeighbours |= 1L << toIndex(x, y);
+                if (hasAt(_boardColor, toIndex(x2, y2), P2_LONG_BIT)) 
+                    ++_neighboursP1;
+                if (hasAt(_boardColor, toIndex(x2, y2), P1_LONG_BIT)) 
+                    ++_neighboursP2;
                 return;
             }
         }
@@ -784,6 +810,10 @@ public class Status {
             int y2 = y + YINCR[dir];
             if(isEmpty(x2, y2)) {
                 _boardNeighbours |= 1L << toIndex(x2, y2);
+                if (hasAt(_boardColor, toIndex(x, y), P2_LONG_BIT)) 
+                    ++_neighboursP1;
+                if (hasAt(_boardColor, toIndex(x, y), P1_LONG_BIT)) 
+                    ++_neighboursP2;
             }
         }
     }
@@ -793,6 +823,8 @@ public class Status {
      */
     private void regenAvailableNeighbors() {
         _boardNeighbours = 0;
+        _neighboursP1    = 0;
+        _neighboursP2    = 0;
         
         for (int x = 0; x < SIZE; x++) {
             for (int y = 0; y < SIZE; y++) {
@@ -835,6 +867,10 @@ public class Status {
         _boardOccupied   |= 1L            << toIndex(x, y);
         _boardColor      |= playerLongBit << toIndex(x, y);
         _boardNeighbours &= ~(1L          << toIndex(x, y));
+        if (hasAt(_boardColor, toIndex(x, y), P1_LONG_BIT)) 
+            --_neighboursP1;
+        if (hasAt(_boardColor, toIndex(x, y), P2_LONG_BIT)) 
+            --_neighboursP2;
         updateAdjacentNeighbors(x, y);
         
         // Update zobrist keychain
