@@ -103,9 +103,9 @@ public class Status {
      */
     private final static float[] dwv = {
     100, 
-    -30, -40, 
-     20,  5,  10, 
-     20,  5,  0, 10};
+      0,  0, 
+     20,  0,  10, 
+     20,  0,  5, 10};
     
     /**
      * Disk weights for each coordinate.
@@ -641,9 +641,10 @@ public class Status {
                 return 0;
         }
         
-        //return _diskWeightsSum*playerColor;
-        if (getCurrentPlayerColor() == P1_COLOR) return 64-_neighboursP2;
-        else return 64-_neighboursP1;
+        if (getCurrentPlayerColor() == P1_COLOR) 
+            return (_diskWeightsSum*playerColor)-_neighboursP2;
+        else 
+            return (_diskWeightsSum*playerColor)-_neighboursP1;
     }
     
     /**
