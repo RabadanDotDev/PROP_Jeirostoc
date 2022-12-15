@@ -167,6 +167,8 @@ class SearchAlgMiniMax extends SearchAlg {
             } else if(!isMax && nextHeuristic < beta) {
                 beta = nextHeuristic;
                 selectedNextMove = nextNode.getLastMovement();
+            } else if (selectedNextMove == -1) {
+                selectedNextMove = nextNode.getLastMovement();
             }
             
             // Update this level's isExtact status
