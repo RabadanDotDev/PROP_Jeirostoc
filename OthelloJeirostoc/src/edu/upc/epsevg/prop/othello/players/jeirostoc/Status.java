@@ -207,12 +207,12 @@ public class Status {
     private long _boardNeighbours;
     
     /**
-     * Number of neighbours which benefits P1
+     * Number of neighbours of P1
      */
     private int _neighboursP1;
     
     /**
-     * Number of neighbours which benefits P2
+     * Number of neighbours of P2
      */
     private int _neighboursP2;
     
@@ -793,9 +793,9 @@ public class Status {
             int y2 = y + YINCR[dir];
             if(hasDisc(x2, y2)) {
                 _boardNeighbours |= 1L << toIndex(x, y);
-                if (hasAt(_boardColor, toIndex(x2, y2), P2_LONG_BIT)) 
-                    ++_neighboursP1;
                 if (hasAt(_boardColor, toIndex(x2, y2), P1_LONG_BIT)) 
+                    ++_neighboursP1;
+                if (hasAt(_boardColor, toIndex(x2, y2), P2_LONG_BIT)) 
                     ++_neighboursP2;
                 return;
             }
@@ -812,9 +812,9 @@ public class Status {
             int y2 = y + YINCR[dir];
             if(isEmpty(x2, y2)) {
                 _boardNeighbours |= 1L << toIndex(x2, y2);
-                if (hasAt(_boardColor, toIndex(x, y), P2_LONG_BIT)) 
-                    ++_neighboursP1;
                 if (hasAt(_boardColor, toIndex(x, y), P1_LONG_BIT)) 
+                    ++_neighboursP1;
+                if (hasAt(_boardColor, toIndex(x, y), P2_LONG_BIT)) 
                     ++_neighboursP2;
             }
         }
@@ -870,9 +870,9 @@ public class Status {
         _boardColor      |= playerLongBit << toIndex(x, y);
         _boardNeighbours &= ~(1L          << toIndex(x, y));
         if (hasAt(_boardColor, toIndex(x, y), P1_LONG_BIT)) 
-            --_neighboursP1;
-        if (hasAt(_boardColor, toIndex(x, y), P2_LONG_BIT)) 
             --_neighboursP2;
+        if (hasAt(_boardColor, toIndex(x, y), P2_LONG_BIT)) 
+            --_neighboursP1;
         updateAdjacentNeighbors(x, y);
         
         // Update zobrist keychain
@@ -903,6 +903,7 @@ public class Status {
     private void flipPosition(int x, int y, boolean playerBit) {
         // Flip position
         _boardColor ^= 1L << toIndex(x, y);
+        updateAdjacentNeighbors(x, y);
         
         // Update zobrist keychain
         ZobristKeyGen.updateKeyChainPositionFlip(_zobristKeyChain, toIndex(x, y));
