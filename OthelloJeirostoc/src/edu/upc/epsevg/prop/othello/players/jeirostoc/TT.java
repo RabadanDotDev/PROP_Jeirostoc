@@ -268,6 +268,39 @@ class TT {
     }
     
     /**
+     * Extract the selected movement in entry if the entry is valid and return 
+     * it. In case in is not valid, return -1.
+     * 
+     * @param s The status.
+     * @param entry The entry to extract from.
+     * @return The selected movement with the correct orientation or -1.
+     */
+    static byte extractSelectedMovementIfValidEntry(Status s, long entry) {
+        if(extractIsValidEntry(entry))
+            return extractSelectedMovement(s, entry);
+        else
+            return -1;
+    }
+    
+    /**
+     * Check if the entry is valid, the recorded depth is equal or greater than
+     * minDepthBelow and the stored bound is the same as the given one.
+     * 
+     * @param entry The entry.
+     * @param minDepthBelow The minimum depth below the entry has to have to be 
+     * able to extract the heuristic from it.
+     * @param isAlpha True to indicate if the expected heuristic is an upper 
+     * bound (true) or a lower bound (false).
+     * @return True if the heuristic can be used with the given params and false
+     * if not
+     */
+    static boolean canExtractHeuristic(long entry, int minDepthBelow, boolean isAlpha) {
+        return extractIsValidEntry(entry) && 
+               minDepthBelow <= extractDepthBelow(entry) &&
+               TT.extractIsAlpha(entry) == isAlpha;
+    }
+    
+    /**
      * Express the given entry as a string.
      * 
      * @param entry The entry to express as a string.

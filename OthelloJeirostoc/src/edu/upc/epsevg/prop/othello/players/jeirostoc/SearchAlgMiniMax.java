@@ -123,32 +123,25 @@ class SearchAlgMiniMax extends SearchAlg {
         
         // Retrieve the entry from transposition table
         long entry = _tt.readEntry(s);
-        byte selectedNextMove = -1;
-        
-        if (TT.extractIsValidEntry(entry)) {
-            // Extract selected movement
-            selectedNextMove = TT.extractSelectedMovement(s, entry);
+        byte selectedNextMove = TT.extractSelectedMovementIfValidEntry(s, entry);
+        if(TT.canExtractHeuristic(entry, _maxGlobalDepth-currentDepth, isMax)) {
+            float extractedHeuristic = TT.extractSelectedHeuristic(entry);
             
-            // Extract last heuristic if its more deep
-            if ((_maxGlobalDepth-currentDepth) <= TT.extractDepthBelow(entry) && TT.extractIsAlpha(entry) == isMax) {
-                float extractedHeuristic = TT.extractSelectedHeuristic(entry);
-                
-                // Return if it is an exact heuristic
-                if (TT.extractIsExact(entry)) {
-                    _lastSelectedMovement = selectedNextMove;
-                    return extractedHeuristic;
-                }
-                
-                // Update bounds
-                if(isMax) alpha = Math.max(alpha, extractedHeuristic);
-                else       beta = Math.min( beta, extractedHeuristic);
-                
-                // Prune if we exceeded lower or upper bound
-                if(beta <= alpha) {
-                    _lastSelectedMovement = selectedNextMove;
-                    _isExact[currentDepth] = false;
-                    return isMax ? alpha : beta;
-                }
+            // Return if it is an exact heuristic
+            if (TT.extractIsExact(entry)) {
+                _lastSelectedMovement = selectedNextMove;
+                return extractedHeuristic;
+            }
+            
+            // Update bounds
+            if(isMax) alpha = Math.max(alpha, extractedHeuristic);
+            else       beta = Math.min( beta, extractedHeuristic);
+            
+            // Prune if we exceeded lower or upper bound already
+            if(beta <= alpha) {
+                _lastSelectedMovement = selectedNextMove;
+                _isExact[currentDepth] = false;
+                return isMax ? alpha : beta;
             }
         }
         
