@@ -193,12 +193,12 @@ public class StatusTest {
      * it initialized (guided version).
      */
     @Test
-    public void testSameResultsGuided() {        
+    public void testSameResultsGuided() {   
         // Init
         GameStatus reference   = new GameStatus(sampleBoards[0]);
         Status     direct      = new Status(sampleBoards[0], Status.P1_BIT);
         Status     copied      = new Status(reference);
-        Status     incremental = new Status(sampleBoards[0], Status.P1_BIT);
+        Status     incremental = new Status(sampleBoards[0], Status.P1_BIT);   
         
         ArrayList<Point> referenceMoves;
         ArrayList<Point> directMoves = new ArrayList<>();

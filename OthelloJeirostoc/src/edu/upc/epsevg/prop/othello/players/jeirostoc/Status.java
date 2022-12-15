@@ -202,19 +202,30 @@ public class Status {
     private long _boardColor;
     
     /**
-     * Unoccupied positions of the game with an adjacent occupied position.
+     * Unoccupied positions of the game with an adjacent occupied position of 
+     * P1.
      */
-    private long _boardNeighbours;
+    private long _boardNeighborsP1;
     
     /**
-     * Number of neighbours of P1
+     * Unoccupied positions of the game with an adjacent occupied position of 
+     * P2.
      */
-    private int _neighboursP1;
+    private long _boardNeighborsP2;
     
     /**
-     * Number of neighbours of P2
+     * The number of empty neighboring positions to pieces of P1. If an empty 
+     * position is adjacent to more than one discs of P1, it is counted as many 
+     * times as adjacent discs there are.
      */
-    private int _neighboursP2;
+    private int _neighborsCountP1;
+    
+    /**
+     * The number of empty neighboring positions to pieces of P2. If an empty 
+     * position is adjacent to more than one discs of P2, it is counted as many 
+     * times as adjacent discs there are.
+     */
+    private int _neighborsCountP2;
     
     /**
      * The number of pieces of P1.
@@ -270,15 +281,16 @@ public class Status {
      */
     public Status() {
         // Init board
-        _boardOccupied   = 0;
-        _boardColor      = 0;
-        _boardNeighbours = 0;
+        _boardOccupied    = 0;
+        _boardColor       = 0;
+        _boardNeighborsP1 = 0;
+        _boardNeighborsP2 = 0;
         
         // Init Metadata
         _piecesCountP1 = 0;
         _piecesCountP2 = 0;
-        _neighboursP1  = 0;
-        _neighboursP2  = 0;
+        _neighborsCountP1   = 0;
+        _neighborsCountP2   = 0;
         
         // Init zobrist keychain
         _zobristKeyChain = new long[BoardVariation.NUMBER];
@@ -308,13 +320,14 @@ public class Status {
      */
     public Status(int[][] board, boolean startingPlayerBit) {
         // Init board
-        _boardOccupied   = 0;
-        _boardColor      = 0;
-        _boardNeighbours = 0;
+        _boardOccupied    = 0;
+        _boardColor       = 0;
+        _boardNeighborsP1 = 0;
+        _boardNeighborsP2 = 0;
         
         // Init neighbours count
-        _neighboursP1 = 0;
-        _neighboursP2 = 0;
+        _neighborsCountP1 = 0;
+        _neighborsCountP2 = 0;
         
         // Init number of pieces
         _piecesCountP1 = 0;
@@ -355,11 +368,8 @@ public class Status {
         GameStatusExtractor gse = new GameStatusExtractor(gs);
         
         // Copy board
-        _boardOccupied   = gse.getBoard_occupied();
-        _boardColor      = gse.getBoard_color();
-        _boardNeighbours = 0;
-        _neighboursP1    = 0;
-        _neighboursP2    = 0;
+        _boardOccupied = gse.getBoard_occupied();
+        _boardColor    = gse.getBoard_color();
         regenAvailableNeighbors();
         
         // Copy number of pieces
@@ -386,13 +396,14 @@ public class Status {
      */
     public Status(Status other) {
         // Copy board
-        _boardOccupied   = other._boardOccupied;
-        _boardColor      = other._boardColor;
-        _boardNeighbours = other._boardNeighbours;
+        _boardOccupied    = other._boardOccupied;
+        _boardColor       = other._boardColor;
+        _boardNeighborsP1 = other._boardNeighborsP1;
+        _boardNeighborsP2 = other._boardNeighborsP2;
         
-        // Copy neighbours player's count
-        _neighboursP1 = other._neighboursP1;
-        _neighboursP2 = other._neighboursP2;
+        // Copy player neighbors's count
+        _neighborsCountP1 = other._neighborsCountP1;
+        _neighborsCountP2 = other._neighborsCountP2;
         
         // Copy number of pieces
         _piecesCountP1 = other._piecesCountP1;
@@ -436,10 +447,6 @@ public class Status {
      * currentPlayerColor.
      */
     public boolean canMovePiece(int x, int y) {
-        // Check if the position is a valid neighbor
-        if(!isNeighbor(x, y))
-            return false;
-        
         return canMovePiece(x, y, _currentPlayerBit);
     }
     
@@ -498,16 +505,24 @@ public class Status {
     }
     
     /**
+     * Get the number of neighbors a player disks has.
+     * 
+     * @param playerBit The player bit.
+     * @return The number of movements a player has made.
+     */
+    public int getNumNeighbors(boolean playerBit) {
+        return playerBit == P1_BIT ? _neighborsCountP1 : _neighborsCountP2;
+    }
+    
+    /**
      * Get a list of the next possible statuses starting from this position.
      * 
      * @param result The array to deposit the new statuses objects at the end of
      * the list.
      */
-    public void getNextMoves(List<Point> result) {        
-        for (int bitIndex = 0; bitIndex < SIZE*SIZE; bitIndex++) {
-            if (isSetAt(_boardNeighbours, bitIndex)) {
-                int x = bitIndex/SIZE, y = bitIndex%SIZE;
-                
+    public void getNextMoves(List<Point> result) {
+        for (int x = 0; x < SIZE; x++) {
+            for (int y = 0; y < SIZE; y++) {
                 if(canMovePiece(x, y, _currentPlayerBit)) {
                     result.add(new Point(x, y));
                 }
@@ -542,11 +557,10 @@ public class Status {
         }
         
         // Get the next statuses
-        for (int bitIndex = 0; bitIndex < SIZE*SIZE; bitIndex++) {
-            if (isSetAt(_boardNeighbours, bitIndex) && bitIndex != bitIndexFirst) {
-                int x = bitIndex/SIZE, y = bitIndex%SIZE;
-                
-                if(canMovePiece(x, y, _currentPlayerBit)) {
+        for (int x = 0; x < SIZE; x++) {
+            for (int y = 0; y < SIZE; y++) {
+                if (toIndex(x, y) != bitIndexFirst &&
+                    canMovePiece(x, y, _currentPlayerBit)) {
                     Status s = new Status(this);
                     s.movePiece(x, y);
                     result.add(s);
@@ -575,8 +589,21 @@ public class Status {
         StringBuilder sb = new StringBuilder();
         
         // Board
+        if(extendedInfo) {
+            sb.append("\t ");
+            for (int x = 0; x < SIZE; x++) {
+                sb.append(' ');
+                sb.append(x);
+                sb.append(' ');
+            }
+            sb.append('\n');
+        }
+        
         for (int y = 0; y < SIZE; y++) {
             sb.append('\t');
+            if(extendedInfo)
+                sb.append(y);
+            
             for (int x = 0; x < SIZE; x++) {
                 int bitIndex = toIndex(x, y);
                 
@@ -586,8 +613,12 @@ public class Status {
                         sb.append('O');
                     else
                         sb.append('@');
-                } else if(extendedInfo && isSetAt(_boardNeighbours, bitIndex)){
+                } else if(extendedInfo && isSetAt(_boardNeighborsP1, bitIndex) && isSetAt(_boardNeighborsP2, bitIndex)){
                     sb.append('N');
+                } else if(extendedInfo && isSetAt(_boardNeighborsP1, bitIndex)){
+                    sb.append('n');
+                } else if(extendedInfo && isSetAt(_boardNeighborsP2, bitIndex)){
+                    sb.append('m');
                 } else {
                     sb.append('·');
                 }
@@ -603,14 +634,22 @@ public class Status {
             sb.append("NO");
         }
         
-        // Zobrist keychain
         if(extendedInfo) {
             sb.append("\n");
+            
+            // Zobrist keychain
+            sb.append("KeyChain: ");
             ArrayList<Long> result = new ArrayList<>(_zobristKeyChain.length);
             for (long item : _zobristKeyChain)
                 result.add(item);
             Collections.sort(result);
             sb.append(result);
+            sb.append("\n");
+            
+            // Disk weights sum
+            sb.append("Disk Weights sum: ");
+            sb.append(_diskWeightsSum);
+            sb.append("\n");
         }
         
         return sb.toString();
@@ -642,9 +681,9 @@ public class Status {
         }
         
         if (getCurrentPlayerColor() == P1_COLOR) 
-            return (_diskWeightsSum*playerColor)-_neighboursP2;
+            return (_diskWeightsSum*playerColor)-_neighborsCountP2;
         else 
-            return (_diskWeightsSum*playerColor)-_neighboursP1;
+            return (_diskWeightsSum*playerColor)-_neighborsCountP1;
     }
     
     /**
@@ -775,48 +814,59 @@ public class Status {
      * 
      * @param x The x coordinate, not necessarily valid.
      * @param y The y coordinate, not necessarily valid.
+     * @param playerBit The bit of the player to check
      * @return True if there is a valid neighbor at (x, y).
      */
-    private boolean isNeighbor(int x, int y) {
+    private boolean isNeighbor(int x, int y, boolean playerBit) {
         return inBounds(x, y) && 
-               isSetAt(_boardNeighbours, toIndex(x, y));
+               isSetAt(playerBit == P1_BIT ? _boardNeighborsP1 : _boardNeighborsP2, toIndex(x, y));
     }
     
     /**
-     * Set (x, y) if it is a neighbor of a occupied disc.
+     * Check if any of the bits surrounding a position have a specific status
+     * 
+     * @return True if any of the bits surrounding a position have a specific 
+     * status
+     */
+    private boolean hasAnyDiscSurroundingWithColor(int x, int y, long status) {
+        for (int dir = 0; dir < XINCR.length; dir++) {
+            int x2 = x + XINCR[dir]; int y2 = y + YINCR[dir];
+            
+            if(inBounds(x2, y2) && 
+               isSetAt(_boardOccupied, toIndex(x2, y2)) &&
+               hasAt(_boardColor, toIndex(x2, y2), status)
+            ) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Set (x, y) if it is a neighbor of a occupied disc. It is assumed not to 
+     * be set
      */
     private void setIfItsNeighbor(int x, int y) {
         if(!isEmpty(x, y))
             return;
         
-        for (int dir = 0; dir < XINCR.length; dir++) {
-            int x2 = x + XINCR[dir];
-            int y2 = y + YINCR[dir];
-            if(hasDisc(x2, y2)) {
-                _boardNeighbours |= 1L << toIndex(x, y);
-                if (hasAt(_boardColor, toIndex(x2, y2), P1_LONG_BIT)) 
-                    ++_neighboursP1;
-                if (hasAt(_boardColor, toIndex(x2, y2), P2_LONG_BIT)) 
-                    ++_neighboursP2;
-                return;
+        boolean p1Set = false;
+        boolean p2Set = false;
+        for (int dir = 0; dir < XINCR.length && (!p1Set || !p2Set); dir++) {
+            int x2 = x + XINCR[dir], y2 = y + YINCR[dir];
+            if(!hasDisc(x2, y2)) {
+                continue;
             }
-        }
-    }
-    
-    /**
-     * Set neighbors of a occupied disc. The position is assumed to 
-     * hasDisc(x, y)
-     */
-    private void updateAdjacentNeighbors(int x, int y) {        
-        for (int dir = 0; dir < XINCR.length; dir++) {
-            int x2 = x + XINCR[dir];
-            int y2 = y + YINCR[dir];
-            if(isEmpty(x2, y2)) {
-                _boardNeighbours |= 1L << toIndex(x2, y2);
-                if (hasAt(_boardColor, toIndex(x, y), P1_LONG_BIT)) 
-                    ++_neighboursP1;
-                if (hasAt(_boardColor, toIndex(x, y), P2_LONG_BIT)) 
-                    ++_neighboursP2;
+            
+            if (hasAt(_boardColor, toIndex(x2, y2), P1_LONG_BIT)) {
+                _boardNeighborsP1 |= 1L << toIndex(x, y);
+                ++_neighborsCountP1;
+                p1Set = true;
+            } else {
+                _boardNeighborsP2 |= 1L << toIndex(x, y);
+                ++_neighborsCountP2;
+                p2Set = true;
             }
         }
     }
@@ -825,9 +875,10 @@ public class Status {
      * Regenerate availableNeighbors BitSet.
      */
     private void regenAvailableNeighbors() {
-        _boardNeighbours = 0;
-        _neighboursP1    = 0;
-        _neighboursP2    = 0;
+        _boardNeighborsP1 = 0;
+        _boardNeighborsP2 = 0;
+        _neighborsCountP1 = 0;
+        _neighborsCountP2 = 0;
         
         for (int x = 0; x < SIZE; x++) {
             for (int y = 0; y < SIZE; y++) {
@@ -857,6 +908,85 @@ public class Status {
     }
     
     /**
+     * Remove the existence of a neighbor at (x, y). The position is assumed to
+     * be valid.
+     * 
+     * @param x The x coordinate.
+     * @param y The y coordinate.
+     */
+    private void removeNeighbor(int x, int y) {
+        int bitsetIndex = toIndex(x, y);
+        if(hasAt(_boardNeighborsP1, bitsetIndex, 1L)) {
+            _boardNeighborsP1 &= ~(1L << toIndex(x, y));
+            _neighborsCountP1--;
+        }
+        
+        if (hasAt(_boardNeighborsP2, bitsetIndex, 1L)) {
+            _boardNeighborsP2 &= ~(1L << toIndex(x, y));
+            _neighborsCountP2--;
+        }
+    }
+    
+    /**
+     * Set the surrounding unset neighbors of a claimed position (x, y) with 
+     * playerBit. The position is assumed to be valid.
+     * 
+     * @param x The x coordinate.
+     * @param y The y coordinate.
+     * @param playerBit The player bit.
+     */
+    private void setSurroundingNeighbors(int x, int y, boolean playerBit) {
+        for (int dir = 0; dir < XINCR.length; dir++) {
+            int x2 = x + XINCR[dir], y2 = y + YINCR[dir];
+            if (!isEmpty(x2, y2))
+                continue;
+            
+            // Set position if new
+            if(playerBit == P1_BIT && hasAt(_boardNeighborsP1, toIndex(x2, y2), 0L)) {
+                _boardNeighborsP1 |= 1L << toIndex(x2, y2);
+                ++_neighborsCountP1;
+            } else if(playerBit == P2_BIT && hasAt(_boardNeighborsP2, toIndex(x2, y2), 0L)) {
+                _boardNeighborsP2 |= 1L << toIndex(x2, y2);
+                ++_neighborsCountP2;
+            }
+        }
+    }
+    
+    /**
+     * Flip the surrounding neighbors of (x, y) with playerBit as the new owner 
+     * of the position. The position is assumed to be valid.
+     * 
+     * @param x The x coordinate.
+     * @param y The y coordinate.
+     * @param playerBit The player bit.
+     */
+    private void flipSurroundingNeighbors(int x, int y, boolean playerBit) {
+        for (int dir = 0; dir < XINCR.length; dir++) {
+            int x2 = x + XINCR[dir], y2 = y + YINCR[dir];
+            if (!isEmpty(x2, y2))
+                continue;
+            
+            // Set position if new
+            if(playerBit == P1_BIT && !hasAt(_boardNeighborsP1, toIndex(x2, y2), 1L)) {
+                _boardNeighborsP1 |= 1L << toIndex(x2, y2);
+                ++_neighborsCountP1;
+            } else if(playerBit == P2_BIT && !hasAt(_boardNeighborsP2, toIndex(x2, y2), 1L)) {
+                _boardNeighborsP2 |= 1L << toIndex(x2, y2);
+                ++_neighborsCountP2;
+            }
+            
+            // Unset old
+            if(playerBit == P2_BIT && !hasAnyDiscSurroundingWithColor(x2, y2, P1_LONG_BIT)) {
+                _boardNeighborsP1 &= ~(1L << toIndex(x2, y2));
+                _neighborsCountP1--;
+            } else if(playerBit == P1_BIT && !hasAnyDiscSurroundingWithColor(x2, y2, P2_LONG_BIT)) {
+                _boardNeighborsP2 &= ~(1L << toIndex(x2, y2));
+                _neighborsCountP2--;
+            }
+        }
+    }
+    
+    /**
      * Claim position (x,y) for player. The position is assumed to 
      * canMovePiece(x, y) or being called from the constructor.
      * 
@@ -869,21 +999,8 @@ public class Status {
         long playerLongBit = (playerBit == P1_BIT ? P1_LONG_BIT : P2_LONG_BIT);
         _boardOccupied   |= 1L            << toIndex(x, y);
         _boardColor      |= playerLongBit << toIndex(x, y);
-        _boardNeighbours &= ~(1L          << toIndex(x, y));
-        if (hasAt(_boardColor, toIndex(x, y), P1_LONG_BIT)) 
-            --_neighboursP2;
-        if (hasAt(_boardColor, toIndex(x, y), P2_LONG_BIT)) 
-            --_neighboursP1;
-        updateAdjacentNeighbors(x, y);
         
-        // Update zobrist keychain
-        ZobristKeyGen.updateKeyChainPositionClaim(
-                _zobristKeyChain, 
-                toIndex(x, y), 
-                playerBit
-        );
-        
-        // Update meta
+        // Update pieces count
         if(playerBit == P1_BIT) {
             _piecesCountP1++;
             _diskWeightsSum += Status.diskWeights[toIndex(x, y)];
@@ -891,6 +1008,17 @@ public class Status {
             _piecesCountP2++;
             _diskWeightsSum -= Status.diskWeights[toIndex(x, y)];
         }
+        
+        // Update neighbors
+        removeNeighbor(x, y);
+        setSurroundingNeighbors(x, y, playerBit);
+        
+        // Update zobrist keychain
+        ZobristKeyGen.updateKeyChainPositionClaim(
+                _zobristKeyChain, 
+                toIndex(x, y), 
+                playerBit
+        );
     }
 
     /**
@@ -902,14 +1030,16 @@ public class Status {
      * @param playerBit The player bit.
      */
     private void flipPosition(int x, int y, boolean playerBit) {
-        // Flip position
+        // Update board
         _boardColor ^= 1L << toIndex(x, y);
-        updateAdjacentNeighbors(x, y);
+        
+        // Update neighbors
+        flipSurroundingNeighbors(x, y, playerBit);
         
         // Update zobrist keychain
         ZobristKeyGen.updateKeyChainPositionFlip(_zobristKeyChain, toIndex(x, y));
         
-        // Update meta
+        // Update pieces count
         if(playerBit == P1_BIT) {
             _piecesCountP1++;
             _piecesCountP2--;
@@ -920,7 +1050,7 @@ public class Status {
             _diskWeightsSum -= Status.diskWeights[toIndex(x, y)]*2;
         }
     }
-    
+      
     /**
      * Check if a movement at (x,y) would envelop enemies pieces at (dx, dy) 
      * direction. The position is assumed to isNeighbor(x, y).
@@ -956,8 +1086,7 @@ public class Status {
     }
     
     /**
-     * Check if a movement at (x,y) can be made with the given playerBit. 
-     * Assumes isNeighbor(x, y).
+     * Check if a movement at (x,y) can be made with the given playerBit.
      * 
      * @param x The x coordinate.
      * @param y The y coordinate    . 
@@ -965,14 +1094,16 @@ public class Status {
      * @return True if only if a movement can be made at (x, y) with playerBit.
      */
     private boolean canMovePiece(int x, int y, boolean playerBit) {       
-        return envelops(x, y, XINCR[0], YINCR[0], playerBit) || // UP_LEFT
+        return isNeighbor(x, y, !playerBit) && (
+               envelops(x, y, XINCR[0], YINCR[0], playerBit) || // UP_LEFT
                envelops(x, y, XINCR[1], YINCR[1], playerBit) || // UP
                envelops(x, y, XINCR[2], YINCR[2], playerBit) || // UP_RIGHT
                envelops(x, y, XINCR[3], YINCR[3], playerBit) || // LEFT
                envelops(x, y, XINCR[4], YINCR[4], playerBit) || // RIGHT
                envelops(x, y, XINCR[5], YINCR[5], playerBit) || // BOTTOM_LEFT
                envelops(x, y, XINCR[6], YINCR[6], playerBit) || // BOTTOM
-               envelops(x, y, XINCR[7], YINCR[7], playerBit);   // BOTTOM_RIGHT
+               envelops(x, y, XINCR[7], YINCR[7], playerBit)    // BOTTOM_RIGHT
+        );
     }
     
     /**
@@ -1036,12 +1167,10 @@ public class Status {
      */
     private boolean computeIsTerminal() {
         for (int bitIndex = 0; bitIndex < SIZE*SIZE; bitIndex++) {
-            if (isSetAt(_boardNeighbours, bitIndex)) {
-                int x = bitIndex/SIZE, y = bitIndex%SIZE;
-                
-                if(canMovePiece(x, y, P1_BIT) || canMovePiece(x, y, P2_BIT)) {
-                    return false;
-                }
+            int x = bitIndex/SIZE, y = bitIndex%SIZE;
+
+            if(canMovePiece(x, y, P1_BIT) || canMovePiece(x, y, P2_BIT)) {
+                return false;
             }
         }
         
