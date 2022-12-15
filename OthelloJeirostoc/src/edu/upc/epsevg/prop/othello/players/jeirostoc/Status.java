@@ -680,10 +680,7 @@ public class Status {
                 return 0;
         }
         
-        if (getCurrentPlayerColor() == P1_COLOR) 
-            return (_diskWeightsSum*playerColor)-_neighborsCountP2;
-        else 
-            return (_diskWeightsSum*playerColor)-_neighborsCountP1;
+        return playerColor*(_diskWeightsSum + (_neighborsCountP2 - _neighborsCountP1));
     }
     
     /**
