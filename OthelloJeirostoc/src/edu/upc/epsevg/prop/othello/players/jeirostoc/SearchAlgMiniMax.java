@@ -124,8 +124,8 @@ class SearchAlgMiniMax extends SearchAlg {
         // Retrieve the entry from transposition table
         long entry = _tt.readEntry(s);
         byte selectedNextMove = TT.extractSelectedMovementIfValidEntry(s, entry);
-        if(TT.canExtractHeuristic(entry, _maxGlobalDepth-currentDepth, isMax)) {
-            float extractedHeuristic = TT.extractSelectedHeuristic(entry);
+        if(TT.canExtractHeuristic(entry, _maxGlobalDepth-currentDepth)) {
+            float extractedHeuristic = TT.extractSelectedHeuristic(entry)*_playerColor;
             
             // Return if it is an exact heuristic
             if (TT.extractIsExact(entry)) {
@@ -134,8 +134,8 @@ class SearchAlgMiniMax extends SearchAlg {
             }
             
             // Update bounds
-            if(isMax) alpha = Math.max(alpha, extractedHeuristic);
-            else       beta = Math.min( beta, extractedHeuristic);
+            if(TT.extractIsAlpha(entry)) alpha = Math.max(alpha, extractedHeuristic);
+            else                         beta = Math.min( beta, extractedHeuristic);
             
             // Prune if we exceeded lower or upper bound already
             if(beta <= alpha) {
@@ -192,7 +192,7 @@ class SearchAlgMiniMax extends SearchAlg {
         if(_searchIsOn) {
             _tt.register(
                     s,
-                    isMax ? alpha : beta,
+                    (isMax ? alpha : beta)*_playerColor,
                     selectedNextMove, 
                     (byte)(_maxGlobalDepth-currentDepth), 
                     _isExact[currentDepth], 
@@ -203,5 +203,19 @@ class SearchAlgMiniMax extends SearchAlg {
         // Return the maxmimized or minimized bound
         _lastSelectedMovement = selectedNextMove;
         return isMax ? alpha : beta;
+    }
+
+    @Override
+    public String getLogLineHeader() {
+        StringBuilder sb = new StringBuilder(super.getLogLineHeader());
+        sb.append("ttNumCollisions").append(';');
+        return sb.toString();
+    }
+    
+    @Override
+    public String getLogLineLastSearch() {
+        StringBuilder sb = new StringBuilder(super.getLogLineLastSearch());
+        sb.append(_tt.getNumCollisions()).append(';');
+        return sb.toString();
     }
 }

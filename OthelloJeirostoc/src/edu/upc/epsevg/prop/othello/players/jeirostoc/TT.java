@@ -171,6 +171,15 @@ class TT {
     }
     
     /**
+     * Get the number of collisions recorded.
+     * 
+     * @param The number of collisions.
+     */
+    public long getNumCollisions() {
+        return _numColisions;
+    }
+    
+    /**
      * Express the component entries in the bitpacked format.
      * 
      * @param selectedHeuristic The selected heuristic
@@ -294,10 +303,9 @@ class TT {
      * @return True if the heuristic can be used with the given params and false
      * if not
      */
-    static boolean canExtractHeuristic(long entry, int minDepthBelow, boolean isAlpha) {
+    static boolean canExtractHeuristic(long entry, int minDepthBelow) {
         return extractIsValidEntry(entry) && 
-               minDepthBelow <= extractDepthBelow(entry) &&
-               TT.extractIsAlpha(entry) == isAlpha;
+               minDepthBelow <= extractDepthBelow(entry);
     }
     
     /**
