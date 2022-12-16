@@ -454,4 +454,29 @@ public class StatusTest {
             }
         }
     }
+    
+        
+    /**
+     * Test that boards have the same zobrist hash and heuristic independently 
+     * of their variation (random movements version).
+     */
+    @Test
+    public void testHeuristicVal() {
+        int[][] sampleBoard = {
+            { 0,  0,  0,  0,  0,  0,  0,  0},
+            { 0,  1,  0,  0,  0,  0,  1,  0},
+            { 0,  0, -1,  0,  0, -1,  0,  0},
+            { 0,  0,  0,  0,  0,  0,  0,  0},
+            { 0,  0,  0,  0,  0,  0,  0,  0},
+            { 0,  0, -1,  0,  0, -1,  0,  0},
+            { 0,  1,  0,  0,  0,  0,  1,  0},
+            { 0,  0,  0,  0,  0,  0,  0,  0}
+        };
+        
+        Status s = new Status(sampleBoard, Status.P1_BIT);
+        
+        System.out.println(s.getHeuristic(Status.P1_COLOR));
+        System.out.println(s.toString(true));
+        assertTrue(s.getHeuristic(Status.P1_COLOR) < 0);
+    }
 }

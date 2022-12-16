@@ -96,16 +96,25 @@ public class Status {
     /**
      * Heuristic version for debugging purposes.
      */
-    public static final float HEURISTIC_VER = 2.1f;
+    public static final float HEURISTIC_VER = 3.2f;
     
     /**
      * Rotation and flip independent disk weights values.
      */
     private final static float[] dwv = {
-    100, 
-      0,  0, 
-     20,  0,  10, 
-     20,  0,  5, 10};
+    150, 
+     40, 40, 
+     30, 30, 20, 
+     20, 20, 20, 10};
+    
+    /**
+     * Rotation and flip independent neighbors weights values.
+     */
+    private final static float[] nwv = {
+     90, 
+     20, 20, 
+     15, 15, 10, 
+     10, 10, 10, 5};
     
     /**
      * Disk weights for each coordinate.
@@ -119,6 +128,17 @@ public class Status {
         dwv[3], dwv[4], dwv[5], dwv[8], dwv[8], dwv[5], dwv[4], dwv[3],
         dwv[1], dwv[2], dwv[4], dwv[7], dwv[7], dwv[4], dwv[2], dwv[1],
         dwv[0], dwv[1], dwv[3], dwv[6], dwv[6], dwv[3], dwv[1], dwv[0]
+    };
+    
+    private final static float[] neighborWeights = {
+        nwv[0], nwv[1], nwv[3], nwv[6], nwv[6], nwv[3], nwv[1], nwv[0],
+        nwv[1], nwv[2], nwv[4], nwv[7], nwv[7], nwv[4], nwv[2], nwv[1],
+        nwv[3], nwv[4], nwv[5], nwv[8], nwv[8], nwv[5], nwv[4], nwv[3],
+        nwv[6], nwv[7], nwv[8], nwv[9], nwv[9], nwv[8], nwv[7], nwv[6],
+        nwv[6], nwv[7], nwv[8], nwv[9], nwv[9], nwv[8], nwv[7], nwv[6],
+        nwv[3], nwv[4], nwv[5], nwv[8], nwv[8], nwv[5], nwv[4], nwv[3],
+        nwv[1], nwv[2], nwv[4], nwv[7], nwv[7], nwv[4], nwv[2], nwv[1],
+        nwv[0], nwv[1], nwv[3], nwv[6], nwv[6], nwv[3], nwv[1], nwv[0]
     };
     
     ////////////////////////////////////////////////////////////////////////////
@@ -248,6 +268,11 @@ public class Status {
     private float _diskWeightsSum;
     
     /**
+     * The cached heuristic value from the neighbor weights sum.
+     */
+    private float _neighborWeightsSum;
+    
+    /**
      * The last recorded movement made in the game, expressed in the form SIZE*x
      * + y.
      */
@@ -291,6 +316,7 @@ public class Status {
         _piecesCountP2 = 0;
         _neighborsCountP1   = 0;
         _neighborsCountP2   = 0;
+        _neighborWeightsSum = 0;
         
         // Init zobrist keychain
         _zobristKeyChain = new long[BoardVariation.NUMBER];
@@ -328,6 +354,7 @@ public class Status {
         // Init neighbours count
         _neighborsCountP1 = 0;
         _neighborsCountP2 = 0;
+        _neighborWeightsSum = 0;
         
         // Init number of pieces
         _piecesCountP1 = 0;
@@ -404,6 +431,7 @@ public class Status {
         // Copy player neighbors's count
         _neighborsCountP1 = other._neighborsCountP1;
         _neighborsCountP2 = other._neighborsCountP2;
+        _neighborWeightsSum = other._neighborWeightsSum;
         
         // Copy number of pieces
         _piecesCountP1 = other._piecesCountP1;
@@ -680,7 +708,7 @@ public class Status {
                 return 0;
         }
         
-        return playerColor*(_diskWeightsSum + (_neighborsCountP2 - _neighborsCountP1));
+        return playerColor*(_diskWeightsSum - _neighborWeightsSum);
     }
     
     /**
@@ -859,10 +887,12 @@ public class Status {
             if (hasAt(_boardColor, toIndex(x2, y2), P1_LONG_BIT)) {
                 _boardNeighborsP1 |= 1L << toIndex(x, y);
                 ++_neighborsCountP1;
+                _neighborWeightsSum += neighborWeights[toIndex(x, y)];
                 p1Set = true;
             } else {
                 _boardNeighborsP2 |= 1L << toIndex(x, y);
                 ++_neighborsCountP2;
+                _neighborWeightsSum -= neighborWeights[toIndex(x, y)];
                 p2Set = true;
             }
         }
@@ -876,6 +906,7 @@ public class Status {
         _boardNeighborsP2 = 0;
         _neighborsCountP1 = 0;
         _neighborsCountP2 = 0;
+        _neighborWeightsSum = 0;
         
         for (int x = 0; x < SIZE; x++) {
             for (int y = 0; y < SIZE; y++) {
@@ -916,11 +947,13 @@ public class Status {
         if(hasAt(_boardNeighborsP1, bitsetIndex, 1L)) {
             _boardNeighborsP1 &= ~(1L << toIndex(x, y));
             _neighborsCountP1--;
+            _neighborWeightsSum -= neighborWeights[toIndex(x, y)];
         }
         
         if (hasAt(_boardNeighborsP2, bitsetIndex, 1L)) {
             _boardNeighborsP2 &= ~(1L << toIndex(x, y));
             _neighborsCountP2--;
+            _neighborWeightsSum += neighborWeights[toIndex(x, y)];
         }
     }
     
@@ -942,9 +975,11 @@ public class Status {
             if(playerBit == P1_BIT && hasAt(_boardNeighborsP1, toIndex(x2, y2), 0L)) {
                 _boardNeighborsP1 |= 1L << toIndex(x2, y2);
                 ++_neighborsCountP1;
+                _neighborWeightsSum += neighborWeights[toIndex(x2, y2)];
             } else if(playerBit == P2_BIT && hasAt(_boardNeighborsP2, toIndex(x2, y2), 0L)) {
                 _boardNeighborsP2 |= 1L << toIndex(x2, y2);
                 ++_neighborsCountP2;
+                _neighborWeightsSum -= neighborWeights[toIndex(x2, y2)];
             }
         }
     }
@@ -967,18 +1002,22 @@ public class Status {
             if(playerBit == P1_BIT && !hasAt(_boardNeighborsP1, toIndex(x2, y2), 1L)) {
                 _boardNeighborsP1 |= 1L << toIndex(x2, y2);
                 ++_neighborsCountP1;
+                _neighborWeightsSum += neighborWeights[toIndex(x2, y2)];
             } else if(playerBit == P2_BIT && !hasAt(_boardNeighborsP2, toIndex(x2, y2), 1L)) {
                 _boardNeighborsP2 |= 1L << toIndex(x2, y2);
                 ++_neighborsCountP2;
+                _neighborWeightsSum -= neighborWeights[toIndex(x2, y2)];
             }
             
             // Unset old
             if(playerBit == P2_BIT && !hasAnyDiscSurroundingWithColor(x2, y2, P1_LONG_BIT)) {
                 _boardNeighborsP1 &= ~(1L << toIndex(x2, y2));
                 _neighborsCountP1--;
+                _neighborWeightsSum -= neighborWeights[toIndex(x2, y2)];
             } else if(playerBit == P1_BIT && !hasAnyDiscSurroundingWithColor(x2, y2, P2_LONG_BIT)) {
                 _boardNeighborsP2 &= ~(1L << toIndex(x2, y2));
                 _neighborsCountP2--;
+                _neighborWeightsSum += neighborWeights[toIndex(x2, y2)];
             }
         }
     }
