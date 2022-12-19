@@ -96,7 +96,7 @@ public class Status {
     /**
      * Heuristic version for debugging purposes.
      */
-    public static final float HEURISTIC_VER = 3.2f;
+    public static final float HEURISTIC_VER = 4.0f;
     
     /**
      * Rotation and flip independent disk weights values.
