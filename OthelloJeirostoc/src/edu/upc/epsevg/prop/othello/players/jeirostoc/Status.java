@@ -101,47 +101,53 @@ public class Status {
     /**
      * Rotation and flip independent disk weights values.
      */
-    private final static float[] dwv = {
-    150, 
-     40, 40, 
-     30, 30, 20, 
-     20, 20, 20, 10};
+    private final static float[] DWV = {
+     5, 
+     4, 2, 
+     3, 2, 2, 
+     3, 2, 2, 1};
     
     /**
      * Rotation and flip independent neighbors weights values.
      */
-    private final static float[] nwv = {
-     90, 
-     20, 20, 
-     15, 15, 10, 
-     10, 10, 10, 5};
+    private final static float[] NWV = {
+     3, 
+     2,    1, 
+     1.5f, 1, 1, 
+     1.5f, 1, 1, 0};
     
     /**
-     * Disk weights for each coordinate.
+     * Disk scores for each coordinate.
      */
-    private final static float[] diskWeights = {
-        dwv[0], dwv[1], dwv[3], dwv[6], dwv[6], dwv[3], dwv[1], dwv[0],
-        dwv[1], dwv[2], dwv[4], dwv[7], dwv[7], dwv[4], dwv[2], dwv[1],
-        dwv[3], dwv[4], dwv[5], dwv[8], dwv[8], dwv[5], dwv[4], dwv[3],
-        dwv[6], dwv[7], dwv[8], dwv[9], dwv[9], dwv[8], dwv[7], dwv[6],
-        dwv[6], dwv[7], dwv[8], dwv[9], dwv[9], dwv[8], dwv[7], dwv[6],
-        dwv[3], dwv[4], dwv[5], dwv[8], dwv[8], dwv[5], dwv[4], dwv[3],
-        dwv[1], dwv[2], dwv[4], dwv[7], dwv[7], dwv[4], dwv[2], dwv[1],
-        dwv[0], dwv[1], dwv[3], dwv[6], dwv[6], dwv[3], dwv[1], dwv[0]
+    private final static float[] DISK_SCORES = {
+        DWV[0], DWV[1], DWV[3], DWV[6], DWV[6], DWV[3], DWV[1], DWV[0],
+        DWV[1], DWV[2], DWV[4], DWV[7], DWV[7], DWV[4], DWV[2], DWV[1],
+        DWV[3], DWV[4], DWV[5], DWV[8], DWV[8], DWV[5], DWV[4], DWV[3],
+        DWV[6], DWV[7], DWV[8], DWV[9], DWV[9], DWV[8], DWV[7], DWV[6],
+        DWV[6], DWV[7], DWV[8], DWV[9], DWV[9], DWV[8], DWV[7], DWV[6],
+        DWV[3], DWV[4], DWV[5], DWV[8], DWV[8], DWV[5], DWV[4], DWV[3],
+        DWV[1], DWV[2], DWV[4], DWV[7], DWV[7], DWV[4], DWV[2], DWV[1],
+        DWV[0], DWV[1], DWV[3], DWV[6], DWV[6], DWV[3], DWV[1], DWV[0]
     };
     
-    private final static float[] neighborWeights = {
-        nwv[0], nwv[1], nwv[3], nwv[6], nwv[6], nwv[3], nwv[1], nwv[0],
-        nwv[1], nwv[2], nwv[4], nwv[7], nwv[7], nwv[4], nwv[2], nwv[1],
-        nwv[3], nwv[4], nwv[5], nwv[8], nwv[8], nwv[5], nwv[4], nwv[3],
-        nwv[6], nwv[7], nwv[8], nwv[9], nwv[9], nwv[8], nwv[7], nwv[6],
-        nwv[6], nwv[7], nwv[8], nwv[9], nwv[9], nwv[8], nwv[7], nwv[6],
-        nwv[3], nwv[4], nwv[5], nwv[8], nwv[8], nwv[5], nwv[4], nwv[3],
-        nwv[1], nwv[2], nwv[4], nwv[7], nwv[7], nwv[4], nwv[2], nwv[1],
-        nwv[0], nwv[1], nwv[3], nwv[6], nwv[6], nwv[3], nwv[1], nwv[0]
+    /**
+     * Neighbor scores for each coordinate.
+     */
+    private final static float[] NEIGHBOR_SCORES = {
+        NWV[0], NWV[1], NWV[3], NWV[6], NWV[6], NWV[3], NWV[1], NWV[0],
+        NWV[1], NWV[2], NWV[4], NWV[7], NWV[7], NWV[4], NWV[2], NWV[1],
+        NWV[3], NWV[4], NWV[5], NWV[8], NWV[8], NWV[5], NWV[4], NWV[3],
+        NWV[6], NWV[7], NWV[8], NWV[9], NWV[9], NWV[8], NWV[7], NWV[6],
+        NWV[6], NWV[7], NWV[8], NWV[9], NWV[9], NWV[8], NWV[7], NWV[6],
+        NWV[3], NWV[4], NWV[5], NWV[8], NWV[8], NWV[5], NWV[4], NWV[3],
+        NWV[1], NWV[2], NWV[4], NWV[7], NWV[7], NWV[4], NWV[2], NWV[1],
+        NWV[0], NWV[1], NWV[3], NWV[6], NWV[6], NWV[3], NWV[1], NWV[0]
     };
     
-    private final static float stableScore = 200.0f;
+    /**
+     * Score to give for each registered stable position.
+     */
+    private final static float stableScore = 5.0f;
     
     ////////////////////////////////////////////////////////////////////////////
     // Static variables (game logic)                                          //
@@ -191,7 +197,7 @@ public class Status {
      * X increment to go to directions UP_LEFT, UP, UP_RIGHT, LEFT, RIGHT, 
      * BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT.
      */
-    private static int[] XINCR = {
+    private static final int[] XINCR = {
         -1,  0,  1, 
         -1,      1, 
         -1,  0,  1
@@ -201,7 +207,7 @@ public class Status {
      * Y increment to go to directions UP_LEFT, UP, UP_RIGHT, LEFT, RIGHT, 
      * BOTTOM_LEFT, BOTTOM, BOTTOM_RIGHT.
      */
-    private static int[] YINCR = {
+    private static final int[] YINCR = {
         -1, -1, -1, 
          0,      0,
          1,  1,  1
@@ -964,12 +970,12 @@ public class Status {
             if (hasAt(_boardColor, toIndex(x2, y2), P1_LONG_BIT)) {
                 _boardNeighborsP1 |= 1L << toIndex(x, y);
                 ++_neighborsCountP1;
-                _neighborWeightsSum += neighborWeights[toIndex(x, y)];
+                _neighborWeightsSum += NEIGHBOR_SCORES[toIndex(x, y)];
                 p1Set = true;
             } else {
                 _boardNeighborsP2 |= 1L << toIndex(x, y);
                 ++_neighborsCountP2;
-                _neighborWeightsSum -= neighborWeights[toIndex(x, y)];
+                _neighborWeightsSum -= NEIGHBOR_SCORES[toIndex(x, y)];
                 p2Set = true;
             }
         }
@@ -1024,13 +1030,13 @@ public class Status {
         if(hasAt(_boardNeighborsP1, bitsetIndex, 1L)) {
             _boardNeighborsP1 &= ~(1L << toIndex(x, y));
             _neighborsCountP1--;
-            _neighborWeightsSum -= neighborWeights[toIndex(x, y)];
+            _neighborWeightsSum -= NEIGHBOR_SCORES[toIndex(x, y)];
         }
         
         if (hasAt(_boardNeighborsP2, bitsetIndex, 1L)) {
             _boardNeighborsP2 &= ~(1L << toIndex(x, y));
             _neighborsCountP2--;
-            _neighborWeightsSum += neighborWeights[toIndex(x, y)];
+            _neighborWeightsSum += NEIGHBOR_SCORES[toIndex(x, y)];
         }
     }
     
@@ -1052,11 +1058,11 @@ public class Status {
             if(playerBit == P1_BIT && hasAt(_boardNeighborsP1, toIndex(x2, y2), 0L)) {
                 _boardNeighborsP1 |= 1L << toIndex(x2, y2);
                 ++_neighborsCountP1;
-                _neighborWeightsSum += neighborWeights[toIndex(x2, y2)];
+                _neighborWeightsSum += NEIGHBOR_SCORES[toIndex(x2, y2)];
             } else if(playerBit == P2_BIT && hasAt(_boardNeighborsP2, toIndex(x2, y2), 0L)) {
                 _boardNeighborsP2 |= 1L << toIndex(x2, y2);
                 ++_neighborsCountP2;
-                _neighborWeightsSum -= neighborWeights[toIndex(x2, y2)];
+                _neighborWeightsSum -= NEIGHBOR_SCORES[toIndex(x2, y2)];
             }
         }
     }
@@ -1079,22 +1085,22 @@ public class Status {
             if(playerBit == P1_BIT && !hasAt(_boardNeighborsP1, toIndex(x2, y2), 1L)) {
                 _boardNeighborsP1 |= 1L << toIndex(x2, y2);
                 ++_neighborsCountP1;
-                _neighborWeightsSum += neighborWeights[toIndex(x2, y2)];
+                _neighborWeightsSum += NEIGHBOR_SCORES[toIndex(x2, y2)];
             } else if(playerBit == P2_BIT && !hasAt(_boardNeighborsP2, toIndex(x2, y2), 1L)) {
                 _boardNeighborsP2 |= 1L << toIndex(x2, y2);
                 ++_neighborsCountP2;
-                _neighborWeightsSum -= neighborWeights[toIndex(x2, y2)];
+                _neighborWeightsSum -= NEIGHBOR_SCORES[toIndex(x2, y2)];
             }
             
             // Unset old
             if(playerBit == P2_BIT && !hasAnyDiscSurroundingWithColor(x2, y2, P1_LONG_BIT)) {
                 _boardNeighborsP1 &= ~(1L << toIndex(x2, y2));
                 _neighborsCountP1--;
-                _neighborWeightsSum -= neighborWeights[toIndex(x2, y2)];
+                _neighborWeightsSum -= NEIGHBOR_SCORES[toIndex(x2, y2)];
             } else if(playerBit == P1_BIT && !hasAnyDiscSurroundingWithColor(x2, y2, P2_LONG_BIT)) {
                 _boardNeighborsP2 &= ~(1L << toIndex(x2, y2));
                 _neighborsCountP2--;
-                _neighborWeightsSum += neighborWeights[toIndex(x2, y2)];
+                _neighborWeightsSum += NEIGHBOR_SCORES[toIndex(x2, y2)];
             }
         }
     }
@@ -1184,10 +1190,10 @@ public class Status {
         // Update pieces count
         if(playerBit == P1_BIT) {
             _piecesCountP1++;
-            _diskWeightsSum += Status.diskWeights[toIndex(x, y)];
+            _diskWeightsSum += Status.DISK_SCORES[toIndex(x, y)];
         } else {
             _piecesCountP2++;
-            _diskWeightsSum -= Status.diskWeights[toIndex(x, y)];
+            _diskWeightsSum -= Status.DISK_SCORES[toIndex(x, y)];
         }
         
         // Update neighbors
@@ -1230,11 +1236,11 @@ public class Status {
         if(playerBit == P1_BIT) {
             _piecesCountP1++;
             _piecesCountP2--;
-            _diskWeightsSum += Status.diskWeights[toIndex(x, y)]*2;
+            _diskWeightsSum += Status.DISK_SCORES[toIndex(x, y)]*2;
         } else {
             _piecesCountP1--;
             _piecesCountP2++;
-            _diskWeightsSum -= Status.diskWeights[toIndex(x, y)]*2;
+            _diskWeightsSum -= Status.DISK_SCORES[toIndex(x, y)]*2;
         }
     }
       
@@ -1374,9 +1380,9 @@ public class Status {
         for (int bitIndex = 0; bitIndex < SIZE*SIZE; bitIndex++) {
             if (isSetAt(_boardOccupied, bitIndex)) {
                 if (hasAt(_boardColor, bitIndex, P1_LONG_BIT)) {
-                    dw += Status.diskWeights[bitIndex];
+                    dw += Status.DISK_SCORES[bitIndex];
                 } else {
-                    dw -= Status.diskWeights[bitIndex];
+                    dw -= Status.DISK_SCORES[bitIndex];
                 }
             }
         }
