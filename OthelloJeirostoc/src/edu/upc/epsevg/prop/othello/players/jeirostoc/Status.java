@@ -96,7 +96,7 @@ public class Status {
     /**
      * Heuristic version for debugging purposes.
      */
-    public static final float HEURISTIC_VER = 4.0f;
+    public static final float HEURISTIC_VER = 5.0f;
     
     /**
      * Rotation and flip independent disk weights values.
@@ -140,6 +140,8 @@ public class Status {
         nwv[1], nwv[2], nwv[4], nwv[7], nwv[7], nwv[4], nwv[2], nwv[1],
         nwv[0], nwv[1], nwv[3], nwv[6], nwv[6], nwv[3], nwv[1], nwv[0]
     };
+    
+    private final static float stableScore = 200.0f;
     
     ////////////////////////////////////////////////////////////////////////////
     // Static variables (game logic)                                          //
@@ -205,6 +207,24 @@ public class Status {
          1,  1,  1
     };
     
+    /**
+     * X increment with directions with opposite way followed by each other: 
+     * UP_LEFT, BOTTOM_RIGHT, UP, BOTTOM, UP_RIGHT, BOTTOM_LEFT LEFT, RIGHT.
+     */
+    private static int[] XINCR2 = {
+        XINCR[0], XINCR[7], XINCR[1], XINCR[6],
+        XINCR[2], XINCR[5], XINCR[3], XINCR[4]
+    };
+    
+    /**
+     * Y increment with directions with opposite way followed by each other: 
+     * UP_LEFT, BOTTOM_RIGHT, UP, BOTTOM, UP_RIGHT, BOTTOM_LEFT LEFT, RIGHT.
+     */
+    private static int[] YINCR2 = {
+        YINCR[0], YINCR[7], YINCR[1], YINCR[6],
+        YINCR[2], YINCR[5], YINCR[3], YINCR[4]
+    };
+    
     ////////////////////////////////////////////////////////////////////////////
     // Internal structure                                                     //
     ////////////////////////////////////////////////////////////////////////////
@@ -220,6 +240,11 @@ public class Status {
      * the form x*SIZE + y.
      */
     private long _boardColor;
+    
+    /**
+     * Occupied positions that were determined to be stable.
+     */
+    private long _boardStable;
     
     /**
      * Unoccupied positions of the game with an adjacent occupied position of 
@@ -273,6 +298,11 @@ public class Status {
     private float _neighborWeightsSum;
     
     /**
+     * The cached heuristic value from the stable disc scores.
+     */
+    private float _stableDiscScoreSum;
+    
+    /**
      * The last recorded movement made in the game, expressed in the form SIZE*x
      * + y.
      */
@@ -308,6 +338,7 @@ public class Status {
         // Init board
         _boardOccupied    = 0;
         _boardColor       = 0;
+        _boardStable      = 0;
         _boardNeighborsP1 = 0;
         _boardNeighborsP2 = 0;
         
@@ -317,6 +348,7 @@ public class Status {
         _neighborsCountP1   = 0;
         _neighborsCountP2   = 0;
         _neighborWeightsSum = 0;
+        _stableDiscScoreSum = 0;
         
         // Init zobrist keychain
         _zobristKeyChain = new long[BoardVariation.NUMBER];
@@ -348,6 +380,7 @@ public class Status {
         // Init board
         _boardOccupied    = 0;
         _boardColor       = 0;
+        _boardStable      = 0;
         _boardNeighborsP1 = 0;
         _boardNeighborsP2 = 0;
         
@@ -355,6 +388,7 @@ public class Status {
         _neighborsCountP1 = 0;
         _neighborsCountP2 = 0;
         _neighborWeightsSum = 0;
+        _stableDiscScoreSum = 0;
         
         // Init number of pieces
         _piecesCountP1 = 0;
@@ -397,6 +431,7 @@ public class Status {
         // Copy board
         _boardOccupied = gse.getBoard_occupied();
         _boardColor    = gse.getBoard_color();
+        regenStability();
         regenAvailableNeighbors();
         
         // Copy number of pieces
@@ -425,6 +460,7 @@ public class Status {
         // Copy board
         _boardOccupied    = other._boardOccupied;
         _boardColor       = other._boardColor;
+        _boardStable      = other._boardStable;
         _boardNeighborsP1 = other._boardNeighborsP1;
         _boardNeighborsP2 = other._boardNeighborsP2;
         
@@ -432,6 +468,7 @@ public class Status {
         _neighborsCountP1 = other._neighborsCountP1;
         _neighborsCountP2 = other._neighborsCountP2;
         _neighborWeightsSum = other._neighborWeightsSum;
+        _stableDiscScoreSum = other._stableDiscScoreSum;
         
         // Copy number of pieces
         _piecesCountP1 = other._piecesCountP1;
@@ -636,7 +673,12 @@ public class Status {
                 int bitIndex = toIndex(x, y);
                 
                 sb.append(' ');
-                if (isSetAt(_boardOccupied, bitIndex)) {
+                if (isSetAt(_boardStable, bitIndex) && extendedInfo) {
+                    if(hasAt(_boardColor, bitIndex, P1_LONG_BIT))
+                        sb.append('Ø');
+                    else
+                        sb.append('#');
+                } else if (isSetAt(_boardOccupied, bitIndex)) {
                     if(hasAt(_boardColor, bitIndex, P1_LONG_BIT))
                         sb.append('O');
                     else
@@ -667,11 +709,13 @@ public class Status {
             
             // Zobrist keychain
             sb.append("KeyChain: ");
-            ArrayList<Long> result = new ArrayList<>(_zobristKeyChain.length);
-            for (long item : _zobristKeyChain)
-                result.add(item);
-            Collections.sort(result);
-            sb.append(result);
+            if (_zobristKeyChain != null) {
+                ArrayList<Long> result = new ArrayList<>(_zobristKeyChain.length);
+                for (long item : _zobristKeyChain)
+                    result.add(item);
+                Collections.sort(result);
+                sb.append(result);
+            }
             sb.append("\n");
             
             // Disk weights sum
@@ -708,7 +752,7 @@ public class Status {
                 return 0;
         }
         
-        return playerColor*(_diskWeightsSum - _neighborWeightsSum);
+        return playerColor*(_diskWeightsSum - _neighborWeightsSum + stableScore);
     }
     
     /**
@@ -756,6 +800,15 @@ public class Status {
     ////////////////////////////////////////////////////////////////////////////
     // Helpers                                                                //
     ////////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * Get the bit value in a specific position of a bitset.
+     * 
+     * @return The bit value in a specific position of a bitset.
+     */
+    private static long getAt(long bitSet, int bitIndex) {
+        return ((bitSet >> bitIndex) & 1L);
+    }
     
     /**
      * Check if bit at a specific index in long is in the same status as the
@@ -866,6 +919,30 @@ public class Status {
         }
         
         return false;
+    }
+    
+    /**
+     * Check if the position is stable.
+     */
+    private boolean isStableAt(int x, int y) {
+        return !inBounds(x, y) || isSetAt(_boardStable, toIndex(x, y));
+    }
+    
+    /**
+     * Check if the position is stable because its out of bounds or is stable
+     * with the given color
+     * 
+     * @param x The x coordinate
+     * @param y The y coordinate
+     * @param status The expected status if hasDisc(x, y)
+     * @return True if the position is stable
+     */
+    private boolean hasStableWithColor(int x, int y, long status) {
+        return !inBounds(x, y) || (
+            isSetAt(_boardOccupied, toIndex(x, y))    &&
+            hasAt(_boardColor, toIndex(x, y), status) &&
+            isSetAt(_boardStable, toIndex(x, y))
+        );
     }
     
     /**
@@ -1023,6 +1100,74 @@ public class Status {
     }
     
     /**
+     * Update the stability status of (x,y).
+     * 
+     * @param x The x coordinate.
+     * @param y The y coordinate.
+     * @param playerBit The player bit.
+     */
+    private void updateStability(int x, int y) {
+        if(isStableAt(x, y) || isUnsetAt(_boardOccupied, toIndex(x, y)))
+            return;
+        
+        // Check surrounding stability with same color discs
+        int sameColorDifDirectionCount = 0;
+        long thisColor = getAt(_boardColor, toIndex(x, y));
+        
+        for (int i = 0; i < XINCR2.length; i+=2) {
+            int x2 = x + XINCR2[i+0], y2 = y + YINCR2[i+0];
+            int x3 = x + XINCR2[i+1], y3 = y + YINCR2[i+1];
+            
+            if (hasStableWithColor(x2, y2, thisColor) || hasStableWithColor(x3, y3, thisColor)) {
+                sameColorDifDirectionCount++;
+            }
+        }
+        
+        if(4 <= sameColorDifDirectionCount) {
+            // Set pos
+            _boardStable |= 1L << toIndex(x, y);
+            
+            // Update stable score
+            if (thisColor == P1_LONG_BIT) {
+                _stableDiscScoreSum += stableScore;
+            } else {
+                _stableDiscScoreSum -= stableScore;
+            }
+            
+            // Update surrounding
+            for (int i = 0; i < XINCR.length; i++) {
+                updateStability(x + XINCR[i], y + YINCR[i]);
+            }
+        } else {
+            // Check surrounding stability with different color discs
+            long otherColor = ~thisColor;
+            
+            for (int i = 0; i < XINCR.length; i+=2) {
+                int x2 = x + XINCR[i+0], y2 = y + YINCR[i+0];
+
+                if (!hasStableWithColor(x2, y2, otherColor))
+                    return;
+            }
+
+            // Set Pos
+            _boardStable |= 1L << toIndex(x, y);
+        }
+    }
+    
+    /**
+     * Regenerate _boardStable values.
+     */
+    private void regenStability() {
+        _boardStable = 0;
+        _stableDiscScoreSum = 0;
+        
+        updateStability(0,      0);
+        updateStability(0,      SIZE-1);
+        updateStability(SIZE-1, 0);
+        updateStability(SIZE-1, SIZE-1);
+    }
+    
+    /**
      * Claim position (x,y) for player. The position is assumed to 
      * canMovePiece(x, y) or being called from the constructor.
      * 
@@ -1049,6 +1194,9 @@ public class Status {
         removeNeighbor(x, y);
         setSurroundingNeighbors(x, y, playerBit);
         
+        // Update stability
+        updateStability(x, y);
+        
         // Update zobrist keychain
         ZobristKeyGen.updateKeyChainPositionClaim(
                 _zobristKeyChain, 
@@ -1071,6 +1219,9 @@ public class Status {
         
         // Update neighbors
         flipSurroundingNeighbors(x, y, playerBit);
+        
+        // Update stability
+        updateStability(x, y);
         
         // Update zobrist keychain
         ZobristKeyGen.updateKeyChainPositionFlip(_zobristKeyChain, toIndex(x, y));
@@ -1111,7 +1262,8 @@ public class Status {
         } while (
             inBounds(x, y) && 
             isSetAt(_boardOccupied, toIndex(x, y)) && 
-            hasAt(_boardColor, toIndex(x, y), otherLongBit)
+            hasAt(_boardColor, toIndex(x, y), otherLongBit) &&
+            isUnsetAt(_boardStable, toIndex(x, y))
         );
         
         // Return true if an envelop is possible

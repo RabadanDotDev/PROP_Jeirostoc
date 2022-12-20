@@ -4,6 +4,7 @@ import edu.upc.epsevg.prop.othello.CellType;
 import edu.upc.epsevg.prop.othello.GameStatus;
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -478,5 +479,45 @@ public class StatusTest {
         System.out.println(s.getHeuristic(Status.P1_COLOR));
         System.out.println(s.toString(true));
         assertTrue(s.getHeuristic(Status.P1_COLOR) < 0);
+    } 
+    
+    @Test
+    public void testStabilityVal() {
+        int[][] sampleBoard = {
+            { 0, -1, -1, -1,  1,  1,  1,  1},
+            { 0, -1, -1, -1,  1,  1,  1,  1},
+            { 0, -1, -1,  1, -1,  1,  1,  1},
+            {-1, -1, -1,  1,  1,  1,  1,  1},
+            {-1, -1, -1,  1,  1,  1,  1,  1},
+            {-1, -1, -1,  1,  1,  1,  1,  1},
+            {-1, -1, -1, -1,  0,  1,  1,  1},
+            {-1,  0, -1,  0,  1,  1, -1, -1},
+        };
+        
+        String expected[] = {
+            "\t  0  1  2  3  4  5  6  7 ",
+            "\t0 m  @  @  @  Ø  Ø  Ø  Ø ",
+            "\t1 m  @  @  @  Ø  Ø  Ø  Ø ",
+            "\t2 m  @  @  O  @  Ø  Ø  Ø ",
+            "\t3 #  @  @  O  O  Ø  Ø  Ø ",
+            "\t4 #  @  @  O  O  Ø  Ø  Ø ",
+            "\t5 #  @  @  O  O  O  Ø  Ø ",
+            "\t6 #  @  @  @  N  O  O  Ø ",
+            "\t7 #  m  @  N  O  O  #  # ",
+        };
+        
+        Status s1 = new Status(new GameStatus(sampleBoard));
+        Status s2 = new Status(sampleBoard, Status.P1_BIT);
+        
+        System.out.println(s1.toString(true));
+        System.out.println(s2.toString(true));
+            
+        String actual1[] = s1.toString(true).split("\n");
+        String actual2[] = s2.toString(true).split("\n");
+        
+        for (int i = 0; i < expected.length; i++) {
+            assertEquals(expected[i], actual1[i]);
+            assertEquals(expected[i], actual2[i]);
+        }
     }
 }
