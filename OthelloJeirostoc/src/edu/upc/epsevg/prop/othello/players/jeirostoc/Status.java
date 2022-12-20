@@ -103,7 +103,7 @@ public class Status {
      */
     private final static float[] DWV = {
      5, 
-     4, 2, 
+     1, 1, 
      3, 2, 2, 
      3, 2, 2, 1};
     
@@ -111,7 +111,7 @@ public class Status {
      * Rotation and flip independent neighbors weights values.
      */
     private final static float[] NWV = {
-     3, 
+     4, 
      2,    1, 
      1.5f, 1, 1, 
      1.5f, 1, 1, 0};
