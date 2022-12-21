@@ -164,6 +164,7 @@ class TT {
             } else {
                 System.out.println("[JeiroWarning] Extracted invalid movement. Current entry:");
                 System.out.println(entryToString(currentEntry));
+                System.out.println(s.toString(true));
             }
         }
         

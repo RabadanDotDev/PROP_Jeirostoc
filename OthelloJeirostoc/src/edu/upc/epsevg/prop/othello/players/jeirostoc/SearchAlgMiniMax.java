@@ -1,6 +1,7 @@
 package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
 import edu.upc.epsevg.prop.othello.SearchType;
+import java.awt.Point;
 import java.util.ArrayList;
 
 /**
@@ -145,17 +146,21 @@ class SearchAlgMiniMax extends SearchAlg {
             }
         }
         
-        // Get next statuses
-        ArrayList<Status> nextStatuses = new ArrayList<>();
-        s.getNextStatuses(nextStatuses, selectedNextMove);
+        // Get next moves
+        ArrayList<Point> nextMoves = new ArrayList<>();
+        s.getNextMoves(nextMoves, selectedNextMove);
         
         // Analize moves if they exist
-        for (Status nextNode : nextStatuses) {
+        for (Point nextMove : nextMoves) {
             // Check if the analisis can continue (interruption or pruning)
             if(!_searchIsOn || beta <= alpha) {
                 _isExact[currentDepth] = false;
                 break;
             }
+            
+            // Generate next node
+            Status nextNode = new Status(s);
+            nextNode.movePiece(nextMove);
             
             // Get the heuristic from the next level
             float nextHeuristic = minimax(nextNode, currentDepth+1, alpha, beta, !isMax);
@@ -176,7 +181,7 @@ class SearchAlgMiniMax extends SearchAlg {
         }
         
         // Analize skipped turn if there is no movements
-        if(nextStatuses.isEmpty() && _searchIsOn) {
+        if(nextMoves.isEmpty() && _searchIsOn) {
             // Generate next node
             Status next = new Status(s);
             next.skipTurn();

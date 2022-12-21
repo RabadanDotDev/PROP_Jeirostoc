@@ -498,15 +498,12 @@ public class Status {
     
     /**
      * Make a movement using the current player at the given point. Point is 
-     * assumed not to be null and to be valid.
+     * assumed not to be null and to canMovePiece(point.x, point.y)
      * 
      * @param point The position to make a movement in.
      */
     public void movePiece(Point point) {
-        if(canMovePiece(point.x, point.y))
-            movePiece(point.x, point.y);
-        else
-            throw new RuntimeException("Tried to make a movement in an invalid position!");
+        movePiece(point.x, point.y);
     }
     
     /**
@@ -595,6 +592,30 @@ public class Status {
         for (int x = 0; x < SIZE; x++) {
             for (int y = 0; y < SIZE; y++) {
                 if(canMovePiece(x, y, _currentPlayerBit)) {
+                    result.add(new Point(x, y));
+                }
+            }
+        }
+    }
+    
+    /**
+     * Get a list of the next possible statuses starting from this position.
+     * 
+     * @param result The array to deposit the new statuses objects at the end of
+     * the list.
+     * @param bitIndexFirst The movement's BitIndex of the form SIZE*x + y that
+     * should be added first to the list. It should be a correct position or -1.
+     */
+    public void getNextMoves(List<Point> result, int bitIndexFirst) {
+        // Add the given movement if possible
+        if(bitIndexFirst != -1) {
+            result.add(new Point(bitIndexFirst/SIZE, bitIndexFirst%SIZE));
+        }
+        
+        for (int x = 0; x < SIZE; x++) {
+            for (int y = 0; y < SIZE; y++) {
+                if (toIndex(x, y) != bitIndexFirst &&
+                    canMovePiece(x, y, _currentPlayerBit)) {
                     result.add(new Point(x, y));
                 }
             }
