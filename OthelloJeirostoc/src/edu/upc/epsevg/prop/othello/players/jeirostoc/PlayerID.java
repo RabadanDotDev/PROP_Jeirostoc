@@ -15,6 +15,20 @@ public class PlayerID extends PlayerBase {
     }
     
     /**
+     * Constructor with custom heuristic scores.
+     * 
+     * @param stableScoreConfig Configuration parameter value for Status: the 
+     * score to evaluate the detected positions in with
+     * @param diskScoresConfig Configuration parameter value for Status: a list 
+     * of the scores for having captured each position
+     * @param neighborScoresConfig Configuration parameter value for Status: a 
+     * list of the scores for having each position as a neighbor
+     */
+    public PlayerID(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig) {
+        super(new SearchAlgMiniMaxIDS(), stableScoreConfig, diskScoresConfig, neighborScoresConfig);
+    }
+    
+    /**
      * Get the name of the player.
      * 
      * @return The name of the player

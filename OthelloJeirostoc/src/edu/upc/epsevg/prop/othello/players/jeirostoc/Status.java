@@ -4,6 +4,7 @@ import edu.upc.epsevg.prop.othello.CellType;
 import edu.upc.epsevg.prop.othello.GameStatus;
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -96,58 +97,42 @@ public class Status {
     /**
      * Heuristic version for debugging purposes.
      */
-    public static final float HEURISTIC_VER = 5.0f;
+    public static final float HEURISTIC_VER = 6.0f;
     
     /**
-     * Rotation and flip independent disk weights values.
+     * Default rotation and flip independent disk weights values.
      */
-    private final static float[] DWV = {
-     5, 
-     1, 1, 
-     3, 2, 2, 
-     3, 2, 2, 1};
-    
-    /**
-     * Rotation and flip independent neighbors weights values.
-     */
-    private final static float[] NWV = {
-     4, 
-     2,    1, 
-     1.5f, 1, 1, 
-     1.5f, 1, 1, 0};
-    
-    /**
-     * Disk scores for each coordinate.
-     */
-    private final static float[] DISK_SCORES = {
-        DWV[0], DWV[1], DWV[3], DWV[6], DWV[6], DWV[3], DWV[1], DWV[0],
-        DWV[1], DWV[2], DWV[4], DWV[7], DWV[7], DWV[4], DWV[2], DWV[1],
-        DWV[3], DWV[4], DWV[5], DWV[8], DWV[8], DWV[5], DWV[4], DWV[3],
-        DWV[6], DWV[7], DWV[8], DWV[9], DWV[9], DWV[8], DWV[7], DWV[6],
-        DWV[6], DWV[7], DWV[8], DWV[9], DWV[9], DWV[8], DWV[7], DWV[6],
-        DWV[3], DWV[4], DWV[5], DWV[8], DWV[8], DWV[5], DWV[4], DWV[3],
-        DWV[1], DWV[2], DWV[4], DWV[7], DWV[7], DWV[4], DWV[2], DWV[1],
-        DWV[0], DWV[1], DWV[3], DWV[6], DWV[6], DWV[3], DWV[1], DWV[0]
+    public final static float[] DWV_DEF = {
+        5, 
+        1, 1, 
+        3, 2, 2, 
+        3, 2, 2, 1
     };
     
     /**
-     * Neighbor scores for each coordinate.
+     * Default rotation and flip independent neighbors weights values.
      */
-    private final static float[] NEIGHBOR_SCORES = {
-        NWV[0], NWV[1], NWV[3], NWV[6], NWV[6], NWV[3], NWV[1], NWV[0],
-        NWV[1], NWV[2], NWV[4], NWV[7], NWV[7], NWV[4], NWV[2], NWV[1],
-        NWV[3], NWV[4], NWV[5], NWV[8], NWV[8], NWV[5], NWV[4], NWV[3],
-        NWV[6], NWV[7], NWV[8], NWV[9], NWV[9], NWV[8], NWV[7], NWV[6],
-        NWV[6], NWV[7], NWV[8], NWV[9], NWV[9], NWV[8], NWV[7], NWV[6],
-        NWV[3], NWV[4], NWV[5], NWV[8], NWV[8], NWV[5], NWV[4], NWV[3],
-        NWV[1], NWV[2], NWV[4], NWV[7], NWV[7], NWV[4], NWV[2], NWV[1],
-        NWV[0], NWV[1], NWV[3], NWV[6], NWV[6], NWV[3], NWV[1], NWV[0]
+    public final static float[] NWV_DEF = {
+        4, 
+        2,    1, 
+        1.5f, 1, 1, 
+        1.5f, 1, 1, 0
     };
     
     /**
-     * Score to give for each registered stable position.
+     * Default score to give for each registered stable position.
      */
-    private final static float stableScore = 5.0f;
+    public final static float STABLE_SCORE_DEFAULT = 5.0f;
+    
+    /**
+     * Default score to give for each captured position.
+     */
+    public final static float[] DISK_SCORES_DEFAULT = generateScoringTable(DWV_DEF); 
+    
+    /**
+     * Default score to give for each neighboring position.
+     */
+    public final static float[] NEIGHBOR_SCORES_DEFAULT = generateScoringTable(NWV_DEF); 
     
     ////////////////////////////////////////////////////////////////////////////
     // Static variables (game logic)                                          //
@@ -234,6 +219,21 @@ public class Status {
     ////////////////////////////////////////////////////////////////////////////
     // Internal structure                                                     //
     ////////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * Score to give for each registered stable position.
+     */
+    private final float _stableScore;
+    
+    /**
+     * Score to give for each captured position.
+     */
+    private final float[] _diskScores;
+    
+    /**
+     * Score to give for each neighboring position.
+     */
+    private final float[] _neighborScores;
     
     /**
      * Positions of the game with a disc of any player. The bits are ordered in 
@@ -325,6 +325,40 @@ public class Status {
     private boolean _currentPlayerBit;
     
     ////////////////////////////////////////////////////////////////////////////
+    // Public static utility functions                                        //
+    ////////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * Generate a table of SIZE*SIZE length of scores from a list of rotation 
+     * and flip independent values. The expected format is as follows:
+     * 0 . . . . . . .
+     * 1 2 . . . . . .
+     * 3 4 5 . . . . .
+     * 6 7 8 9 . . . .
+     * . . . . . . . .
+     * . . . . . . . .
+     * . . . . . . . .
+     * . . . . . . . .
+     * With each number from 0 to 9 indicating the position of the value on the 
+     * array.
+     * 
+     * @param rfil The list of rotation and flip independent values.
+     * @return The generated table.
+     */
+    public static float[] generateScoringTable(float[] rfil) {
+        return new float[] {
+            rfil[0], rfil[1], rfil[3], rfil[6], rfil[6], rfil[3], rfil[1], rfil[0],
+            rfil[1], rfil[2], rfil[4], rfil[7], rfil[7], rfil[4], rfil[2], rfil[1],
+            rfil[3], rfil[4], rfil[5], rfil[8], rfil[8], rfil[5], rfil[4], rfil[3],
+            rfil[6], rfil[7], rfil[8], rfil[9], rfil[9], rfil[8], rfil[7], rfil[6],
+            rfil[6], rfil[7], rfil[8], rfil[9], rfil[9], rfil[8], rfil[7], rfil[6],
+            rfil[3], rfil[4], rfil[5], rfil[8], rfil[8], rfil[5], rfil[4], rfil[3],
+            rfil[1], rfil[2], rfil[4], rfil[7], rfil[7], rfil[4], rfil[2], rfil[1],
+            rfil[0], rfil[1], rfil[3], rfil[6], rfil[6], rfil[3], rfil[1], rfil[0]
+        };
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
     
@@ -341,6 +375,11 @@ public class Status {
      * And with player 1 as the player to move.
      */
     public Status() {
+        // Init scoring for heuristic
+        _stableScore = STABLE_SCORE_DEFAULT;
+        _diskScores = DISK_SCORES_DEFAULT;
+        _neighborScores = NEIGHBOR_SCORES_DEFAULT;
+        
         // Init board
         _boardOccupied    = 0;
         _boardColor       = 0;
@@ -366,7 +405,7 @@ public class Status {
         claimPosition(4, 4, P1_BIT);
         
         // Init Heuristics cache
-        _diskWeightsSum = computeDiskWeights();
+        _diskWeightsSum = computeDiskScoresSum();
         
         // Init game status
         _lastMovement     = -1;
@@ -383,6 +422,11 @@ public class Status {
      * @param startingPlayerBit The bit of the starting player.
      */
     public Status(int[][] board, boolean startingPlayerBit) {
+        // Init scoring for heuristic
+        _stableScore = STABLE_SCORE_DEFAULT;
+        _diskScores = DISK_SCORES_DEFAULT;
+        _neighborScores = NEIGHBOR_SCORES_DEFAULT;
+        
         // Init board
         _boardOccupied    = 0;
         _boardColor       = 0;
@@ -417,7 +461,7 @@ public class Status {
         }
         
         // Init heuristics caching
-        _diskWeightsSum = computeDiskWeights();
+        _diskWeightsSum = computeDiskScoresSum();
         
         // Init game status
         _isTerminalState  = computeIsTerminal();
@@ -431,6 +475,24 @@ public class Status {
      * @param gs The game status to copy from.
      */
     public Status(GameStatus gs) {
+        this(gs, STABLE_SCORE_DEFAULT, DISK_SCORES_DEFAULT, NEIGHBOR_SCORES_DEFAULT);
+    }
+    
+    /**
+     * Constructor from a Game status.
+     * 
+     * @param gs The game status to copy from.
+     * @param stableScore The score to evaluate the detected positions with
+     * @param diskScores A list of the scores for having captured each position
+     * @param neighborScores A list of the scores for having each position as a 
+     * neighbor
+     */
+    public Status(GameStatus gs, float stableScore, float[] diskScores, float[] neighborScores) {
+        // Init scoring for heuristic
+        _stableScore = stableScore;
+        _diskScores = diskScores;
+        _neighborScores = neighborScores;
+        
         // Create the extractor
         GameStatusExtractor gse = new GameStatusExtractor(gs);
         
@@ -445,7 +507,7 @@ public class Status {
         _piecesCountP2 = gse.getPiecesCountP2();
         
         // Init heuristics caching
-        _diskWeightsSum = computeDiskWeights();
+        _diskWeightsSum = computeDiskScoresSum();
         
         // Init/Copy game status
         _isTerminalState  = gse.isGameOver();
@@ -463,6 +525,11 @@ public class Status {
      * @param other The Status to copy.
      */
     public Status(Status other) {
+        // Copy scoring for heuristic
+        _stableScore    = other._stableScore;
+        _diskScores     = other._diskScores;
+        _neighborScores = other._neighborScores;
+        
         // Copy board
         _boardOccupied    = other._boardOccupied;
         _boardColor       = other._boardColor;
@@ -745,10 +812,32 @@ public class Status {
             }
             sb.append("\n");
             
-            // Disk weights sum
-            sb.append("Disk Weights sum: ");
-            sb.append(_diskWeightsSum);
-            sb.append("\n");
+            // Disk weights
+            sb.append("Disk weights: ")
+              .append(Arrays.toString(_diskScores))
+              .append("\n");
+            
+            sb.append("Disk weights sum: ")
+              .append(_diskWeightsSum)
+              .append("\n");
+            
+            // Disk neighbors
+            sb.append("Disk neighbors: ")
+              .append(Arrays.toString(_neighborScores))
+              .append("\n");
+            
+            sb.append("Disk neighbors sum: ")
+              .append(_neighborWeightsSum)
+              .append("\n");
+            
+            // Stable score
+            sb.append("Stable score: ")
+              .append(_stableScore)
+              .append("\n");
+            
+            sb.append("Stable score sum")
+              .append(_stableDiscScoreSum)
+              .append("\n");
         }
         
         return sb.toString();
@@ -779,7 +868,7 @@ public class Status {
                 return 0;
         }
         
-        return playerColor*(_diskWeightsSum - _neighborWeightsSum + stableScore);
+        return playerColor*(_diskWeightsSum - _neighborWeightsSum + _stableDiscScoreSum);
     }
     
     /**
@@ -991,12 +1080,12 @@ public class Status {
             if (hasAt(_boardColor, toIndex(x2, y2), P1_LONG_BIT)) {
                 _boardNeighborsP1 |= 1L << toIndex(x, y);
                 ++_neighborsCountP1;
-                _neighborWeightsSum += NEIGHBOR_SCORES[toIndex(x, y)];
+                _neighborWeightsSum += _neighborScores[toIndex(x, y)];
                 p1Set = true;
             } else {
                 _boardNeighborsP2 |= 1L << toIndex(x, y);
                 ++_neighborsCountP2;
-                _neighborWeightsSum -= NEIGHBOR_SCORES[toIndex(x, y)];
+                _neighborWeightsSum -= _neighborScores[toIndex(x, y)];
                 p2Set = true;
             }
         }
@@ -1051,13 +1140,13 @@ public class Status {
         if(hasAt(_boardNeighborsP1, bitsetIndex, 1L)) {
             _boardNeighborsP1 &= ~(1L << toIndex(x, y));
             _neighborsCountP1--;
-            _neighborWeightsSum -= NEIGHBOR_SCORES[toIndex(x, y)];
+            _neighborWeightsSum -= _neighborScores[toIndex(x, y)];
         }
         
         if (hasAt(_boardNeighborsP2, bitsetIndex, 1L)) {
             _boardNeighborsP2 &= ~(1L << toIndex(x, y));
             _neighborsCountP2--;
-            _neighborWeightsSum += NEIGHBOR_SCORES[toIndex(x, y)];
+            _neighborWeightsSum += _neighborScores[toIndex(x, y)];
         }
     }
     
@@ -1079,11 +1168,11 @@ public class Status {
             if(playerBit == P1_BIT && hasAt(_boardNeighborsP1, toIndex(x2, y2), 0L)) {
                 _boardNeighborsP1 |= 1L << toIndex(x2, y2);
                 ++_neighborsCountP1;
-                _neighborWeightsSum += NEIGHBOR_SCORES[toIndex(x2, y2)];
+                _neighborWeightsSum += _neighborScores[toIndex(x2, y2)];
             } else if(playerBit == P2_BIT && hasAt(_boardNeighborsP2, toIndex(x2, y2), 0L)) {
                 _boardNeighborsP2 |= 1L << toIndex(x2, y2);
                 ++_neighborsCountP2;
-                _neighborWeightsSum -= NEIGHBOR_SCORES[toIndex(x2, y2)];
+                _neighborWeightsSum -= _neighborScores[toIndex(x2, y2)];
             }
         }
     }
@@ -1106,22 +1195,22 @@ public class Status {
             if(playerBit == P1_BIT && !hasAt(_boardNeighborsP1, toIndex(x2, y2), 1L)) {
                 _boardNeighborsP1 |= 1L << toIndex(x2, y2);
                 ++_neighborsCountP1;
-                _neighborWeightsSum += NEIGHBOR_SCORES[toIndex(x2, y2)];
+                _neighborWeightsSum += _neighborScores[toIndex(x2, y2)];
             } else if(playerBit == P2_BIT && !hasAt(_boardNeighborsP2, toIndex(x2, y2), 1L)) {
                 _boardNeighborsP2 |= 1L << toIndex(x2, y2);
                 ++_neighborsCountP2;
-                _neighborWeightsSum -= NEIGHBOR_SCORES[toIndex(x2, y2)];
+                _neighborWeightsSum -= _neighborScores[toIndex(x2, y2)];
             }
             
             // Unset old
             if(playerBit == P2_BIT && !hasAnyDiscSurroundingWithColor(x2, y2, P1_LONG_BIT)) {
                 _boardNeighborsP1 &= ~(1L << toIndex(x2, y2));
                 _neighborsCountP1--;
-                _neighborWeightsSum -= NEIGHBOR_SCORES[toIndex(x2, y2)];
+                _neighborWeightsSum -= _neighborScores[toIndex(x2, y2)];
             } else if(playerBit == P1_BIT && !hasAnyDiscSurroundingWithColor(x2, y2, P2_LONG_BIT)) {
                 _boardNeighborsP2 &= ~(1L << toIndex(x2, y2));
                 _neighborsCountP2--;
-                _neighborWeightsSum += NEIGHBOR_SCORES[toIndex(x2, y2)];
+                _neighborWeightsSum += _neighborScores[toIndex(x2, y2)];
             }
         }
     }
@@ -1156,9 +1245,9 @@ public class Status {
             
             // Update stable score
             if (thisColor == P1_LONG_BIT) {
-                _stableDiscScoreSum += stableScore;
+                _stableDiscScoreSum += _stableScore;
             } else {
-                _stableDiscScoreSum -= stableScore;
+                _stableDiscScoreSum -= _stableScore;
             }
             
             // Update surrounding
@@ -1211,10 +1300,10 @@ public class Status {
         // Update pieces count
         if(playerBit == P1_BIT) {
             _piecesCountP1++;
-            _diskWeightsSum += Status.DISK_SCORES[toIndex(x, y)];
+            _diskWeightsSum += _diskScores[toIndex(x, y)];
         } else {
             _piecesCountP2++;
-            _diskWeightsSum -= Status.DISK_SCORES[toIndex(x, y)];
+            _diskWeightsSum -= _diskScores[toIndex(x, y)];
         }
         
         // Update neighbors
@@ -1244,6 +1333,17 @@ public class Status {
         // Update board
         _boardColor ^= 1L << toIndex(x, y);
         
+        // Update pieces count
+        if(playerBit == P1_BIT) {
+            _piecesCountP1++;
+            _piecesCountP2--;
+            _diskWeightsSum += _diskScores[toIndex(x, y)]*2;
+        } else {
+            _piecesCountP1--;
+            _piecesCountP2++;
+            _diskWeightsSum -= _diskScores[toIndex(x, y)]*2;
+        }
+        
         // Update neighbors
         flipSurroundingNeighbors(x, y, playerBit);
         
@@ -1252,17 +1352,6 @@ public class Status {
         
         // Update zobrist keychain
         ZobristKeyGen.updateKeyChainPositionFlip(_zobristKeyChain, toIndex(x, y));
-        
-        // Update pieces count
-        if(playerBit == P1_BIT) {
-            _piecesCountP1++;
-            _piecesCountP2--;
-            _diskWeightsSum += Status.DISK_SCORES[toIndex(x, y)]*2;
-        } else {
-            _piecesCountP1--;
-            _piecesCountP2++;
-            _diskWeightsSum -= Status.DISK_SCORES[toIndex(x, y)]*2;
-        }
     }
       
     /**
@@ -1393,17 +1482,17 @@ public class Status {
     }
     
     /**
-     * Compute the disk weight value from the current status.
+     * Compute the disk score value sum from the current status.
      */
-    private float computeDiskWeights() {
+    private float computeDiskScoresSum() {
         float dw = 0;
         
         for (int bitIndex = 0; bitIndex < SIZE*SIZE; bitIndex++) {
             if (isSetAt(_boardOccupied, bitIndex)) {
                 if (hasAt(_boardColor, bitIndex, P1_LONG_BIT)) {
-                    dw += Status.DISK_SCORES[bitIndex];
+                    dw += _diskScores[bitIndex];
                 } else {
-                    dw -= Status.DISK_SCORES[bitIndex];
+                    dw -= _diskScores[bitIndex];
                 }
             }
         }
