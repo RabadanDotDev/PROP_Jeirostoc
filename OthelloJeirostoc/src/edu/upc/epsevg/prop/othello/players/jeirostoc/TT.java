@@ -122,11 +122,10 @@ class TT {
         
         // Try write
         if (!extractIsValidEntry(currentEntry) ||
-            currentKey != key || 
+            (currentKey ^ currentEntry) != key || 
             extractDepthBelow(currentEntry) <= depthBelow) {
             
-            _table[index  ] = key;
-            _table[index+1] = toEntry(
+            long newEntry = toEntry(
                     selectedHeuristic, 
                     BoardVariation.applyTransformation(selectedMovementBitIndex, variationIndex), 
                     depthBelow, 
@@ -134,7 +133,10 @@ class TT {
                     isAlpha
             );
             
-            if(extractIsValidEntry(currentEntry) && currentKey != key)
+            _table[index  ] = key ^ newEntry;
+            _table[index+1] = newEntry;
+            
+            if(extractIsValidEntry(currentEntry) && (currentKey ^ currentEntry) != key)
                 _numColisions++;
         }
     }
@@ -158,7 +160,7 @@ class TT {
         byte extractedMove = extractSelectedMovement(s, currentEntry);
         
         // Check and return
-        if(extractIsValidEntry(currentEntry) && currentKey == key) {
+        if(extractIsValidEntry(currentEntry) && (currentKey ^ currentEntry) == key) {
             if(extractedMove == -1 || s.canMovePiece(extractedMove/Status.SIZE, extractedMove%Status.SIZE)) {
                 return currentEntry;
             } else {
