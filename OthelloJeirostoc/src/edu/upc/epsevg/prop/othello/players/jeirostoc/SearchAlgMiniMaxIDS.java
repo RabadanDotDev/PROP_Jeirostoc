@@ -1,6 +1,9 @@
 package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
 import edu.upc.epsevg.prop.othello.SearchType;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Search algorithm that chooses a move based on MiniMax with iterative 
@@ -10,11 +13,14 @@ import edu.upc.epsevg.prop.othello.SearchType;
  * @author josep
  */
 class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
+    RunnableFutureMiniMax _currentRun;
+        
     /**
      * Create a MiniMax search algorithm with iterative deepening.
      */
     public SearchAlgMiniMaxIDS() {
         super(1, SearchType.MINIMAX_IDS);
+        _currentRun = null;
     }
     
     /**
@@ -23,6 +29,14 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
      */
     public SearchAlgMiniMaxIDS(int numEntries) {
         super(1, SearchType.MINIMAX_IDS, numEntries);
+        _currentRun = null;
+    }
+
+    @Override
+    public void searchOFF() {
+        super.searchOFF();
+        if(_currentRun != null)
+            _currentRun.cancel(false);
     }
     
     /**
@@ -38,32 +52,30 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
     @Override
     public void doSearch(Status s) {
         // Init ID
-        float lastHeuristicSoFar = 0.0f;
-        byte lastMovementSoFar = -1;
         _maxGlobalDepth = 1;
+        RunnableFutureMiniMax.Result currentResult = null;
         
         while (_searchIsOn) {
-            // Do search at the current depth
-            float heuristic = minimax(
-                s,
-                0,
-                Float.NEGATIVE_INFINITY, 
-                Float.POSITIVE_INFINITY, 
-                true
-            );
+            _currentRun = new RunnableFutureMiniMax(_maxGlobalDepth, _playerColor, _tt, s);
+            _currentRun.run();
             
-            if(_searchIsOn) {
+            try {
+                currentResult = (RunnableFutureMiniMax.Result)_currentRun.get();
+            } catch (InterruptedException | ExecutionException ex) {
+                Logger.getLogger(SearchAlgMiniMax.class.getName()).log(Level.SEVERE, null, ex);
+                currentResult = null;
+            }
+            
+            if(currentResult != null) {
                 // Store results
-                lastHeuristicSoFar = heuristic;
-                lastMovementSoFar = _lastSelectedMovement;
+                _depthReached = currentResult.depthReached;
+                _lastSelectedHeuristic = currentResult.lastSelectedHeuristic;
+                _lastSelectedMovement = currentResult.lastSelectedMovement;
+                _nodesWithComputedHeuristic += currentResult.nodesWithComputedHeuristic;
                 
                 // Next depth
                 _maxGlobalDepth++;
             }
         }
-        
-        // Store the last complete values
-        _lastSelectedHeuristic = lastHeuristicSoFar;
-        _lastSelectedMovement = lastMovementSoFar;
     }
 }
