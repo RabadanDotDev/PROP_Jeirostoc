@@ -48,7 +48,8 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
                 storeResultsLock.lock();
                 try {
                     _nodesWithComputedHeuristic += result.nodesWithComputedHeuristic;
-                    if(_depthReached < result.depthReached) {
+                    if(_maxGlobalDepth < rfm.getMaxDepth()) {
+                        _maxGlobalDepth = rfm.getMaxDepth();
                         _depthReached = result.depthReached;
                         _lastSelectedHeuristic = result.lastSelectedHeuristic;
                         _lastSelectedMovement = result.lastSelectedMovement;
@@ -112,6 +113,8 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
     }
     
     private void doSearchLazySMP(Status s) {
+        _maxGlobalDepth = -1;
+        
         for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
             _executor.execute(new RunnableFutureMiniMax(
                 1 + i%2,

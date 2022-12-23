@@ -192,6 +192,10 @@ class RunnableFutureMiniMax implements RunnableFuture {
             throw new TimeoutException();
         }
     }
+
+    public int getMaxDepth() {
+        return _maxDepth;
+    }
     
     /**
      * Maximize or minimize the heuristic from the perspective of player within
