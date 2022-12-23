@@ -14,6 +14,7 @@ import java.lang.ref.WeakReference;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -30,7 +31,7 @@ public class HeadlessGame {
     private int gameCount;
     private int timeout;
     
-    private static FileWriter currentGameLog;
+    static FileWriter currentGameLog;
 
     public static void main(String[] args) {
         FileWriter fw = null;
@@ -79,13 +80,47 @@ public class HeadlessGame {
         this.gameCount = gameCount;
         this.timeout = timeout;
     }
+    
+    public TwoSidesGameResult doGamesTwoSides() {
+        GameResult gr1 = new GameResult();
+        for (int i = 0; i < gameCount/2; i++) {
+            reportUpdate("-------------------------------------------------------------");
+            reportUpdate("Playing game nº " + i);
+            gr1.update(play());
+        }
+        
+        reportUpdate("Flipping players...");
+        IPlayer tmp = players[0];
+        players[0] = players[1];
+        players[1] = tmp;
+        
+        GameResult gr2 = new GameResult();
+        for (int i = gameCount/2; i < gameCount; i++) {
+            reportUpdate("-------------------------------------------------------------");
+            reportUpdate("Playing game nº " + i);
+            gr2.update(play());
+        }
+        
+        reportUpdate("-------------------------------------------------------------");
+        reportUpdate(gr1.toString());
+        reportUpdate(gr2.toString());
+        reportUpdate("-------------------------------------------------------------");
+        
+        
+        TwoSidesGameResult tsgr = new TwoSidesGameResult();
+        tsgr.ties = gr1.ties + gr2.ties;
+        tsgr.wins1 = gr1.wins1 + gr2.wins2;
+        tsgr.wins2 = gr1.wins2 + gr2.wins1;
+        
+        return tsgr;
+    }
 
     public GameResult start() {
         GameResult gr = new GameResult();
         for (int i = 0; i < gameCount; i++) {
             reportUpdate("-------------------------------------------------------------");
             reportUpdate("Playing game nº " + i);
-            gr.update(play(players[0], players[1]));
+            gr.update(play());
         }
         return gr;
     }
@@ -94,7 +129,7 @@ public class HeadlessGame {
         public boolean ok;
     }
 
-    private CellType play(IPlayer player, IPlayer player0) {
+    private CellType play() {
         this.status = new GameStatus();
         reportUpdate(status.toString());
 
@@ -177,42 +212,27 @@ public class HeadlessGame {
     }
 
     private class GameResult {
-
-        java.util.List<CellType> results;
+        private int wins1;
+        private int wins2;
+        private int ties;
 
         public GameResult() {
-            results = new ArrayList<CellType>();
-
+            wins1 = wins2 = ties = 0;
         }
 
         public void update(CellType res) {
-            results.add(res);
+            switch (res) {
+                case EMPTY:     ties++; break;
+                case PLAYER1:  wins1++; break;
+                default:       wins2++; break;
+            }
         }
 
         @Override
         public String toString() {
             String res = "";
-            int wins1 = 0, ties1 = 0, loose1 = 0;
-            for (CellType c : results) {
-                if (null == c) {
-                    loose1++;
-                } else {
-                    switch (c) {
-                        case EMPTY:
-                            ties1++;
-                            break;
-                        case PLAYER1:
-                            wins1++;
-                            break;
-                        default:
-                            loose1++;
-                            break;
-                    }
-                }
-            }
-
-            res += "PLAYER 1 (" + pad(players[0].getName(), 40) + "):\t wins " + wins1 + "\t ties:" + ties1 + "\t looses:" + loose1 + "\n";
-            res += "PLAYER 2 (" + pad(players[1].getName(), 40) + "):\t wins " + loose1 + "\t ties:" + ties1 + "\t looses:" + wins1 + "\n";
+            res += "PLAYER 1 (" + pad(players[0].getName(), 40) + "):\t wins " + wins1 + "\t ties:" + ties + "\t looses:" + wins2 + "\n";
+            res += "PLAYER 2 (" + pad(players[1].getName(), 40) + "):\t wins " + wins2 + "\t ties:" + ties + "\t looses:" + wins1 + "\n";
             return res;
         }
 
@@ -228,8 +248,25 @@ public class HeadlessGame {
 
             return sb.toString();
         }
-    }
 
+        public int getWins1() {
+            return wins1;
+        }
+
+        public int getWins2() {
+            return wins2;
+        }
+
+        public int getTies() {
+            return ties;
+        }
+    }
+    
+    public class TwoSidesGameResult {
+        int wins1;
+        int wins2;
+        int ties;
+    }
     
     /**
      * This method guarantees that garbage collection is done unlike
