@@ -1267,7 +1267,7 @@ public class Status {
      * @param playerBit The player bit.
      */
     private void updateStability(int x, int y) {
-        if(isStableAt(x, y) || isUnsetAt(_boardOccupied, toIndex(x, y)))
+        if(isStableAt(x, y) || isUnsetAt(_boardOccupied, toIndex(x, y)) || _stableScore == 0)
             return;
         
         // Check surrounding stability with same color discs
