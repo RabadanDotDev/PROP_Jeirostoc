@@ -20,23 +20,13 @@ import java.util.logging.Logger;
  */
 abstract class PlayerBase implements IAuto, IPlayer {
     ////////////////////////////////////////////////////////////////////////////
-    // Logging config                                                         //
+    // Logging variables                                                      //
     ////////////////////////////////////////////////////////////////////////////
-    
-    /**
-     * End of the filename to log the actions to. 
-     */
-    private final static String CSV_BASE_FILE_NAME = "move_log.csv";
-    
-    /**
-     * Toggle to determine if logging should be done.
-     */
-    private final static boolean DO_LOG = true;
     
     /**
      * FileWriter where to write the log of the actions of the player.
      */
-    private FileWriter fw;
+    private final FileWriter _fw;
     
     ////////////////////////////////////////////////////////////////////////////
     // Status heuristic config                                                //
@@ -105,15 +95,18 @@ abstract class PlayerBase implements IAuto, IPlayer {
     ////////////////////////////////////////////////////////////////////////////
     
     /**
-     * Protected constructor. It takes a SearchAlg strategy class to use.
+     * Protected constructor.
+     * 
      * @param searchAlg The SearchAlg to use
+     * @param fw File writer to write the logs in csv format to. If it is null, 
+     * logging is disabled.
      */
-    protected PlayerBase(SearchType searchType) {
-        this(searchType, Status.STABLE_SCORE_DEFAULT, Status.DISK_SCORES_DEFAULT, Status.NEIGHBOR_SCORES_DEFAULT);
+    protected PlayerBase(SearchType searchType, FileWriter fw) {
+        this(searchType, Status.STABLE_SCORE_DEFAULT, Status.DISK_SCORES_DEFAULT, Status.NEIGHBOR_SCORES_DEFAULT, fw);
     }
     
     /**
-     * Protected constructor. It takes a SearchAlg strategy class to use.
+     * Protected constructor.
      * @param searchAlg The SearchAlg to use
      * @param stableScoreConfig Configuration parameter value for Status: the 
      * score to evaluate the detected positions in with
@@ -121,24 +114,21 @@ abstract class PlayerBase implements IAuto, IPlayer {
      * of the scores for having captured each position
      * @param neighborScoresConfig Configuration parameter value for Status: a 
      * list of the scores for having each position as a neighbor
+     * @param fw File writer to write the logs in csv format to. If it is null, 
+     * logging is disabled.
      */
-    protected PlayerBase(SearchType searchType, float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig) {
+    protected PlayerBase(SearchType searchType, float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw) {
         // Search config
         _searchType = searchType;
         
         // Log config
-        if(DO_LOG) { 
+        _fw = fw;
+        if(_fw != null) { 
             try {
-                fw = new FileWriter(
-                        System.currentTimeMillis() + "_" +
-                        getName() + "_" + 
-                        CSV_BASE_FILE_NAME
-                );
-                
                 fw.append(getLogLineHeader());
                 fw.append("\n");
             } catch (IOException ex) {
-                Logger.getLogger(PlayerBase.class.getName()).log(Level.SEVERE, "Couldn't open csv file", ex);
+                Logger.getLogger(PlayerBase.class.getName()).log(Level.SEVERE, "Couldn't write csv header", ex);
             } 
         }
         
@@ -167,7 +157,7 @@ abstract class PlayerBase implements IAuto, IPlayer {
         doSearch(s);
         
         // Log selected movement
-        if(DO_LOG)
+        if(_fw != null)
             logLastSearch();
         
         // Return selected movement
@@ -236,11 +226,11 @@ abstract class PlayerBase implements IAuto, IPlayer {
     
     private void logLastSearch() {
         try {
-            fw.append(getLogLineLastSearch());
-            fw.append('\n');
-            fw.flush();
+            _fw.append(getLogLineLastSearch());
+            _fw.append('\n');
+            _fw.flush();
         } catch (IOException ex) {
-            Logger.getLogger(PlayerBase.class.getName()).log(Level.SEVERE, "Couldn't write to csv file", ex);
+            Logger.getLogger(PlayerBase.class.getName()).log(Level.SEVERE, "Couldn't write entry to csv file", ex);
         }
     }
 }

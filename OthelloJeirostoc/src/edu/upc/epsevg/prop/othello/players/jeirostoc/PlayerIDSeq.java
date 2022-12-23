@@ -1,6 +1,7 @@
 package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
 import edu.upc.epsevg.prop.othello.SearchType;
+import java.io.FileWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,24 +41,33 @@ public class PlayerIDSeq extends PlayerBase {
      * Default constructor.
      */
     public PlayerIDSeq() {
-        super(SearchType.MINIMAX_IDS);
+        super(SearchType.MINIMAX_IDS, null);
+        _tt = new TT();
+    }
+    
+    /**
+     * Constructor with logging activated.
+     * 
+     * @param fw File writer to write the logs in csv format to. If it is null, 
+     * logging is disabled.
+     */
+    public PlayerIDSeq(FileWriter fw) {
+        super(SearchType.MINIMAX_IDS, fw);
         _tt = new TT();
     }
     
     /**
      * Constructor with custom transposition table size.
      * 
-     * @param maxDepth The maximum number of movements the player is allowed to 
-     * explore
      * @param numEntriesTT The number of entries in the transposition table.
      */
-    public PlayerIDSeq(int maxDepth, int numEntriesTT) {
-        super(SearchType.MINIMAX);
+    public PlayerIDSeq(int numEntriesTT) {
+        super(SearchType.MINIMAX, null);
         _tt = new TT(numEntriesTT);
     }
     
     /**
-     * Constructor with custom heuristic scores.
+     * Constructor with custom heuristic scores and logging.
      * 
      * @param stableScoreConfig Configuration parameter value for Status: the 
      * score to evaluate the detected positions in with
@@ -65,9 +75,11 @@ public class PlayerIDSeq extends PlayerBase {
      * of the scores for having captured each position
      * @param neighborScoresConfig Configuration parameter value for Status: a 
      * list of the scores for having each position as a neighbor
+     * @param fw File writer to write the logs in csv format to. If it is null, 
+     * logging is disabled.
      */
-    public PlayerIDSeq(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig) {
-        super(SearchType.MINIMAX_IDS, stableScoreConfig, diskScoresConfig, neighborScoresConfig);
+    public PlayerIDSeq(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw) {
+        super(SearchType.MINIMAX_IDS, stableScoreConfig, diskScoresConfig, neighborScoresConfig, fw);
         _tt = new TT();
     }
     

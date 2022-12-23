@@ -1,5 +1,8 @@
 package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
+import edu.upc.epsevg.prop.othello.SearchType;
+import java.io.FileWriter;
+
 /**
  * Player that does a search using MiniMax iteratively until it gets a timeout
  * 
@@ -25,6 +28,16 @@ public class PlayerID extends PlayerIDLazySMP {
      */
     public PlayerID(int numEntriesTT) {
         super(numEntriesTT);
+    }    
+    
+    /**
+     * Constructor with logging activated.
+     * 
+     * @param fw File writer to write the logs in csv format to. If it is null, 
+     * logging is disabled.
+     */
+    public PlayerID(FileWriter fw) {
+        super(fw);
     }
     
     /**
@@ -36,9 +49,11 @@ public class PlayerID extends PlayerIDLazySMP {
      * of the scores for having captured each position
      * @param neighborScoresConfig Configuration parameter value for Status: a 
      * list of the scores for having each position as a neighbor
+     * @param fw File writer to write the logs in csv format to. If it is null, 
+     * logging is disabled.
      */
-    public PlayerID(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig) {    
-        super(stableScoreConfig, diskScoresConfig, neighborScoresConfig);
+    public PlayerID(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw) {    
+        super(stableScoreConfig, diskScoresConfig, neighborScoresConfig, fw);
     }
 
     ////////////////////////////////////////////////////////////////////////////

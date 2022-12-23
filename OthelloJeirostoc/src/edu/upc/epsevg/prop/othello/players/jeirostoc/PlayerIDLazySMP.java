@@ -1,6 +1,7 @@
 package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
 import edu.upc.epsevg.prop.othello.SearchType;
+import java.io.FileWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -99,7 +100,19 @@ public class PlayerIDLazySMP extends PlayerBase {
      * Default constructor.
      */
     public PlayerIDLazySMP() {
-        super(SearchType.MINIMAX_IDS);
+        super(SearchType.MINIMAX_IDS, null);
+        _tt = new TT();
+        _executor = new LazySMPExecutor(Runtime.getRuntime().availableProcessors());
+    }
+    
+    /**
+     * Constructor with logging activated.
+     * 
+     * @param fw File writer to write the logs in csv format to. If it is null, 
+     * logging is disabled.
+     */
+    public PlayerIDLazySMP(FileWriter fw) {
+        super(SearchType.MINIMAX_IDS, fw);
         _tt = new TT();
         _executor = new LazySMPExecutor(Runtime.getRuntime().availableProcessors());
     }
@@ -110,7 +123,7 @@ public class PlayerIDLazySMP extends PlayerBase {
      * @param numEntriesTT The number of entries in the transposition table.
      */
     public PlayerIDLazySMP(int numEntriesTT) {
-        super(SearchType.MINIMAX);
+        super(SearchType.MINIMAX, null);
         _tt = new TT(numEntriesTT);
         _executor = new LazySMPExecutor(Runtime.getRuntime().availableProcessors());
     }
@@ -124,9 +137,11 @@ public class PlayerIDLazySMP extends PlayerBase {
      * of the scores for having captured each position
      * @param neighborScoresConfig Configuration parameter value for Status: a 
      * list of the scores for having each position as a neighbor
+     * @param fw File writer to write the logs in csv format to. If it is null, 
+     * logging is disabled.
      */
-    public PlayerIDLazySMP(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig) {
-        super(SearchType.MINIMAX_IDS, stableScoreConfig, diskScoresConfig, neighborScoresConfig);
+    public PlayerIDLazySMP(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw) {
+        super(SearchType.MINIMAX_IDS, stableScoreConfig, diskScoresConfig, neighborScoresConfig, fw);
         _tt = new TT();
         _executor = new LazySMPExecutor(Runtime.getRuntime().availableProcessors());
     }

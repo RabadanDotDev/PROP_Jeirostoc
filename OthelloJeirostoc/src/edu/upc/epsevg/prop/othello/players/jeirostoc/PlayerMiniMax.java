@@ -1,6 +1,7 @@
 package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
 import edu.upc.epsevg.prop.othello.SearchType;
+import java.io.FileWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,7 +39,21 @@ public class PlayerMiniMax extends PlayerBase {
      * explore
      */
     public PlayerMiniMax(int maxDepth) {
-        super(SearchType.MINIMAX);
+        super(SearchType.MINIMAX, null);
+        _maxDepth = maxDepth;
+        _tt = new TT();
+    }    
+    
+    /**
+     * Constructor with logging activated.
+     * 
+     * @param maxDepth The maximum number of movements the player is allowed to 
+     * explore
+     * @param fw File writer to write the logs in csv format to. If it is null, 
+     * logging is disabled.
+     */
+    public PlayerMiniMax(int maxDepth, FileWriter fw) {
+        super(SearchType.MINIMAX, fw);
         _maxDepth = maxDepth;
         _tt = new TT();
     }
@@ -51,13 +66,13 @@ public class PlayerMiniMax extends PlayerBase {
      * @param numEntriesTT The number of entries in the transposition table.
      */
     public PlayerMiniMax(int maxDepth, int numEntriesTT) {
-        super(SearchType.MINIMAX);
+        super(SearchType.MINIMAX, null);
         _maxDepth = maxDepth;
         _tt = new TT(numEntriesTT);
     }
     
     /**
-     * Constructor with custom heuristic scores.
+     * Constructor with custom heuristic scores  and logging.
      * 
      * @param maxDepth The maximum number of movements the player is allowed to 
      * explore
@@ -67,9 +82,11 @@ public class PlayerMiniMax extends PlayerBase {
      * of the scores for having captured each position
      * @param neighborScoresConfig Configuration parameter value for Status: a 
      * list of the scores for having each position as a neighbor
+     * @param fw File writer to write the logs in csv format to. If it is null, 
+     * logging is disabled.
      */
-    public PlayerMiniMax(int maxDepth, float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig) {
-        super(SearchType.MINIMAX, stableScoreConfig, diskScoresConfig, neighborScoresConfig);
+    public PlayerMiniMax(int maxDepth, float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw) {
+        super(SearchType.MINIMAX, stableScoreConfig, diskScoresConfig, neighborScoresConfig, fw);
         _maxDepth = maxDepth;
         _tt = new TT();
     }

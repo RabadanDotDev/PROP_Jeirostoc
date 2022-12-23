@@ -8,6 +8,8 @@ package edu.upc.epsevg.prop.othello;
 import edu.upc.epsevg.prop.othello.players.DesdemonaPlayer;
 import edu.upc.epsevg.prop.othello.players.RandomPlayer;
 import edu.upc.epsevg.prop.othello.players.jeirostoc.PlayerID;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 
 import java.util.ArrayList;
@@ -27,26 +29,47 @@ public class HeadlessGame {
     private GameStatus status;
     private int gameCount;
     private int timeout;
+    
+    private static FileWriter currentGameLog;
 
     public static void main(String[] args) {
-
-        IPlayer playerID = new PlayerID();
+        FileWriter fw = null;
+        try {
+            long time = System.currentTimeMillis();
+            fw = new FileWriter(time + "_actions.csv");
+            currentGameLog = new FileWriter(time + "_gameLog.log");
+        } catch (IOException ex) {
+            Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        IPlayer player = new PlayerID(fw);
         //Player player2 = new RandomPlayer("Desdesmonasia");
         IPlayer desdemona = new DesdemonaPlayer(2);//GB
 
         
-        HeadlessGame game1 = new HeadlessGame(playerID, desdemona, 2, 5);
+        HeadlessGame game1 = new HeadlessGame(player, desdemona, 2, 5);
         GameResult gr1 = game1.start();
         
-        HeadlessGame game2 = new HeadlessGame(desdemona, playerID, 2, 5);
+        HeadlessGame game2 = new HeadlessGame(desdemona, player, 2, 5);
         GameResult gr2 = game2.start();
 
-        System.out.println("-------------------------------------------------------------");
-        System.out.println(gr1);
-        System.out.println(gr2);
-        System.out.println("-------------------------------------------------------------");
+        reportUpdate("-------------------------------------------------------------");
+        reportUpdate(gr1.toString());
+        reportUpdate(gr2.toString());
+        reportUpdate("-------------------------------------------------------------");
     }
 
+    private static void reportUpdate(String str) {
+        System.out.println(str);
+        try {
+            currentGameLog.append(str);
+            currentGameLog.append('\n');
+            currentGameLog.flush();
+        } catch (IOException ex) {
+            Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
     //=====================================================================================0
     public HeadlessGame(IPlayer p1, IPlayer p2, int timeout, int gameCount) {
 
@@ -60,8 +83,8 @@ public class HeadlessGame {
     public GameResult start() {
         GameResult gr = new GameResult();
         for (int i = 0; i < gameCount; i++) {
-            System.out.println("-------------------------------------------------------------");
-            System.out.println("Playing game nº " + i);
+            reportUpdate("-------------------------------------------------------------");
+            reportUpdate("Playing game nº " + i);
             gr.update(play(players[0], players[1]));
         }
         return gr;
@@ -73,29 +96,32 @@ public class HeadlessGame {
 
     private CellType play(IPlayer player, IPlayer player0) {
         this.status = new GameStatus();
+        reportUpdate(status.toString());
 
         while (!this.status.isGameOver()) {
             if (!status.currentPlayerCanMove()) {
+                reportUpdate(players[status.getCurrentPlayer() == CellType.PLAYER1 ? 0 : 1].getName() + " skips turn");
                 status.skipTurn();
+                reportUpdate(status.toString());
             } else {
                 final Semaphore semaphore = new Semaphore(1);
                 semaphore.tryAcquire();
                 //System.out.println("." + new Date());
                 final Result r = new Result();
                 CellType cp = status.getCurrentPlayer();
-                System.out.println(status);
                 
                 Thread t1 = new Thread(() -> {
                     Move m = null;
                     try {
                         m = players[cp == CellType.PLAYER1 ? 0 : 1].move(new GameStatus(status));
                     } catch(Exception ex) {
-                        System.out.println("Excepció descontrolada al player:"+cp.name());
+                        reportUpdate("Excepció descontrolada al player:"+cp.name());
                         ex.printStackTrace();
                     }
                     if (m != null) {
-                        System.out.println(players[cp == CellType.PLAYER1 ? 0 : 1].getName() + " moves " + m.getTo() + " ("  + cp + ")");
+                        reportUpdate(players[cp == CellType.PLAYER1 ? 0 : 1].getName() + " moves " + m.getTo() + " ("  + cp + ")");
                         status.movePiece(m.getTo());
+                        reportUpdate(status.toString());
                     } else {
                         status.forceLoser();
                     }
@@ -119,7 +145,7 @@ public class HeadlessGame {
                 try {
                     if (!semaphore.tryAcquire(1, timeout * 1000 + WAIT_EXTRA_TIME, TimeUnit.MILLISECONDS)) {
 
-                        System.out.println("Espera il·legal ! Player trampós:"+cp.name());
+                        reportUpdate("Espera il·legal ! Player trampós:"+cp.name());
                         //throw new RuntimeException("Jugador trampós ! Espera il·legal !");
                         // Som millors persones deixant que el jugador il·legal continui jugant...
                         semaphore.acquire();
@@ -134,16 +160,16 @@ public class HeadlessGame {
         }
         
         if (null == status.winnerPlayer ) {
-            System.out.println("Tie.");
+            reportUpdate("Tie.");
         } else switch (status.winnerPlayer) {
             case PLAYER1:
-                System.out.println(players[0].getName() + " ("  + status.winnerPlayer + ") has won!");
+                reportUpdate(players[0].getName() + " ("  + status.winnerPlayer + ") has won!");
                 break;
             case PLAYER2:
-                System.out.println(players[1].getName() + " ("  + status.winnerPlayer + ") has won!");
+                reportUpdate(players[1].getName() + " ("  + status.winnerPlayer + ") has won!");
                 break;
             default:
-                System.out.println("Tie.");
+                reportUpdate("Tie.");
                 break;
 
         }
