@@ -33,15 +33,6 @@ abstract class PlayerBase implements IAuto, IPlayer {
     private final FileWriter _fw;
     
     ////////////////////////////////////////////////////////////////////////////
-    // Opening Book variables                                                 //
-    ////////////////////////////////////////////////////////////////////////////
-    
-    /**
-     * BufferedReader to read full lines of the Opening Book
-     */
-    //private final BufferedReader _opbr;
-    
-    ////////////////////////////////////////////////////////////////////////////
     // Status heuristic config                                                //
     ////////////////////////////////////////////////////////////////////////////
     
@@ -140,14 +131,14 @@ abstract class PlayerBase implements IAuto, IPlayer {
         // Init search config
         _searchType = searchType;
         _tt = new TT((int)numEntriesTT);
-        /*
+        
         try {
-            _opbr = new BufferedReader(new FileReader("OpeningBook.txt"));
-            _tt.fill(_opbr);
+            BufferedReader opbr = new BufferedReader(new FileReader("OpeningBook.txt"));
+            _tt.fill(opbr);
         } catch (FileNotFoundException ex) {
             Logger.getLogger(PlayerBase.class.getName()).log(Level.SEVERE, null, ex);
         }
-        */
+        
         // Log config
         _fw = fw;
         if(_fw != null) { 
