@@ -4,6 +4,7 @@ import static edu.upc.epsevg.prop.othello.HeadlessGame.currentGameLog;
 import edu.upc.epsevg.prop.othello.players.DesdemonaPlayer;
 import edu.upc.epsevg.prop.othello.players.jeirostoc.PlayerID;
 import edu.upc.epsevg.prop.othello.players.jeirostoc.Status;
+import edu.upc.epsevg.prop.othello.players.jeirostoc.TT;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -90,7 +91,8 @@ public class HeuristicComparisions {
                     s.discScoresConfig, 
                     s.neighborScoresConfig, 
                     actions1,
-                    s.name
+                    s.name,
+                    TT.DEF_NUM_ENTRIES
             );
             IPlayer desdemona = new DesdemonaPlayer(2);//GB
             
@@ -129,7 +131,8 @@ public class HeuristicComparisions {
                     s1.discScoresConfig, 
                     s1.neighborScoresConfig, 
                     actions1,
-                    s1.name
+                    s1.name,
+                    TT.DEF_NUM_ENTRIES
                 );
                 
                 IPlayer player2 = new PlayerID(
@@ -137,7 +140,8 @@ public class HeuristicComparisions {
                     s2.discScoresConfig, 
                     s2.neighborScoresConfig, 
                     actions2,
-                    s2.name
+                    s2.name,
+                    TT.DEF_NUM_ENTRIES
                 );
 
                 HeadlessGame.currentGameLog = gameLog;

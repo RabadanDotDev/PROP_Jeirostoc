@@ -90,6 +90,11 @@ abstract class PlayerBase implements IAuto, IPlayer {
      */
     protected byte _lastSelectedMovement;
     
+    /**
+     * Transposition table.
+     */
+    protected final TT _tt;
+    
     ////////////////////////////////////////////////////////////////////////////
     // Constructor                                                            //
     ////////////////////////////////////////////////////////////////////////////
@@ -101,8 +106,8 @@ abstract class PlayerBase implements IAuto, IPlayer {
      * @param fw File writer to write the logs in csv format to. If it is null, 
      * logging is disabled.
      */
-    protected PlayerBase(SearchType searchType, FileWriter fw) {
-        this(searchType, Status.STABLE_SCORE_DEFAULT, Status.DISK_SCORES_DEFAULT, Status.NEIGHBOR_SCORES_DEFAULT, fw);
+    protected PlayerBase(SearchType searchType, FileWriter fw, long numEntriesTT) {
+        this(searchType, Status.STABLE_SCORE_DEFAULT, Status.DISK_SCORES_DEFAULT, Status.NEIGHBOR_SCORES_DEFAULT, fw, numEntriesTT);
     }
     
     /**
@@ -116,10 +121,12 @@ abstract class PlayerBase implements IAuto, IPlayer {
      * list of the scores for having each position as a neighbor
      * @param fw File writer to write the logs in csv format to. If it is null, 
      * logging is disabled.
+     * @param numEntriesTT The number of entries in the transposition table.
      */
-    protected PlayerBase(SearchType searchType, float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw) {
-        // Search config
+    protected PlayerBase(SearchType searchType, float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw, long numEntriesTT) {
+        // Init search config
         _searchType = searchType;
+        _tt = new TT((int)numEntriesTT);
         
         // Log config
         _fw = fw;

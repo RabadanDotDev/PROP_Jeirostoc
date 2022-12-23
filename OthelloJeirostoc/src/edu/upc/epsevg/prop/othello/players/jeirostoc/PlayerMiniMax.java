@@ -23,11 +23,6 @@ public class PlayerMiniMax extends PlayerBase {
      */
     private final int _maxDepth;
     
-    /**
-     * Transposition table.
-     */
-    private final TT _tt;
-    
     ////////////////////////////////////////////////////////////////////////////
     // Constructor                                                            //
     ////////////////////////////////////////////////////////////////////////////
@@ -39,9 +34,8 @@ public class PlayerMiniMax extends PlayerBase {
      * explore
      */
     public PlayerMiniMax(int maxDepth) {
-        super(SearchType.MINIMAX, null);
+        super(SearchType.MINIMAX, null, TT.DEF_NUM_ENTRIES);
         _maxDepth = maxDepth;
-        _tt = new TT();
     }    
     
     /**
@@ -53,9 +47,8 @@ public class PlayerMiniMax extends PlayerBase {
      * logging is disabled.
      */
     public PlayerMiniMax(int maxDepth, FileWriter fw) {
-        super(SearchType.MINIMAX, fw);
+        super(SearchType.MINIMAX, fw, TT.DEF_NUM_ENTRIES);
         _maxDepth = maxDepth;
-        _tt = new TT();
     }
     
     /**
@@ -65,10 +58,9 @@ public class PlayerMiniMax extends PlayerBase {
      * explore
      * @param numEntriesTT The number of entries in the transposition table.
      */
-    public PlayerMiniMax(int maxDepth, int numEntriesTT) {
-        super(SearchType.MINIMAX, null);
+    public PlayerMiniMax(int maxDepth, long numEntriesTT) {
+        super(SearchType.MINIMAX, null, numEntriesTT);
         _maxDepth = maxDepth;
-        _tt = new TT(numEntriesTT);
     }
     
     /**
@@ -84,11 +76,11 @@ public class PlayerMiniMax extends PlayerBase {
      * list of the scores for having each position as a neighbor
      * @param fw File writer to write the logs in csv format to. If it is null, 
      * logging is disabled.
+     * @param numEntriesTT The number of entries in the transposition table.
      */
-    public PlayerMiniMax(int maxDepth, float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw) {
-        super(SearchType.MINIMAX, stableScoreConfig, diskScoresConfig, neighborScoresConfig, fw);
+    public PlayerMiniMax(int maxDepth, float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw, long numEntriesTT) {
+        super(SearchType.MINIMAX, stableScoreConfig, diskScoresConfig, neighborScoresConfig, fw, numEntriesTT);
         _maxDepth = maxDepth;
-        _tt = new TT();
     }
     
     ////////////////////////////////////////////////////////////////////////////

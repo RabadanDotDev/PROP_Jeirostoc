@@ -19,11 +19,6 @@ public class PlayerIDSeq extends PlayerBase {
     ////////////////////////////////////////////////////////////////////////////
     
     /**
-     * Transposition table.
-     */
-    private final TT _tt;
-    
-    /**
      * The maximum number of movements a search has started with.
      */
     private int _maxDepthStarted;
@@ -41,8 +36,7 @@ public class PlayerIDSeq extends PlayerBase {
      * Default constructor.
      */
     public PlayerIDSeq() {
-        super(SearchType.MINIMAX_IDS, null);
-        _tt = new TT();
+        super(SearchType.MINIMAX_IDS, null, TT.DEF_NUM_ENTRIES);
     }
     
     /**
@@ -52,8 +46,7 @@ public class PlayerIDSeq extends PlayerBase {
      * logging is disabled.
      */
     public PlayerIDSeq(FileWriter fw) {
-        super(SearchType.MINIMAX_IDS, fw);
-        _tt = new TT();
+        super(SearchType.MINIMAX_IDS, fw, TT.DEF_NUM_ENTRIES);
     }
     
     /**
@@ -61,9 +54,8 @@ public class PlayerIDSeq extends PlayerBase {
      * 
      * @param numEntriesTT The number of entries in the transposition table.
      */
-    public PlayerIDSeq(int numEntriesTT) {
-        super(SearchType.MINIMAX, null);
-        _tt = new TT(numEntriesTT);
+    public PlayerIDSeq(long numEntriesTT) {
+        super(SearchType.MINIMAX, null, numEntriesTT);
     }
     
     /**
@@ -77,10 +69,10 @@ public class PlayerIDSeq extends PlayerBase {
      * list of the scores for having each position as a neighbor
      * @param fw File writer to write the logs in csv format to. If it is null, 
      * logging is disabled.
+     * @param numEntriesTT The number of entries in the transposition table.
      */
-    public PlayerIDSeq(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw) {
-        super(SearchType.MINIMAX_IDS, stableScoreConfig, diskScoresConfig, neighborScoresConfig, fw);
-        _tt = new TT();
+    public PlayerIDSeq(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw, long numEntriesTT) {
+        super(SearchType.MINIMAX_IDS, stableScoreConfig, diskScoresConfig, neighborScoresConfig, fw, numEntriesTT);
     }
     
     ////////////////////////////////////////////////////////////////////////////

@@ -28,7 +28,7 @@ public class PlayerID extends PlayerIDLazySMP {
      * 
      * @param numEntriesTT The number of entries in the transposition table.
      */
-    public PlayerID(int numEntriesTT) {
+    public PlayerID(long numEntriesTT) {
         super(numEntriesTT);
         configName = "";
     }    
@@ -56,9 +56,10 @@ public class PlayerID extends PlayerIDLazySMP {
      * @param fw File writer to write the logs in csv format to. If it is null, 
      * logging is disabled.
      * @param name Name of the configuration
+     * @param numEntriesTT The number of entries in the transposition table.
      */
-    public PlayerID(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw, String name) {    
-        super(stableScoreConfig, diskScoresConfig, neighborScoresConfig, fw);
+    public PlayerID(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw, String name, long numEntriesTT) {    
+        super(stableScoreConfig, diskScoresConfig, neighborScoresConfig, fw, numEntriesTT);
         this.configName = name;
     }
 

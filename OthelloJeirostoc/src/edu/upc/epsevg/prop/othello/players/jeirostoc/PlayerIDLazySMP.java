@@ -90,11 +90,6 @@ public class PlayerIDLazySMP extends PlayerBase {
     ////////////////////////////////////////////////////////////////////////////
     
     /**
-     * Transposition table.
-     */
-    private final TT _tt;
-    
-    /**
      * The maximum number of movements a search has completed with.
      */
     private int _maxDepthCompleted;
@@ -112,8 +107,7 @@ public class PlayerIDLazySMP extends PlayerBase {
      * Default constructor.
      */
     public PlayerIDLazySMP() {
-        super(SearchType.MINIMAX_IDS, null);
-        _tt = new TT();
+        super(SearchType.MINIMAX_IDS, null, TT.DEF_NUM_ENTRIES);
         _executor = new LazySMPExecutor(Runtime.getRuntime().availableProcessors());
     }
     
@@ -124,8 +118,7 @@ public class PlayerIDLazySMP extends PlayerBase {
      * logging is disabled.
      */
     public PlayerIDLazySMP(FileWriter fw) {
-        super(SearchType.MINIMAX_IDS, fw);
-        _tt = new TT();
+        super(SearchType.MINIMAX_IDS, fw, TT.DEF_NUM_ENTRIES);
         _executor = new LazySMPExecutor(Runtime.getRuntime().availableProcessors());
     }
     
@@ -134,9 +127,8 @@ public class PlayerIDLazySMP extends PlayerBase {
      * 
      * @param numEntriesTT The number of entries in the transposition table.
      */
-    public PlayerIDLazySMP(int numEntriesTT) {
-        super(SearchType.MINIMAX, null);
-        _tt = new TT(numEntriesTT);
+    public PlayerIDLazySMP(long numEntriesTT) {
+        super(SearchType.MINIMAX, null, numEntriesTT);
         _executor = new LazySMPExecutor(Runtime.getRuntime().availableProcessors());
     }
     
@@ -150,11 +142,11 @@ public class PlayerIDLazySMP extends PlayerBase {
      * @param neighborScoresConfig Configuration parameter value for Status: a 
      * list of the scores for having each position as a neighbor
      * @param fw File writer to write the logs in csv format to. If it is null, 
-     * logging is disabled.
+     * logging is disabled
+     * @param numEntriesTT The number of entries in the transposition table.
      */
-    public PlayerIDLazySMP(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw) {
-        super(SearchType.MINIMAX_IDS, stableScoreConfig, diskScoresConfig, neighborScoresConfig, fw);
-        _tt = new TT();
+    public PlayerIDLazySMP(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw, long numEntriesTT) {
+        super(SearchType.MINIMAX_IDS, stableScoreConfig, diskScoresConfig, neighborScoresConfig, fw, numEntriesTT);
         _executor = new LazySMPExecutor(Runtime.getRuntime().availableProcessors());
     }
     

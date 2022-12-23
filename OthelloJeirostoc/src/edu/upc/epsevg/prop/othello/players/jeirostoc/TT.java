@@ -7,7 +7,7 @@ package edu.upc.epsevg.prop.othello.players.jeirostoc;
  * @author raul
  * @author josep
  */
-class TT {
+public class TT {
     /**
      * Mask to extract the "selected heuristic" from the 8 lower bytes of the
      * entry.
@@ -57,7 +57,7 @@ class TT {
     /**
      * Default number of entries in the transposition table.
      */
-    private static final long DEF_NUM_ENTRIES = 134204621;
+    public static final long DEF_NUM_ENTRIES = 134204621;
     
     /**
      * Number of entries in the transposition table.
