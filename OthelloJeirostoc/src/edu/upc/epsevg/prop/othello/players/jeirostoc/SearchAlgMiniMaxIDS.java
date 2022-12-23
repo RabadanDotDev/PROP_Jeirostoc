@@ -24,7 +24,7 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
         
         LazySMPExecutor(int nThreads) {
             super(nThreads, nThreads, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
-            _depthTaskIncrement = Math.min(1, nThreads/2);
+            _depthTaskIncrement = Math.max(1, nThreads/2);
         }
         
         @Override
