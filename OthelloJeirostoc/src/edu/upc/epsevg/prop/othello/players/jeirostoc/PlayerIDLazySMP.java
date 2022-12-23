@@ -1,0 +1,197 @@
+package edu.upc.epsevg.prop.othello.players.jeirostoc;
+
+import edu.upc.epsevg.prop.othello.SearchType;
+import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
+
+/**
+ * Player that does a search using MiniMax iteratively and using a LazySMP
+ * parallelization until it gets a timeout
+ * 
+ * @author raul
+ * @author josep
+ */
+public class PlayerIDLazySMP extends PlayerBase {
+    ////////////////////////////////////////////////////////////////////////////
+    // Executor subclass                                                      //
+    ////////////////////////////////////////////////////////////////////////////
+    
+    private class LazySMPExecutor extends ThreadPoolExecutor {
+        private final ReentrantLock storeResultsLock = new ReentrantLock();
+        private final int _depthTaskIncrement;
+        
+        LazySMPExecutor(int nThreads) {
+            super(nThreads, nThreads, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+            _depthTaskIncrement = Math.max(1, nThreads/2);
+        }
+        
+        @Override
+        protected void afterExecute(Runnable r, Throwable t) {
+            super.afterExecute(r, t);
+            if(r instanceof RunnableFutureMiniMax rfm) {
+                // Get results
+                RunnableFutureMiniMax.Result result;
+                
+                try {
+                    result = (RunnableFutureMiniMax.Result)rfm.get();
+                } catch (InterruptedException | ExecutionException ex) {
+                    Logger.getLogger(PlayerIDLazySMP.class.getName()).log(Level.SEVERE, null, ex);
+                    return;
+                }
+                
+                if(result == null)
+                    return;
+                
+                // Store results  
+                storeResultsLock.lock();
+                try {
+                    _nodesWithComputedHeuristic += result.nodesWithComputedHeuristic;
+                    if(_maxDepthCompleted < rfm.getMaxDepth()) {
+                        _maxDepthCompleted = rfm.getMaxDepth();
+                        _depthReached = result.depthReached;
+                        _lastSelectedHeuristic = result.lastSelectedHeuristic;
+                        _lastSelectedMovement = result.lastSelectedMovement;
+                    }
+                } finally {
+                    storeResultsLock.unlock();
+                }
+                    
+                // Generate next task
+                RunnableFutureMiniMax nextTask = new RunnableFutureMiniMax(rfm, _depthTaskIncrement);
+                try {
+                    this.execute(nextTask);
+                } catch (RejectedExecutionException e) {}
+            }
+        }
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Search variables                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * Transposition table.
+     */
+    private final TT _tt;
+    
+    /**
+     * The maximum number of movements a search has completed with.
+     */
+    private int _maxDepthCompleted;
+    
+    /**
+     * The executor of the searches.
+     */
+    private LazySMPExecutor _executor;
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructor                                                            //
+    ////////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * Default constructor.
+     */
+    public PlayerIDLazySMP() {
+        super(SearchType.MINIMAX_IDS);
+        _tt = new TT();
+        _executor = new LazySMPExecutor(Runtime.getRuntime().availableProcessors());
+    }
+    
+    /**
+     * Constructor with custom transposition table size.
+     * 
+     * @param numEntriesTT The number of entries in the transposition table.
+     */
+    public PlayerIDLazySMP(int numEntriesTT) {
+        super(SearchType.MINIMAX);
+        _tt = new TT(numEntriesTT);
+        _executor = new LazySMPExecutor(Runtime.getRuntime().availableProcessors());
+    }
+    
+    /**
+     * Constructor with custom heuristic scores.
+     * 
+     * @param stableScoreConfig Configuration parameter value for Status: the 
+     * score to evaluate the detected positions in with
+     * @param diskScoresConfig Configuration parameter value for Status: a list 
+     * of the scores for having captured each position
+     * @param neighborScoresConfig Configuration parameter value for Status: a 
+     * list of the scores for having each position as a neighbor
+     */
+    public PlayerIDLazySMP(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig) {
+        super(SearchType.MINIMAX_IDS, stableScoreConfig, diskScoresConfig, neighborScoresConfig);
+        _tt = new TT();
+        _executor = new LazySMPExecutor(Runtime.getRuntime().availableProcessors());
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Move                                                                   //
+    ////////////////////////////////////////////////////////////////////////////
+    
+    @Override
+    protected void doSearch(Status s) {
+        // Start thread execution
+        _maxDepthCompleted = -1;
+        for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
+            _executor.execute(new RunnableFutureMiniMax(
+                1 + i%2,
+                s.getCurrentPlayerColor(),
+                _tt,
+                s,
+                i%2 == 0
+            ));
+        }
+        
+        // Wait for the search to complete
+        try {
+            _executor.awaitTermination(10, TimeUnit.DAYS);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(PlayerIDLazySMP.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            // Clean executor for the next search
+            _executor = new LazySMPExecutor(Runtime.getRuntime().availableProcessors());
+        }
+    }
+
+    @Override
+    public void timeout() {
+        _executor.shutdownNow();
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Logging                                                                //
+    ////////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * Get the name of the player.
+     * 
+     * @return The name of the player
+     */
+    @Override
+    public String getName() {
+        return "JeiroMiniMaxIDLazySMP" ;
+    }
+    
+    @Override
+    public String getLogLineHeader() {
+        StringBuilder sb = new StringBuilder(super.getLogLineHeader());
+        sb.append("maxDepthCompleted").append(';');
+        sb.append("ttColissions").append(';');
+        return sb.toString();
+    }
+    
+    @Override
+    public String getLogLineLastSearch() {
+        StringBuilder sb = new StringBuilder(super.getLogLineLastSearch());
+        sb.append(_maxDepthCompleted).append(';');
+        sb.append(_tt.getNumCollisions()).append(';');
+        return sb.toString();
+    }
+}

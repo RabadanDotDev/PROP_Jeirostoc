@@ -6,12 +6,25 @@ package edu.upc.epsevg.prop.othello.players.jeirostoc;
  * @author raul
  * @author josep
  */
-public class PlayerID extends PlayerBase {
+public class PlayerID extends PlayerIDLazySMP {
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructor                                                            //
+    ////////////////////////////////////////////////////////////////////////////
+    
     /**
      * Default constructor.
      */
     public PlayerID() {
-        super(new SearchAlgMiniMaxIDS());
+        super();
+    }
+    
+    /**
+     * Constructor with custom transposition table size.
+     * 
+     * @param numEntriesTT The number of entries in the transposition table.
+     */
+    public PlayerID(int numEntriesTT) {
+        super(numEntriesTT);
     }
     
     /**
@@ -24,10 +37,13 @@ public class PlayerID extends PlayerBase {
      * @param neighborScoresConfig Configuration parameter value for Status: a 
      * list of the scores for having each position as a neighbor
      */
-    public PlayerID(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig) {
-        super(new SearchAlgMiniMaxIDS(), stableScoreConfig, diskScoresConfig, neighborScoresConfig);
+    public PlayerID(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig) {    
+        super(stableScoreConfig, diskScoresConfig, neighborScoresConfig);
     }
-    
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Logging                                                                //
+    ////////////////////////////////////////////////////////////////////////////
     /**
      * Get the name of the player.
      * 
@@ -35,14 +51,6 @@ public class PlayerID extends PlayerBase {
      */
     @Override
     public String getName() {
-        return "Jeirostoc_MiniMaxID";
-    }
-
-    /**
-     * Inform the player that it has run out of time.
-     */
-    @Override
-    public void timeout() {
-        _searchAlg.searchOFF();
+        return "JeiroMiniMaxID" ;
     }
 }
