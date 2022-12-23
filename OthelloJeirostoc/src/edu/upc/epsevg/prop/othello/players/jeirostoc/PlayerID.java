@@ -9,6 +9,8 @@ import java.io.FileWriter;
  * @author josep
  */
 public class PlayerID extends PlayerIDLazySMP {
+    final String configName;
+    
     ////////////////////////////////////////////////////////////////////////////
     // Constructor                                                            //
     ////////////////////////////////////////////////////////////////////////////
@@ -18,6 +20,7 @@ public class PlayerID extends PlayerIDLazySMP {
      */
     public PlayerID() {
         super();
+        configName = "";
     }
     
     /**
@@ -27,6 +30,7 @@ public class PlayerID extends PlayerIDLazySMP {
      */
     public PlayerID(int numEntriesTT) {
         super(numEntriesTT);
+        configName = "";
     }    
     
     /**
@@ -37,6 +41,7 @@ public class PlayerID extends PlayerIDLazySMP {
      */
     public PlayerID(FileWriter fw) {
         super(fw);
+        configName = "";
     }
     
     /**
@@ -50,9 +55,11 @@ public class PlayerID extends PlayerIDLazySMP {
      * list of the scores for having each position as a neighbor
      * @param fw File writer to write the logs in csv format to. If it is null, 
      * logging is disabled.
+     * @param name Name of the configuration
      */
-    public PlayerID(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw) {    
+    public PlayerID(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw, String name) {    
         super(stableScoreConfig, diskScoresConfig, neighborScoresConfig, fw);
+        this.configName = name;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -66,6 +73,6 @@ public class PlayerID extends PlayerIDLazySMP {
      */
     @Override
     public String getName() {
-        return "JeiroMiniMaxID" ;
+        return "JeiroMiniMaxID_" + configName;
     }
 }

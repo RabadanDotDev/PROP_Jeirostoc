@@ -17,6 +17,8 @@ import java.util.logging.Logger;
  */
 public class HeuristicComparisions {
     static class HeuristicSettings implements Comparable<HeuristicSettings> {
+        String name;
+        
         float stableScoreConfig;
         float discScoresConfig[];
         float neighborScoresConfig[];
@@ -24,7 +26,8 @@ public class HeuristicComparisions {
         float recordedWins;
         float recordedGames;
 
-        public HeuristicSettings(float stableScoreConfig, float[] discScoresConfig, float[] neighborScoresConfig, int defWins, int defGames) {
+        public HeuristicSettings(String name, float stableScoreConfig, float[] discScoresConfig, float[] neighborScoresConfig, int defWins, int defGames) {
+            this.name = name;            
             this.stableScoreConfig = stableScoreConfig;
             this.discScoresConfig = discScoresConfig;
             this.neighborScoresConfig = neighborScoresConfig;
@@ -46,20 +49,22 @@ public class HeuristicComparisions {
     
     public static void main(String[] args) {
         settings.add(new HeuristicSettings(
+            "Ekaitz",
             Status.STABLE_SCORE_DEFAULT, 
             Status.DISK_SCORES_DEFAULT,
             Status.NEIGHBOR_SCORES_DEFAULT,
             0, 0
         ));
         settings.add(new HeuristicSettings(
+            "Fionnghuala",
             0, 
             Status.DISK_SCORES_DEFAULT,
             Status.NEIGHBOR_SCORES_DEFAULT,
             0, 0
         ));
         
-        testsDesdemona(settings);
         testsInterSettings(settings);
+        testsDesdemona(settings);
     }
     
     static void testsDesdemona(ArrayList<HeuristicSettings> st) {
@@ -68,22 +73,24 @@ public class HeuristicComparisions {
         
         // Tests against desdemona
         for(int i = 0; i < st.size(); i++) {
+            HeuristicSettings s = st.get(i);
+            
             // Create output files
             try {
                 long time = System.currentTimeMillis();
-                actions1 = new FileWriter(time + "_" + i + "_vs_desdemona_actions.csv");
-                gameLog = new FileWriter(time + "_" + i + "_vs_desdemona_gameLog.log");
+                actions1 = new FileWriter(time + "_" + s.name + "_vs_desdemona_actions.csv");
+                gameLog = new FileWriter(time + "_" + s.name + "_vs_desdemona_gameLog.log");
             } catch (IOException ex) {
                 Logger.getLogger(HeadlessGame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
             }
             
             // Do game
-            HeuristicSettings s = st.get(i);
             IPlayer player = new PlayerID(
                     s.stableScoreConfig, 
                     s.discScoresConfig, 
                     s.neighborScoresConfig, 
-                    actions1
+                    actions1,
+                    s.name
             );
             IPlayer desdemona = new DesdemonaPlayer(2);//GB
             
@@ -103,31 +110,34 @@ public class HeuristicComparisions {
                 if(i == j)
                     continue;
                 
+                HeuristicSettings s1 = st.get(i);
+                HeuristicSettings s2 = st.get(j);
+                
                 // Create output files
                 try {
                     long time = System.currentTimeMillis();
-                    actions1 = new FileWriter(time + "_" + i + "_vs_ " + j +"_actions1.csv");
-                    actions2 = new FileWriter(time + "_" + i + "_vs_ " + j +"_actions2.csv");
-                    gameLog = new FileWriter(time + "_" + i + "_vs_ " + j +"_vs_gameLog.log");
+                    actions1 = new FileWriter(time + "_" + s1.name + "_vs_ " + s2.name + "_actions_" + s1.name + ".csv");
+                    actions2 = new FileWriter(time + "_" + s1.name + "_vs_ " + s2.name + "_actions_" + s2.name + ".csv");
+                    gameLog = new FileWriter(time + "_" + s1.name + "_vs_ " + s2.name + "_gameLog.log");
                 } catch (IOException ex) {
                     Logger.getLogger(HeadlessGame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
                 }
             
                 // Do game
-                HeuristicSettings s1 = st.get(i);
-                HeuristicSettings s2 = st.get(j);
                 IPlayer player1 = new PlayerID(
                     s1.stableScoreConfig, 
                     s1.discScoresConfig, 
                     s1.neighborScoresConfig, 
-                    actions1
+                    actions1,
+                    s1.name
                 );
                 
                 IPlayer player2 = new PlayerID(
                     s2.stableScoreConfig, 
                     s2.discScoresConfig, 
                     s2.neighborScoresConfig, 
-                    actions2
+                    actions2,
+                    s2.name
                 );
 
                 HeadlessGame.currentGameLog = gameLog;
