@@ -2,6 +2,11 @@ package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
 import edu.upc.epsevg.prop.othello.SearchType;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -13,7 +18,56 @@ import java.util.logging.Logger;
  * @author josep
  */
 class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
+    class LazySMPExecutor extends ThreadPoolExecutor {
+        private final ReentrantLock storeResultsLock = new ReentrantLock();
+        private final int _depthTaskIncrement;
+        
+        LazySMPExecutor(int nThreads) {
+            super(nThreads, nThreads, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+            _depthTaskIncrement = Math.min(1, nThreads/2);
+        }
+        
+        @Override
+        protected void afterExecute(Runnable r, Throwable t) {
+            super.afterExecute(r, t);
+            if(r instanceof RunnableFutureMiniMax rfm) {
+                // Get results
+                RunnableFutureMiniMax.Result result;
+                
+                try {
+                    result = (RunnableFutureMiniMax.Result)rfm.get();
+                } catch (InterruptedException | ExecutionException ex) {
+                    Logger.getLogger(SearchAlgMiniMaxIDS.class.getName()).log(Level.SEVERE, null, ex);
+                    return;
+                }
+                
+                if(result == null)
+                    return;
+                
+                // Store results  
+                storeResultsLock.lock();
+                try {
+                    _nodesWithComputedHeuristic += result.nodesWithComputedHeuristic;
+                    if(_depthReached < result.depthReached) {
+                        _depthReached = result.depthReached;
+                        _lastSelectedHeuristic = result.lastSelectedHeuristic;
+                        _lastSelectedMovement = result.lastSelectedMovement;
+                    }
+                } finally {
+                    storeResultsLock.unlock();
+                }
+                    
+                // Generate next task
+                RunnableFutureMiniMax nextTask = new RunnableFutureMiniMax(rfm, _depthTaskIncrement);
+                try {
+                    this.execute(nextTask);
+                } catch (RejectedExecutionException e) {}
+            }
+        }
+    }
+    
     RunnableFutureMiniMax _currentRun;
+    LazySMPExecutor _executor;
         
     /**
      * Create a MiniMax search algorithm with iterative deepening.
@@ -21,6 +75,7 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
     public SearchAlgMiniMaxIDS() {
         super(1, SearchType.MINIMAX_IDS);
         _currentRun = null;
+        _executor = new LazySMPExecutor(Runtime.getRuntime().availableProcessors());
     }
     
     /**
@@ -30,6 +85,7 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
     public SearchAlgMiniMaxIDS(int numEntries) {
         super(1, SearchType.MINIMAX_IDS, numEntries);
         _currentRun = null;
+        _executor = new LazySMPExecutor(Runtime.getRuntime().availableProcessors());
     }
 
     @Override
@@ -37,6 +93,7 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
         super.searchOFF();
         if(_currentRun != null)
             _currentRun.cancel(false);
+        _executor.shutdownNow();
     }
     
     /**
@@ -51,12 +108,34 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
      */
     @Override
     public void doSearch(Status s) {
-        // Init ID
-        _maxGlobalDepth = 1;
-        RunnableFutureMiniMax.Result currentResult = null;
+        doSearchLazySMP(s);
+    }
+    
+    private void doSearchLazySMP(Status s) {
+        for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
+            _executor.execute(new RunnableFutureMiniMax(
+                1 + i%2,
+                s.getCurrentPlayerColor(),
+                _tt,
+                s,
+                i%2 == 0
+            ));
+        }
         
-        while (_searchIsOn) {
-            _currentRun = new RunnableFutureMiniMax(_maxGlobalDepth, _playerColor, _tt, s);
+        try {
+            _executor.awaitTermination(10, TimeUnit.DAYS);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(SearchAlgMiniMaxIDS.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        _executor = new LazySMPExecutor(Runtime.getRuntime().availableProcessors());
+    }
+    
+    private void doSearchSeq(Status s) {
+        RunnableFutureMiniMax.Result currentResult;
+        int remainingMoves = (Status.SIZE*Status.SIZE - 4) - s.getNumMovements();
+        for (_maxGlobalDepth = 1; _maxGlobalDepth <= remainingMoves; _maxGlobalDepth++) {
+            _currentRun = new RunnableFutureMiniMax(_maxGlobalDepth, _playerColor, _tt, s, true);
             _currentRun.run();
             
             try {
@@ -72,9 +151,8 @@ class SearchAlgMiniMaxIDS extends SearchAlgMiniMax {
                 _lastSelectedHeuristic = currentResult.lastSelectedHeuristic;
                 _lastSelectedMovement = currentResult.lastSelectedMovement;
                 _nodesWithComputedHeuristic += currentResult.nodesWithComputedHeuristic;
-                
-                // Next depth
-                _maxGlobalDepth++;
+            } else {
+                break;
             }
         }
     }

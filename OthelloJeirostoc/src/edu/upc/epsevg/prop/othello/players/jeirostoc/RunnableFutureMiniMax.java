@@ -27,6 +27,11 @@ class RunnableFutureMiniMax implements RunnableFuture {
             this.lastSelectedHeuristic = lastSelectedHeuristic;
             this.lastSelectedMovement = lastSelectedMovement;
         }
+
+        @Override
+        public String toString() {
+            return "Result{" + "nodesWithComputedHeuristic=" + nodesWithComputedHeuristic + ", depthReached=" + depthReached + ", lastSelectedHeuristic=" + lastSelectedHeuristic + ", lastSelectedMovement=" + lastSelectedMovement + '}';
+        }
     }
     
     /**
@@ -85,11 +90,15 @@ class RunnableFutureMiniMax implements RunnableFuture {
      * Reference to the root node.
      */
     private final Status _s;
+    
+    private final boolean _regularOrder;
 
-    public RunnableFutureMiniMax(int maxDepth, int playerColor, TT tt, Status s) {
+    public RunnableFutureMiniMax(int maxDepth, int playerColor, TT tt, Status s, boolean regularOrder) {
+        int remainingMoves = (Status.SIZE*Status.SIZE - 4) - s.getNumMovements();
+        
         this._searchIsOn = true;
         this._finished = false;
-        this._maxDepth = maxDepth;
+        this._maxDepth = Math.min(maxDepth, remainingMoves);
         this._nodesWithComputedHeuristic = 0;
         this._depthReached = 0;
         this._playerColor = playerColor;
@@ -98,7 +107,25 @@ class RunnableFutureMiniMax implements RunnableFuture {
         this._tt = tt;
         this._isExact = new boolean[Status.SIZE*Status.SIZE];
         this._s = s;
-    }    
+        this._regularOrder = regularOrder;
+    }
+
+    public RunnableFutureMiniMax(RunnableFutureMiniMax r, int extraDepth) {
+        int remainingMoves = (Status.SIZE*Status.SIZE - 4) - r._s.getNumMovements();
+            
+        this._searchIsOn = true;
+        this._finished = false;
+        this._maxDepth = Math.min(r._maxDepth+extraDepth, remainingMoves);
+        this._nodesWithComputedHeuristic = 0;
+        this._depthReached = 0;
+        this._playerColor = r._playerColor;
+        this._lastSelectedHeuristic = 0;
+        this._lastSelectedMovement = -1;
+        this._tt = r._tt;
+        this._isExact = new boolean[Status.SIZE*Status.SIZE];
+        this._s = r._s;
+        this._regularOrder = r._regularOrder;
+    }
     
     @Override
     public void run() {
@@ -181,7 +208,12 @@ class RunnableFutureMiniMax implements RunnableFuture {
      * @return The heuristic more favorable to the current player within the 
      * bounds alpha and beta.
      */
-    private float minimax(Status s, int currentDepth, float alpha, float beta, boolean isMax) {        
+    private float minimax(Status s, int currentDepth, float alpha, float beta, boolean isMax) {
+        // Stop search if the thread recieved an interrupt
+        if (Thread.currentThread().isInterrupted()) {
+            _searchIsOn = false;
+        }
+        
         // Mark this level as exact
         _isExact[currentDepth] = true;
         
@@ -197,6 +229,7 @@ class RunnableFutureMiniMax implements RunnableFuture {
         long entry = _tt.readEntry(s);
         byte selectedNextMove = TT.extractSelectedMovementIfValidEntry(s, entry);
         if(TT.canExtractHeuristic(entry, _maxDepth-currentDepth)) {
+            _depthReached = Math.max(_depthReached, currentDepth + TT.extractDepthBelow(entry));
             float extractedHeuristic = TT.extractSelectedHeuristic(entry)*_playerColor;
             
             // Return if it is an exact heuristic

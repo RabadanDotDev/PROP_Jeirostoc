@@ -79,7 +79,7 @@ class SearchAlgMiniMax extends SearchAlg {
      */
     @Override
     public void doSearch(Status s) {
-        RunnableFutureMiniMax r = new RunnableFutureMiniMax(_maxGlobalDepth, _playerColor, _tt, s);
+        RunnableFutureMiniMax r = new RunnableFutureMiniMax(_maxGlobalDepth, _playerColor, _tt, s, true);
         r.run();
         RunnableFutureMiniMax.Result rr;
         try {
