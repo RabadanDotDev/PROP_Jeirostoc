@@ -15,22 +15,35 @@ import java.util.concurrent.TimeoutException;
  * @author josep
  */
 class RunnableFutureMiniMax implements RunnableFuture {
+    /**
+     * Result class to group all the execution information.
+     */
     class Result {
+        /**
+         * The amount of nodes whose heuristic was computed.
+         */
         final long nodesWithComputedHeuristic;
+        
+        /**
+         * The depth reached.
+         */
         final int depthReached;
+        
+        /**
+         * The last selected heuristic in the search.
+         */
         final float lastSelectedHeuristic;
+        
+        /**
+         * The last selected movement in the search.
+         */
         final byte lastSelectedMovement;
 
-        public Result(long nodesWithComputedHeuristic, int depthReached, float lastSelectedHeuristic, byte lastSelectedMovement) {
+        Result(long nodesWithComputedHeuristic, int depthReached, float lastSelectedHeuristic, byte lastSelectedMovement) {
             this.nodesWithComputedHeuristic = nodesWithComputedHeuristic;
             this.depthReached = depthReached;
             this.lastSelectedHeuristic = lastSelectedHeuristic;
             this.lastSelectedMovement = lastSelectedMovement;
-        }
-
-        @Override
-        public String toString() {
-            return "Result{" + "nodesWithComputedHeuristic=" + nodesWithComputedHeuristic + ", depthReached=" + depthReached + ", lastSelectedHeuristic=" + lastSelectedHeuristic + ", lastSelectedMovement=" + lastSelectedMovement + '}';
         }
     }
     
@@ -91,8 +104,22 @@ class RunnableFutureMiniMax implements RunnableFuture {
      */
     private final Status _s;
     
+    /**
+     * Toggle to select between the regular move ordering or the inverted move 
+     * ordering.
+     */
     private final boolean _regularOrder;
 
+    /**
+     * Constructor of the search.
+     * 
+     * @param maxDepth The max depth the search is allowed to go.
+     * @param playerColor The color of the player.
+     * @param tt A reference to the transposition table to use
+     * @param s A reference of the status of the root node
+     * @param regularOrder True if a regular move ordering has to be used, false
+     * in the opposite case
+     */
     public RunnableFutureMiniMax(int maxDepth, int playerColor, TT tt, Status s, boolean regularOrder) {
         int remainingMoves = (Status.SIZE*Status.SIZE - 4) - s.getNumMovements();
         
@@ -110,6 +137,12 @@ class RunnableFutureMiniMax implements RunnableFuture {
         this._regularOrder = regularOrder;
     }
 
+    /**
+     * Copy constructor with a depth increase
+     * 
+     * @param r The instance to make the copy from.
+     * @param extraDepth The extra depth to add.
+     */
     public RunnableFutureMiniMax(RunnableFutureMiniMax r, int extraDepth) {
         int remainingMoves = (Status.SIZE*Status.SIZE - 4) - r._s.getNumMovements();
             
@@ -127,6 +160,9 @@ class RunnableFutureMiniMax implements RunnableFuture {
         this._regularOrder = r._regularOrder;
     }
     
+    /**
+     * Execute the task.
+     */
     @Override
     public void run() {
         _lastSelectedHeuristic = minimax(
@@ -154,16 +190,34 @@ class RunnableFutureMiniMax implements RunnableFuture {
         return true;
     }
 
+    /**
+     * Check if the task has been canceled/interrupted.
+     * 
+     * @return True if it has been canceled, false otherwise.
+     */
     @Override
     public boolean isCancelled() {
         return !_searchIsOn;
     }
 
+    /**
+     * Check if the task has ended successfully.
+     * 
+     * @return True if it has ended successfully, false otherwise.
+     */
     @Override
     public boolean isDone() {
         return !_searchIsOn || _finished;
     }
 
+    /**
+     * Get the result of the search if it has ended successfully
+     * 
+     * @return The result of the search if it has ended successfully, null 
+     * otherwise
+     * @throws InterruptedException
+     * @throws ExecutionException 
+     */
     @Override
     public Object get() throws InterruptedException, ExecutionException {
         while(!isDone()) {}
@@ -180,6 +234,18 @@ class RunnableFutureMiniMax implements RunnableFuture {
         }
     }
 
+    /**
+     * Get the result of the search if it has ended successfully in at least l 
+     * [tu].
+     * 
+     * @param l The amount of time to wait
+     * @param tu The units of the time
+     * @return The result of the search if it has ended successfully, null 
+     * otherwise
+     * @throws InterruptedException
+     * @throws ExecutionException
+     * @throws TimeoutException 
+     */
     @Override
     public Object get(long l, TimeUnit tu) throws InterruptedException, ExecutionException, TimeoutException {
         long start = System.currentTimeMillis();
@@ -193,6 +259,11 @@ class RunnableFutureMiniMax implements RunnableFuture {
         }
     }
 
+    /**
+     * Get the max depth the search is allowed to go.
+     * 
+     * @return The max depth the search is allowed to go.
+     */
     public int getMaxDepth() {
         return _maxDepth;
     }

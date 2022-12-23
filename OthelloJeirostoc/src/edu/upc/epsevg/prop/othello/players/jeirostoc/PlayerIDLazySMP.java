@@ -2,7 +2,6 @@ package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
 import edu.upc.epsevg.prop.othello.SearchType;
 import java.io.FileWriter;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.concurrent.ExecutionException;
@@ -14,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Player that does a search using MiniMax iteratively and using a LazySMP
- * parallelization until it gets a timeout
+ * until it gets a timeout
  * 
  * @author raul
  * @author josep
@@ -25,9 +24,22 @@ public class PlayerIDLazySMP extends PlayerBase {
     ////////////////////////////////////////////////////////////////////////////
     
     private class LazySMPExecutor extends ThreadPoolExecutor {
+        /**
+         * Lock to coordinate writing the results of the search to the outer 
+         * class.
+         */
         private final ReentrantLock storeResultsLock = new ReentrantLock();
+        
+        /**
+         * The amount to increment the depth of each task.
+         */
         private final int _depthTaskIncrement;
         
+        /**
+         * Constructor of the ThreadPool
+         * 
+         * @param nThreads The number of threads to use.
+         */
         LazySMPExecutor(int nThreads) {
             super(nThreads, nThreads, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
             _depthTaskIncrement = Math.max(1, nThreads/2);
@@ -37,7 +49,7 @@ public class PlayerIDLazySMP extends PlayerBase {
         protected void afterExecute(Runnable r, Throwable t) {
             super.afterExecute(r, t);
             if(r instanceof RunnableFutureMiniMax rfm) {
-                // Get results
+                // Retrieve results from runnable
                 RunnableFutureMiniMax.Result result;
                 
                 try {
@@ -64,7 +76,7 @@ public class PlayerIDLazySMP extends PlayerBase {
                     storeResultsLock.unlock();
                 }
                     
-                // Generate next task
+                // Generate next task if possible
                 RunnableFutureMiniMax nextTask = new RunnableFutureMiniMax(rfm, _depthTaskIncrement);
                 try {
                     this.execute(nextTask);
@@ -170,7 +182,7 @@ public class PlayerIDLazySMP extends PlayerBase {
         } catch (InterruptedException ex) {
             Logger.getLogger(PlayerIDLazySMP.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
-            // Clean executor for the next search
+            // Regenerate executor for the next search
             _executor = new LazySMPExecutor(Runtime.getRuntime().availableProcessors());
         }
     }
@@ -193,7 +205,14 @@ public class PlayerIDLazySMP extends PlayerBase {
     public String getName() {
         return "JeiroMiniMaxIDLazySMP" ;
     }
-    
+        
+    /**
+     * Get a semicolon-separated string with the header of the information 
+     * retrieved from getLogLineLastSearch.
+     * 
+     * @return The newline-terminated string with the header of the information 
+     * retrieved from getLogLineLastSearch.
+     */
     @Override
     public String getLogLineHeader() {
         StringBuilder sb = new StringBuilder(super.getLogLineHeader());
@@ -202,6 +221,13 @@ public class PlayerIDLazySMP extends PlayerBase {
         return sb.toString();
     }
     
+    /**
+     * Get a semicolon-separated string with all the captured information about 
+     * the last search.
+     * 
+     * @return The newline-terminated string with all the captured information 
+     * about the last search. 
+     */
     @Override
     public String getLogLineLastSearch() {
         StringBuilder sb = new StringBuilder(super.getLogLineLastSearch());

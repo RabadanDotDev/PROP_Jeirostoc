@@ -1,6 +1,5 @@
 package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
-
 /**
  * Transposition table of HeuristicStatus capable of giving a list of explorable
  * nodes.

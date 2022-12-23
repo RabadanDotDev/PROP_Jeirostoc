@@ -946,6 +946,8 @@ public class Status {
     /**
      * Get the bit value in a specific position of a bitset.
      * 
+     * @param bitSet The bitset to extract the bit from
+     * @param bitIndex The index of the bitset
      * @return The bit value in a specific position of a bitset.
      */
     private static long getAt(long bitSet, int bitIndex) {
@@ -956,6 +958,9 @@ public class Status {
      * Check if bit at a specific index in long is in the same status as the
      * given.
      * 
+     * @param bitSet The bitset to extract the bit from
+     * @param bitIndex The index of the bitset
+     * @param status The expected status
      * @return True if the bitSet has a bit equal to status at bitsetIndex.
      */
     private static boolean hasAt(long bitSet, int bitIndex, long status) {
@@ -965,6 +970,8 @@ public class Status {
     /**
      * Check if bit at a specific index in long is set.
      * 
+     * @param bitSet The bitset to extract the bit from
+     * @param bitIndex The index of the bitset
      * @return True if the bitSet has a set bit at bitsetIndex.
      */
     private static boolean isSetAt(long bitSet, int bitIndex) {
@@ -975,6 +982,8 @@ public class Status {
     /**
      * Check if bit at a specific index in long is unset.
      * 
+     * @param bitSet The bitset to extract the bit from
+     * @param bitIndex The index of the bitset
      * @return True if the bitSet has a unset bit at bitsetIndex.
      */
     private static boolean isUnsetAt(long bitSet, int bitIndex) {
@@ -1045,8 +1054,11 @@ public class Status {
     /**
      * Check if any of the bits surrounding a position have a specific status
      * 
+     * @param y The y coordinate, not necessarily valid.
+     * @param x The x coordinate, not necessarily valid.
+     * @param status The expected status.
      * @return True if any of the bits surrounding a position have a specific 
-     * status
+     * status.
      */
     private boolean hasAnyDiscSurroundingWithColor(int x, int y, long status) {
         for (int dir = 0; dir < XINCR.length; dir++) {
@@ -1064,7 +1076,10 @@ public class Status {
     }
     
     /**
-     * Check if the position is stable.
+     * Check if the position is stable
+     * 
+     * @param y The y coordinate, not necessarily valid.
+     * @param x The x coordinate, not necessarily valid.
      */
     private boolean isStableAt(int x, int y) {
         return !inBounds(x, y) || isSetAt(_boardStable, toIndex(x, y));
@@ -1090,6 +1105,9 @@ public class Status {
     /**
      * Set (x, y) if it is a neighbor of a occupied disc. It is assumed not to 
      * be set
+     * 
+     * @param x The x coordinate
+     * @param y The y coordinate
      */
     private void setIfItsNeighbor(int x, int y) {
         if(!isEmpty(x, y))

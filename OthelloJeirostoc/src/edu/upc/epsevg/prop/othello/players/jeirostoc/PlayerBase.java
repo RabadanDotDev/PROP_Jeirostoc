@@ -185,7 +185,7 @@ abstract class PlayerBase implements IAuto, IPlayer {
     ////////////////////////////////////////////////////////////////////////////
     
     /**
-     * Get a newline-terminated string with the header of the information 
+     * Get a semicolon-separated string with the header of the information 
      * retrieved from getLogLineLastSearch.
      * 
      * @return The newline-terminated string with the header of the information 
@@ -224,6 +224,9 @@ abstract class PlayerBase implements IAuto, IPlayer {
         return sb.toString();
     }
     
+    /**
+     * Write to the _fw the log of the last search.
+     */
     private void logLastSearch() {
         try {
             _fw.append(getLogLineLastSearch());

@@ -149,6 +149,9 @@ public class ZobristKeyGen {
                                                                      bp.v;
     }
     
+    /**
+     * Generate the values of the Zobrist hashing.
+     */
     private static void generateValues() {
         Random r = new Random();
         

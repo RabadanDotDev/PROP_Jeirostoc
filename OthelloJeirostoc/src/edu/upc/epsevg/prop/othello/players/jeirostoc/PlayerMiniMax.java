@@ -140,7 +140,14 @@ public class PlayerMiniMax extends PlayerBase {
     public String getName() {
         return "Jeirostoc_MiniMax" ;
     }
-    
+        
+    /**
+     * Get a semicolon-separated string with the header of the information 
+     * retrieved from getLogLineLastSearch.
+     * 
+     * @return The newline-terminated string with the header of the information 
+     * retrieved from getLogLineLastSearch.
+     */
     @Override
     public String getLogLineHeader() {
         StringBuilder sb = new StringBuilder(super.getLogLineHeader());
@@ -149,6 +156,13 @@ public class PlayerMiniMax extends PlayerBase {
         return sb.toString();
     }
     
+    /**
+     * Get a semicolon-separated string with all the captured information about 
+     * the last search.
+     * 
+     * @return The newline-terminated string with all the captured information 
+     * about the last search. 
+     */
     @Override
     public String getLogLineLastSearch() {
         StringBuilder sb = new StringBuilder(super.getLogLineLastSearch());

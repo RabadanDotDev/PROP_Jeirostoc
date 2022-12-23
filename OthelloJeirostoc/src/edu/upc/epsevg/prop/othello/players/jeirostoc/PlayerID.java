@@ -1,6 +1,5 @@
 package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
-import edu.upc.epsevg.prop.othello.SearchType;
 import java.io.FileWriter;
 
 /**
@@ -59,6 +58,7 @@ public class PlayerID extends PlayerIDLazySMP {
     ////////////////////////////////////////////////////////////////////////////
     // Logging                                                                //
     ////////////////////////////////////////////////////////////////////////////
+    
     /**
      * Get the name of the player.
      * 
