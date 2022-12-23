@@ -1,5 +1,13 @@
 package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Transposition table of HeuristicStatus capable of giving a list of explorable
  * nodes.
@@ -95,6 +103,43 @@ public class TT {
     }
     
     /**
+     * Dumps all data form the transposition table to the opening book
+     * @param bw The opening book to write
+     */
+    public void dump(BufferedWriter bw) {
+        for (int i = 0; i < _numEntries; i++) {
+            int index = i * (int)LONGS_PER_ENTRY;
+            try {
+                bw.append(Long.toString(_table[index]));
+                bw.append("\n");
+                bw.append(Long.toString(_table[index+1]));
+                bw.append("\n");
+                bw.flush();
+            } catch (IOException ex) {
+                Logger.getLogger(TT.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    /**
+     * Reads the stored transposition table from the opening book
+     * @param br The opening book to read
+     */
+    public void fill(BufferedReader br) {
+        try {
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                long key = Long.parseLong(line);
+                line = br.readLine();
+                int index = (int) (Long.remainderUnsigned(key, _numEntries)*LONGS_PER_ENTRY);
+                _table[index] = key;
+                _table[index+1] = Long.parseLong(line);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(TT.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
      * Register an entry to the TranspositionTable. It will be added if there is
      * no collision, if the collision has a different min Zobrist hash or the 
      * depthBelow is lower or equal than the provided
@@ -174,8 +219,6 @@ public class TT {
     
     /**
      * Get the number of collisions recorded.
-     * 
-     * @param The number of collisions.
      */
     public long getNumCollisions() {
         return _numColisions;

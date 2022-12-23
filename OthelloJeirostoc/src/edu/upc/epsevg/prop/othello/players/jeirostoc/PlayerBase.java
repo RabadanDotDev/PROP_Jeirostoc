@@ -6,6 +6,10 @@ import edu.upc.epsevg.prop.othello.IPlayer;
 import edu.upc.epsevg.prop.othello.Move;
 import edu.upc.epsevg.prop.othello.SearchType;
 import java.awt.Point;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -27,6 +31,15 @@ abstract class PlayerBase implements IAuto, IPlayer {
      * FileWriter where to write the log of the actions of the player.
      */
     private final FileWriter _fw;
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Opening Book variables                                                 //
+    ////////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * BufferedReader to read full lines of the Opening Book
+     */
+    //private final BufferedReader _opbr;
     
     ////////////////////////////////////////////////////////////////////////////
     // Status heuristic config                                                //
@@ -127,7 +140,14 @@ abstract class PlayerBase implements IAuto, IPlayer {
         // Init search config
         _searchType = searchType;
         _tt = new TT((int)numEntriesTT);
-        
+        /*
+        try {
+            _opbr = new BufferedReader(new FileReader("OpeningBook.txt"));
+            _tt.fill(_opbr);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(PlayerBase.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        */
         // Log config
         _fw = fw;
         if(_fw != null) { 

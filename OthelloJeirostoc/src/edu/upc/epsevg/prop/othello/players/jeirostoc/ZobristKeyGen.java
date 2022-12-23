@@ -2,7 +2,15 @@ package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
 import edu.upc.epsevg.prop.othello.CellType;
 import java.awt.Point;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Helper class to generate Zobrist keys for the Othello game
@@ -150,9 +158,43 @@ public class ZobristKeyGen {
     }
     
     /**
+     * Dumps all zobrist keys form to the opening book
+     * @param bw The opening book to write
+     */
+    public static void dumpValues(BufferedWriter bw) {
+        for (int i = 0; i < VALUES.length; ++i) {
+            try {
+                bw.append(Long.toString(VALUES[i]));
+                bw.append("\n");
+                bw.flush();
+            } catch (IOException ex) {
+                Logger.getLogger(ZobristKeyGen.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    /**
+     * Reads the stored keys from the opening book
+     * @param br The opening book to read
+     * @return Returns how many lines were readed
+     */
+    public static int fillValues(BufferedReader br) {
+        int index = 0;
+        try {
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                VALUES[index] = Long.parseLong(line);
+                index++;
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(ZobristKeyGen.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return index;
+    }
+    
+    /**
      * Generate the values of the Zobrist hashing.
      */
-    private static void generateValues() {
+    private static void generateValues(BufferedWriter bw) {
         Random r = new Random();
         
         // Generate a zobrist value for each position and state of the board
@@ -175,6 +217,9 @@ public class ZobristKeyGen {
             }
         }
         
+        // Add zobrist keys to the Opening Book
+        ZobristKeyGen.dumpValues(bw);
+        
         // Generate the value to indicate that it is the turn of player 2
         long zv = r.nextLong();
         VALUES[VALUES.length-1] = zv;
@@ -189,6 +234,18 @@ public class ZobristKeyGen {
                 1                                // 1 key to specify the player
         ];
         
-        generateValues();
+        int rdk = 0;
+        try {
+            BufferedReader opbr = new BufferedReader(new FileReader("ZobristBook.txt"));
+            rdk = ZobristKeyGen.fillValues(opbr);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(ZobristKeyGen.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            BufferedWriter opbw = new BufferedWriter(new FileWriter("ZobristBook.txt"));
+            if (rdk == 0) generateValues(opbw);
+        } catch (IOException ex) {
+            Logger.getLogger(ZobristKeyGen.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
