@@ -252,7 +252,10 @@ class RunnableFutureMiniMax implements RunnableFuture {
         
         // Get next moves
         ArrayList<Point> nextMoves = new ArrayList<>();
-        s.getNextMoves(nextMoves, selectedNextMove);
+        if(_regularOrder)
+            s.getNextMoves(nextMoves, selectedNextMove);
+        else
+            s.getNextMovesInverse(nextMoves, selectedNextMove);
         
         // Analize moves if they exist
         for (Point nextMove : nextMoves) {

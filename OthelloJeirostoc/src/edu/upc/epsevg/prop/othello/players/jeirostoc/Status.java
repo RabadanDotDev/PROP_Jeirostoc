@@ -690,6 +690,32 @@ public class Status {
     }
     
     /**
+     * Get a list of the next possible statuses starting from this position. The
+     * moves except the bitIndexFirst are ordered in the opposite way as 
+     * getNextMoves()
+     * 
+     * @param result The array to deposit the new statuses objects at the end of
+     * the list.
+     * @param bitIndexFirst The movement's BitIndex of the form SIZE*x + y that
+     * should be added first to the list. It should be a correct position or -1.
+     */
+    public void getNextMovesInverse(List<Point> result, int bitIndexFirst) {
+        // Add the given movement if possible
+        if(bitIndexFirst != -1) {
+            result.add(new Point(bitIndexFirst/SIZE, bitIndexFirst%SIZE));
+        }
+        
+        for (int x = SIZE-1; 0 <= x; x--) {
+            for (int y = SIZE-1; 0 <= y; y--) {
+                if (toIndex(x, y) != bitIndexFirst &&
+                    canMovePiece(x, y, _currentPlayerBit)) {
+                    result.add(new Point(x, y));
+                }
+            }
+        }
+    }
+    
+    /**
      * Get a list of the next possible statuses starting from this position.
      * 
      * @param result The array to deposit the new statuses objects. 
