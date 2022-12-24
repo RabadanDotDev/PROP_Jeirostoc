@@ -37,7 +37,7 @@ public class ZobristKeyGen {
     /**
      * The filename to store the zobrist values to.
      */
-    private final static String filename = "ZobristValues.data";
+    private final static String filename = "JeirostocZobristValues.data";
     
     /**
      * Get the Zobrist value corresponding to the position p with the 
