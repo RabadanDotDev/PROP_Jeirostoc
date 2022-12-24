@@ -107,17 +107,18 @@ public class TT {
      * @param bw The opening book to write
      */
     public void dump(BufferedWriter bw) {
-        for (int i = 0; i < _numEntries; i++) {
-            int index = i * (int)LONGS_PER_ENTRY;
-            try {
-                bw.append(Long.toString(_table[index]));
-                bw.append("\n");
-                bw.append(Long.toString(_table[index+1]));
-                bw.append("\n");
-                bw.flush();
-            } catch (IOException ex) {
-                Logger.getLogger(TT.class.getName()).log(Level.SEVERE, null, ex);
+        try {
+            for (int entry = 0; entry < _numEntries; entry++) {
+                int index = entry * (int)LONGS_PER_ENTRY;
+                if(extractIsValidEntry(_table[index+1])) {
+                    bw.append(Long.toString(_table[index  ])).append("\n");
+                    bw.append(Long.toString(_table[index+1])).append("\n");
+                }
             }
+            
+            bw.flush();
+        } catch (IOException ex) {
+            Logger.getLogger(TT.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
@@ -128,14 +129,24 @@ public class TT {
     public void fill(BufferedReader br) {
         try {
             for (String line = br.readLine(); line != null; line = br.readLine()) {
-                long key = Long.parseLong(line);
-                line = br.readLine();
+                // Extract xored_key+data
+                long xored_key = Long.parseLong(line);
+                long entry     = Long.parseLong(br.readLine());
+                
+                // Write to table
+                long key       = xored_key ^ entry;
                 int index = (int) (Long.remainderUnsigned(key, _numEntries)*LONGS_PER_ENTRY);
-                _table[index] = key;
-                _table[index+1] = Long.parseLong(line);
+                
+                _table[index]   = xored_key;
+                _table[index+1] = entry;
             }
-        } catch (IOException ex) {
+        } catch (IOException | NullPointerException ex) {
             Logger.getLogger(TT.class.getName()).log(Level.SEVERE, null, ex);
+            
+            // Clear table just in case
+            for (int i = 0; i < _table.length; i++) {
+                _table[i] = 0;
+            }
         }
     }
     
