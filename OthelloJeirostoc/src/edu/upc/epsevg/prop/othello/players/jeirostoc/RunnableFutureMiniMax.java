@@ -39,6 +39,16 @@ class RunnableFutureMiniMax implements RunnableFuture {
          */
         final byte lastSelectedMovement;
 
+        /**
+         * Default constructor
+         * 
+         * @param nodesWithComputedHeuristic The number of nodes whose heuristic
+         * was computed
+         * @param depthReached The depth reached
+         * @param lastSelectedHeuristic The last selected heuristic in the 
+         * search
+         * @param lastSelectedMovement The last selected movement in the search
+         */
         Result(long nodesWithComputedHeuristic, int depthReached, float lastSelectedHeuristic, byte lastSelectedMovement) {
             this.nodesWithComputedHeuristic = nodesWithComputedHeuristic;
             this.depthReached = depthReached;
@@ -215,8 +225,8 @@ class RunnableFutureMiniMax implements RunnableFuture {
      * 
      * @return The result of the search if it has ended successfully, null 
      * otherwise
-     * @throws InterruptedException
-     * @throws ExecutionException 
+     * @throws InterruptedException if the containing thread is interrupted
+     * @throws ExecutionException if the execution generated any errors.
      */
     @Override
     public Object get() throws InterruptedException, ExecutionException {
@@ -242,9 +252,10 @@ class RunnableFutureMiniMax implements RunnableFuture {
      * @param tu The units of the time
      * @return The result of the search if it has ended successfully, null 
      * otherwise
-     * @throws InterruptedException
-     * @throws ExecutionException
-     * @throws TimeoutException 
+     * @throws InterruptedException if the containing thread is interrupted
+     * @throws ExecutionException if the execution generated any errors.
+     * @throws TimeoutException if the time has passed without completing the 
+     * task
      */
     @Override
     public Object get(long l, TimeUnit tu) throws InterruptedException, ExecutionException, TimeoutException {

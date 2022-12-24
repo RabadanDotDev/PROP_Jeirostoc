@@ -9,6 +9,9 @@ import java.io.FileWriter;
  * @author josep
  */
 public class PlayerID extends PlayerIDLazySMP {
+    /**
+     * The name of the config.
+     */
     final String configName;
     
     ////////////////////////////////////////////////////////////////////////////
@@ -74,6 +77,6 @@ public class PlayerID extends PlayerIDLazySMP {
      */
     @Override
     public String getName() {
-        return "JeiroMiniMaxID_" + configName;
+        return "JeiroMiniMaxID" + configName;
     }
 }

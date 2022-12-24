@@ -354,8 +354,6 @@ public class TT {
      * @param entry The entry.
      * @param minDepthBelow The minimum depth below the entry has to have to be 
      * able to extract the heuristic from it.
-     * @param isAlpha True to indicate if the expected heuristic is an upper 
-     * bound (true) or a lower bound (false).
      * @return True if the heuristic can be used with the given params and false
      * if not
      */

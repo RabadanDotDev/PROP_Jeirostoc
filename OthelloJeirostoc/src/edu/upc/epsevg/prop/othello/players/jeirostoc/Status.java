@@ -1080,6 +1080,7 @@ public class Status {
      * 
      * @param y The y coordinate, not necessarily valid.
      * @param x The x coordinate, not necessarily valid.
+     * @return True if the position is stable
      */
     private boolean isStableAt(int x, int y) {
         return !inBounds(x, y) || isSetAt(_boardStable, toIndex(x, y));
@@ -1264,7 +1265,6 @@ public class Status {
      * 
      * @param x The x coordinate.
      * @param y The y coordinate.
-     * @param playerBit The player bit.
      */
     private void updateStability(int x, int y) {
         if(isStableAt(x, y) || isUnsetAt(_boardOccupied, toIndex(x, y)) || _stableScore == 0)
@@ -1399,7 +1399,7 @@ public class Status {
     }
       
     /**
-     * Check if a movement at (x,y) would envelop enemies pieces at (dx, dy) 
+     * Check if a movement at (x,y) would envelop enemy pieces at (dx, dy) 
      * direction. The position is assumed to isNeighbor(x, y).
      * 
      * @param x The x coordinate.
@@ -1407,6 +1407,7 @@ public class Status {
      * @param dx The x coordinate increment.
      * @param dy The y coordinate increment.
      * @param playerBit The player bit.
+     * @return true if the movement envelops enemy pieces
      */
     private boolean envelops(int x, int y, int dx, int dy, boolean playerBit) {
         long playerLongBit = (playerBit == P1_BIT ? P1_LONG_BIT : P2_LONG_BIT);
@@ -1527,6 +1528,7 @@ public class Status {
     
     /**
      * Compute the disk score value sum from the current status.
+     * @return The sum of the disk scores
      */
     private float computeDiskScoresSum() {
         float dw = 0;

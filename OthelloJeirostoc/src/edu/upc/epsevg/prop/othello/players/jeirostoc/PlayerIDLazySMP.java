@@ -23,6 +23,9 @@ public class PlayerIDLazySMP extends PlayerBase {
     // Executor subclass                                                      //
     ////////////////////////////////////////////////////////////////////////////
     
+    /**
+     * ThreadPoolExecutor specialization to execute tasks in a LazySMP way.
+     */
     private class LazySMPExecutor extends ThreadPoolExecutor {
         /**
          * Lock to coordinate writing the results of the search to the outer 
