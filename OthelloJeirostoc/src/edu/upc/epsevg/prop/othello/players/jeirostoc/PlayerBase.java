@@ -106,7 +106,7 @@ abstract public class PlayerBase implements IAuto, IPlayer {
     /**
      * The filename to store and read the transposition table from.
      */
-    private static final String TT_FILENAME = "TanspositionTable.data";
+    private static final String TT_FILENAME = "TranspositionTable.data";
     
     /**
      * The max number of movements for the restricted table.
