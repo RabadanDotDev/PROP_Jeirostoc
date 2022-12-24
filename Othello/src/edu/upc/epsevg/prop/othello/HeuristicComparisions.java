@@ -46,15 +46,9 @@ public class HeuristicComparisions {
     
     static int timeout = 2;
     static int gamesAgainstDesdemona = 10;
-    static int gamesAgainstEachOther = 2;
+    static int gamesAgainstEachOther = 4;
     
     public static void main(String[] args) {
-        float[] emptyScores = {
-            0, 
-            0, 0, 
-            0, 0, 0, 
-            0, 0, 0, 0
-        };
         float[] diskScores = {
             5, 
             1, 1, 
@@ -99,8 +93,8 @@ public class HeuristicComparisions {
             0, 0
         ));
         
-        testsDesdemona(settings);
-        //testsInterSettings(settings);
+        //testsDesdemona(settings);
+        testsInterSettings(settings);
     }
     
     static void testsDesdemona(ArrayList<HeuristicSettings> st) {
@@ -143,11 +137,8 @@ public class HeuristicComparisions {
         FileWriter actions2 = null;
         FileWriter gameLog = null;
         // Tests against each other
-        for(int i = 0; i < st.size(); i++) {
-            for (int j = i+1; j < st.size(); j++) {
-                if(i == j)
-                    continue;
-                
+        for(int i = 0; i < 1; i++) {
+            for (int j = i+1; j < st.size(); j++) {                
                 HeuristicSettings s1 = st.get(i);
                 HeuristicSettings s2 = st.get(j);
                 
