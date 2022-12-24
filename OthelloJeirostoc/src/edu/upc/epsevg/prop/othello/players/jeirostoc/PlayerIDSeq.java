@@ -14,6 +14,8 @@ import java.util.logging.Logger;
  * @author josep
  */
 public class PlayerIDSeq extends PlayerBase {
+    public static int globalDepthCutoff = Integer.MAX_VALUE;
+    
     ////////////////////////////////////////////////////////////////////////////
     // Search variables                                                       //
     ////////////////////////////////////////////////////////////////////////////
@@ -84,9 +86,9 @@ public class PlayerIDSeq extends PlayerBase {
         RunnableFutureMiniMax.Result currentResult;
         int remainingMoves = (Status.SIZE*Status.SIZE - 4) - s.getNumMovements();
         
-        for (_maxDepthStarted = 1; _maxDepthStarted <= remainingMoves; _maxDepthStarted++) {
+        for (_maxDepthStarted = 1; _maxDepthStarted <= remainingMoves && _maxDepthStarted <= globalDepthCutoff; _maxDepthStarted++) {
             // Search current depth
-            _currentRun = new RunnableFutureMiniMax(_maxDepthStarted, _playerColor, _tt, s, true);
+            _currentRun = new RunnableFutureMiniMax(Math.min(_maxDepthStarted, globalDepthCutoff), _playerColor, _tt, s, true);
             _currentRun.run();
             try {
                 currentResult = (RunnableFutureMiniMax.Result)_currentRun.get();
