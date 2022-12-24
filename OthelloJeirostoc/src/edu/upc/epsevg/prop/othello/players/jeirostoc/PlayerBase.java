@@ -109,6 +109,11 @@ abstract class PlayerBase implements IAuto, IPlayer {
     private static final String TT_FILENAME = "TanspositionTable.data";
     
     /**
+     * The max number of movements for the restricted table.
+     */
+    private static final int MAX_MOVES_RESTRICTED = 10;
+    
+    /**
      * The type of TT to create.
      */
     private static boolean createRestrictedTable = false;
@@ -121,7 +126,11 @@ abstract class PlayerBase implements IAuto, IPlayer {
         // Instantiate table
         TT tt;
         
-        tt = new TT((int)numEntriesTT);
+        if (createRestrictedTable) {
+            tt = new TTRestricted((int)numEntriesTT, MAX_MOVES_RESTRICTED);
+        } else {
+            tt = new TT((int)numEntriesTT);
+        }
         
         // Try to fill the table from an already existing table from disc
         try {

@@ -2,8 +2,6 @@ package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,7 +73,7 @@ public class TT {
     /**
      * Transposition table internal data.
      */
-    private final long[] _table;
+    protected final long[] _table;
     
     /**
      * Counter for the number of write collisions.
@@ -201,7 +199,7 @@ public class TT {
      * registered entry with a valid movement or -1 as the movement can't be 
      * found, it returns 0.
      * 
-     * @param s The status to register
+     * @param s The status to get the entry from.
      * @return The entry
      */
     public long readEntry(Status s) {
@@ -230,6 +228,8 @@ public class TT {
     
     /**
      * Get the number of collisions recorded.
+     * 
+     * @return The number of collisions recorded.
      */
     public long getNumCollisions() {
         return _numColisions;
