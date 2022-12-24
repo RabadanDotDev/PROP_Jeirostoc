@@ -35,6 +35,11 @@ public class ZobristKeyGen {
     private final static int BOARD_STATE = 2;
     
     /**
+     * The filename to store the zobrist values to.
+     */
+    private final static String filename = "ZobristValues.data";
+    
+    /**
      * Get the Zobrist value corresponding to the position p with the 
      * CellType c and having applied the transformation indicated by bp.
      * 
@@ -176,7 +181,7 @@ public class ZobristKeyGen {
     /**
      * Reads the stored keys from the opening book
      * @param br The opening book to read
-     * @return Returns how many lines were readed
+     * @return Returns how many lines were read
      */
     public static int fillValues(BufferedReader br) {
         int index = 0;
@@ -194,7 +199,7 @@ public class ZobristKeyGen {
     /**
      * Generate the values of the Zobrist hashing.
      */
-    private static void generateValues(BufferedWriter bw) {
+    private static void generateValues() {
         Random r = new Random();
         
         // Generate a zobrist value for each position and state of the board
@@ -217,9 +222,6 @@ public class ZobristKeyGen {
             }
         }
         
-        // Add zobrist keys to the Opening Book
-        ZobristKeyGen.dumpValues(bw);
-        
         // Generate the value to indicate that it is the turn of player 2
         long zv = r.nextLong();
         VALUES[VALUES.length-1] = zv;
@@ -234,16 +236,27 @@ public class ZobristKeyGen {
                 1                                // 1 key to specify the player
         ];
         
-        int rdk = 0;
+        // Try to read already existing values
+        int linesRead = 0;
         try {
-            BufferedReader opbr = new BufferedReader(new FileReader("ZobristBook.txt"));
-            rdk = ZobristKeyGen.fillValues(opbr);
+            BufferedReader br = new BufferedReader(new FileReader(filename));
+            linesRead = ZobristKeyGen.fillValues(br);
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(ZobristKeyGen.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Could not read already existing zobrist value file!");
         }
+        
+        // Generate new values in case they were not read sucessfully
         try {
-            BufferedWriter opbw = new BufferedWriter(new FileWriter("ZobristBook.txt"));
-            if (rdk == 0) generateValues(opbw);
+            if (linesRead != BOARD_SIZE*BOARD_SIZE*BOARD_STATE*BoardVariation.NUMBER + 1) {
+                System.out.println("Generating new zobrist values...");
+                
+                // Gerate values and store them
+                generateValues();
+                
+                // Add zobrist keys to the Opening Book
+                BufferedWriter bw = new BufferedWriter(new FileWriter(filename));
+                ZobristKeyGen.dumpValues(bw);
+            }
         } catch (IOException ex) {
             Logger.getLogger(ZobristKeyGen.class.getName()).log(Level.SEVERE, null, ex);
         }
