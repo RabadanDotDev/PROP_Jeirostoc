@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 
 /**
  * Player that does a search using MiniMax with a given depth and ignores 
- * timeouts
+ * timeouts.
  * 
  * @author raul
  * @author josep
@@ -31,7 +31,7 @@ public class PlayerMiniMax extends PlayerBase {
      * Default constructor.
      * 
      * @param maxDepth The maximum number of movements the player is allowed to 
-     * explore
+     * explore.
      */
     public PlayerMiniMax(int maxDepth) {
         super(SearchType.MINIMAX, null, TT.DEF_NUM_ENTRIES);
@@ -42,7 +42,7 @@ public class PlayerMiniMax extends PlayerBase {
      * Constructor with logging activated.
      * 
      * @param maxDepth The maximum number of movements the player is allowed to 
-     * explore
+     * explore.
      * @param fw File writer to write the logs in csv format to. If it is null, 
      * logging is disabled.
      */
@@ -55,7 +55,7 @@ public class PlayerMiniMax extends PlayerBase {
      * Constructor with custom transposition table size.
      * 
      * @param maxDepth The maximum number of movements the player is allowed to 
-     * explore
+     * explore.
      * @param numEntriesTT The number of entries in the transposition table.
      */
     public PlayerMiniMax(int maxDepth, long numEntriesTT) {
@@ -67,13 +67,13 @@ public class PlayerMiniMax extends PlayerBase {
      * Constructor with custom heuristic scores  and logging.
      * 
      * @param maxDepth The maximum number of movements the player is allowed to 
-     * explore
+     * explore.
      * @param stableScoreConfig Configuration parameter value for Status: the 
-     * score to evaluate the detected positions in with
+     * score to evaluate the detected positions in with.
      * @param diskScoresConfig Configuration parameter value for Status: a list 
-     * of the scores for having captured each position
+     * of the scores for having captured each position.
      * @param neighborScoresConfig Configuration parameter value for Status: a 
-     * list of the scores for having each position as a neighbor
+     * list of the scores for having each position as a neighbor.
      * @param fw File writer to write the logs in csv format to. If it is null, 
      * logging is disabled.
      * @param numEntriesTT The number of entries in the transposition table.
@@ -126,7 +126,7 @@ public class PlayerMiniMax extends PlayerBase {
     /**
      * Get the name of the player.
      * 
-     * @return The name of the player
+     * @return The name of the player.
      */
     @Override
     public String getName() {
