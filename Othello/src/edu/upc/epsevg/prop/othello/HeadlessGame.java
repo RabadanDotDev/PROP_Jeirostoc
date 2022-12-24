@@ -36,7 +36,7 @@ public class HeadlessGame {
     static FileWriter currentGameLog;
 
     public static void main(String[] args) {
-        genOpeningBook();
+        genTimingDifferencesID();
 //        FileWriter fw = null;
 //        try {
 //            long time = System.currentTimeMillis();
@@ -61,6 +61,29 @@ public class HeadlessGame {
 //        reportUpdate(gr1.toString());
 //        reportUpdate(gr2.toString());
 //        reportUpdate("-------------------------------------------------------------");
+    }
+    
+    private static void genTimingDifferencesID() {
+        int timeouts[] = {1, 2, 3, 4, 5};
+        
+        for(int timeout : timeouts) {
+            FileWriter fw = null;
+            long time = System.currentTimeMillis();
+            try {
+                fw = new FileWriter(time + "_timeout_" + timeout + "_actions.csv");
+                currentGameLog = new FileWriter(time + "_timeout_" + timeout + "_gameLog.log");
+                
+            } catch (IOException ex) {
+                Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            IPlayer player = new PlayerID(fw);
+            IPlayer desdemona = new DesdemonaPlayer(2);//GB
+
+            HeadlessGame game = new HeadlessGame(player, desdemona, timeout, 1);
+            GameResult gr = game.start();
+            reportUpdate(gr.toString());
+        }
     }
     
     private static void genOpeningBook() {
