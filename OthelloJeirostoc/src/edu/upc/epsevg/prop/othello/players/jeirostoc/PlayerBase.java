@@ -119,7 +119,7 @@ abstract public class PlayerBase implements IAuto, IPlayer {
     private static boolean createRestrictedTable = false;
     
     /**
-     * Set if TT should be created with the base class or the restricted class
+     * Set if TT should be created with the base class or the restricted class.
      * 
      * @param b True if they should be restricted, false otherwise.
      */
@@ -130,7 +130,7 @@ abstract public class PlayerBase implements IAuto, IPlayer {
     /**
      * Create a TT with the given number entries.
      * 
-     * @param numEntriesTT The number of entries
+     * @param numEntriesTT The number of entries.
      * @return The TT with the given number entries.
      */
     public static TT createTable(int numEntriesTT) {
@@ -143,7 +143,7 @@ abstract public class PlayerBase implements IAuto, IPlayer {
             tt = new TT((int)numEntriesTT);
         }
         
-        // Try to fill the table from an already existing table from disc
+        // Try to fill the table from an already existing table from disk
         try {
             BufferedReader br = new BufferedReader(new FileReader(TT_FILENAME));
             tt.fill(br);
@@ -155,7 +155,7 @@ abstract public class PlayerBase implements IAuto, IPlayer {
     }
     
     /**
-     * Write the contents of the TT into bw
+     * Write the contents of the TT into bw.
      * 
      * @param bw The buffered writer to write into.
      */
@@ -183,11 +183,11 @@ abstract public class PlayerBase implements IAuto, IPlayer {
      * Protected constructor.
      * @param searchType The SearchType of the specialization
      * @param stableScoreConfig Configuration parameter value for Status: the 
-     * score to evaluate the detected positions in with
+     * score to evaluate the detected positions in with.
      * @param diskScoresConfig Configuration parameter value for Status: a list 
-     * of the scores for having captured each position
+     * of the scores for having captured each position.
      * @param neighborScoresConfig Configuration parameter value for Status: a 
-     * list of the scores for having each position as a neighbor
+     * list of the scores for having each position as a neighbor.
      * @param fw File writer to write the logs in csv format to. If it is null, 
      * logging is disabled.
      * @param numEntriesTT The number of entries in the transposition table.

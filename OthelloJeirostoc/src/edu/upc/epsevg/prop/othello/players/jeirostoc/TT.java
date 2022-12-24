@@ -92,7 +92,7 @@ public class TT {
     /**
      * Constructor with a custom table size.
      * 
-     * @param numEntries The number of entries in the table
+     * @param numEntries The number of entries in the table.
      */
     public TT(int numEntries) {
         _numEntries = numEntries;
@@ -101,8 +101,9 @@ public class TT {
     }
     
     /**
-     * Dumps all data form the transposition table to the opening book
-     * @param bw The opening book to write
+     * Dumps all data from the transposition table to the opening book.
+     * 
+     * @param bw The opening book to write.
      */
     public void dump(BufferedWriter bw) {
         try {
@@ -121,8 +122,9 @@ public class TT {
     }
     
     /**
-     * Reads the stored transposition table from the opening book
-     * @param br The opening book to read
+     * Reads the stored transposition table from the opening book.
+     * 
+     * @param br The opening book to read.
      */
     public void fill(BufferedReader br) {
         try {
@@ -151,17 +153,17 @@ public class TT {
     /**
      * Register an entry to the TranspositionTable. It will be added if there is
      * no collision, if the collision has a different min Zobrist hash or the 
-     * depthBelow is lower or equal than the provided
+     * depthBelow is lower or equal than the provided.
      * 
-     * @param s The status to register
-     * @param selectedHeuristic The selected heuristic for this status
+     * @param s The status to register.
+     * @param selectedHeuristic The selected heuristic for this status.
      * @param selectedMovementBitIndex The selected movement expressed in x*SIZE
-     * + y format
-     * @param depthBelow The depth explored below s
+     * + y format.
+     * @param depthBelow The depth explored below s.
      * @param isExact The flag to indicate if the heuristic is exact (true) or 
-     * was calculated with pruning (false)
-     * @param isAlpha The flag to indicate if the heuristic is an lower bound 
-     * (true) or a upper bound (false).
+     * was calculated with pruning (false).
+     * @param isAlpha The flag to indicate if the heuristic is a lower bound 
+     * (true) or an upper bound (false).
      */
     public void register(Status s, float selectedHeuristic, byte selectedMovementBitIndex, byte depthBelow, boolean isExact, boolean isAlpha) {
         // Compute index and key
@@ -173,7 +175,7 @@ public class TT {
         long currentKey      = _table[index];
         long currentEntry    = _table[index+1];
         
-        // Try write
+        // Try to write
         if (!extractIsValidEntry(currentEntry) ||
             (currentKey ^ currentEntry) != key || 
             extractDepthBelow(currentEntry) <= depthBelow) {
@@ -200,7 +202,7 @@ public class TT {
      * found, it returns 0.
      * 
      * @param s The status to get the entry from.
-     * @return The entry
+     * @return The entry.
      */
     public long readEntry(Status s) {
         // Compute index and key
@@ -238,12 +240,12 @@ public class TT {
     /**
      * Express the component entries in the bitpacked format.
      * 
-     * @param selectedHeuristic The selected heuristic
+     * @param selectedHeuristic The selected heuristic.
      * @param selectedMovementBitIndex The selected movement expressed in x*SIZE
-     * + y format
-     * @param depthBelow The depth explored
+     * + y format.
+     * @param depthBelow The depth explored.
      * @param isExact The flag to indicate if the heuristic is exact (true) or 
-     * was calculated with pruning (false)
+     * was calculated with pruning (false).
      * @param isAlpha The flag to indicate if the heuristic is an upper bound 
      * (true) or a lower bound (false).
      * @return The entry in the bitpacked format.
@@ -355,7 +357,7 @@ public class TT {
      * @param minDepthBelow The minimum depth below the entry has to have to be 
      * able to extract the heuristic from it.
      * @return True if the heuristic can be used with the given params and false
-     * if not
+     * if not.
      */
     static boolean canExtractHeuristic(long entry, int minDepthBelow) {
         return extractIsValidEntry(entry) && 

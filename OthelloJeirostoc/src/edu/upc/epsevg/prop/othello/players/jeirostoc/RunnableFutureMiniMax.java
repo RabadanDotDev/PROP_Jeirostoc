@@ -9,7 +9,7 @@ import java.util.concurrent.TimeoutException;
 
 /**
  * MiniMax search algorithm that chooses a move based on a MiniMax exploration 
- * and is executable as runnable
+ * and is executable as runnable.
  * 
  * @author raul
  * @author josep
@@ -125,10 +125,10 @@ class RunnableFutureMiniMax implements RunnableFuture {
      * 
      * @param maxDepth The max depth the search is allowed to go.
      * @param playerColor The color of the player.
-     * @param tt A reference to the transposition table to use
-     * @param s A reference of the status of the root node
+     * @param tt A reference to the transposition table to use.
+     * @param s A reference of the status of the root node.
      * @param regularOrder True if a regular move ordering has to be used, false
-     * in the opposite case
+     * in the opposite case.
      */
     public RunnableFutureMiniMax(int maxDepth, int playerColor, TT tt, Status s, boolean regularOrder) {
         int remainingMoves = (Status.SIZE*Status.SIZE - 4) - s.getNumMovements();
@@ -148,7 +148,7 @@ class RunnableFutureMiniMax implements RunnableFuture {
     }
 
     /**
-     * Copy constructor with a depth increase
+     * Copy constructor with a depth increase.
      * 
      * @param r The instance to make the copy from.
      * @param extraDepth The extra depth to add.
@@ -221,11 +221,11 @@ class RunnableFutureMiniMax implements RunnableFuture {
     }
 
     /**
-     * Get the result of the search if it has ended successfully
+     * Get the result of the search if it has ended successfully.
      * 
      * @return The result of the search if it has ended successfully, null 
      * otherwise
-     * @throws InterruptedException if the containing thread is interrupted
+     * @throws InterruptedException if the containing thread is interrupted.
      * @throws ExecutionException if the execution generated any errors.
      */
     @Override
@@ -248,8 +248,8 @@ class RunnableFutureMiniMax implements RunnableFuture {
      * Get the result of the search if it has ended successfully in at least l 
      * [tu].
      * 
-     * @param l The amount of time to wait
-     * @param tu The units of the time
+     * @param l The amount of time to wait.
+     * @param tu The units of the time.
      * @return The result of the search if it has ended successfully, null 
      * otherwise
      * @throws InterruptedException if the containing thread is interrupted
@@ -295,7 +295,7 @@ class RunnableFutureMiniMax implements RunnableFuture {
      * bounds alpha and beta.
      */
     private float minimax(Status s, int currentDepth, float alpha, float beta, boolean isMax) {
-        // Stop search if the thread recieved an interrupt
+        // Stop search if the thread received an interrupt
         if (Thread.currentThread().isInterrupted()) {
             _searchIsOn = false;
         }
@@ -343,9 +343,9 @@ class RunnableFutureMiniMax implements RunnableFuture {
         else
             s.getNextMovesInverse(nextMoves, selectedNextMove);
         
-        // Analize moves if they exist
+        // Analyze moves if they exist
         for (Point nextMove : nextMoves) {
-            // Check if the analisis can continue (interruption or pruning)
+            // Check if the analysis can continue (interruption or pruning)
             if(!_searchIsOn || beta <= alpha) {
                 _isExact[currentDepth] = false;
                 break;
@@ -373,7 +373,7 @@ class RunnableFutureMiniMax implements RunnableFuture {
             _isExact[currentDepth] = _isExact[currentDepth] && _isExact[currentDepth+1];
         }
         
-        // Analize skipped turn if there is no movements
+        // Analyze skipped turn if there are no movements
         if(nextMoves.isEmpty() && _searchIsOn) {
             // Generate next node
             Status next = new Status(s);
@@ -398,7 +398,7 @@ class RunnableFutureMiniMax implements RunnableFuture {
             );
         }
         
-        // Return the maxmimized or minimized bound
+        // Return the maximized or minimized bound
         _lastSelectedMovement = selectedNextMove;
         return isMax ? alpha : beta;
     }
