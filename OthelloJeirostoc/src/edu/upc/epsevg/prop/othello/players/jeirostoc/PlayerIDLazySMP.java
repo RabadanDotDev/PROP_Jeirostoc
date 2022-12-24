@@ -160,7 +160,7 @@ public class PlayerIDLazySMP extends PlayerBase {
         _maxDepthCompleted = -1;
         for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
             _executor.execute(new RunnableFutureMiniMax(
-                1 + i%2,
+                1 + i/2,
                 s.getCurrentPlayerColor(),
                 _tt,
                 s,
