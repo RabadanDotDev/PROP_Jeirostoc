@@ -62,11 +62,11 @@ public class PlayerIDSeq extends PlayerBase {
      * Constructor with custom heuristic scores and logging.
      * 
      * @param stableScoreConfig Configuration parameter value for Status: the 
-     * score to evaluate the detected positions in with
+     * score to evaluate the detected positions in with.
      * @param diskScoresConfig Configuration parameter value for Status: a list 
-     * of the scores for having captured each position
+     * of the scores for having captured each position.
      * @param neighborScoresConfig Configuration parameter value for Status: a 
-     * list of the scores for having each position as a neighbor
+     * list of the scores for having each position as a neighbor.
      * @param fw File writer to write the logs in csv format to. If it is null, 
      * logging is disabled.
      * @param numEntriesTT The number of entries in the transposition table.
@@ -121,7 +121,7 @@ public class PlayerIDSeq extends PlayerBase {
     /**
      * Get the name of the player.
      * 
-     * @return The name of the player
+     * @return The name of the player.
      */
     @Override
     public String getName() {

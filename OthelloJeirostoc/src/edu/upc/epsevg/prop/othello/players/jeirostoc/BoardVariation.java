@@ -116,7 +116,7 @@ public enum BoardVariation {
     /**
      * Apply transformation at point indexed by bitsetIndex with the form x*SIZE
      * +y by the variation BoardVariation.valueof(variationIndex). If the
-     * bitsetIndex is invalid, it will return -1
+     * bitsetIndex is invalid, returns -1.
      * 
      * @param bitsetIndex The bitsetIndex index to transform.
      * @param variationIndex The index of the variation to transform with.
@@ -149,11 +149,11 @@ public enum BoardVariation {
     /**
      * Apply the inverse transformation at point indexed by bitsetIndex with the
      * form x*SIZE+y by the variation BoardVariation.valueof(variationIndex). If the
-     * bitsetIndex is invalid, it will return -1
+     * bitsetIndex is invalid, returns -1.
      * 
-     * @param bitsetIndex The bitsetIndex index to transform
-     * @param variationIndex The index of the variation to transform with
-     * @return The bitsetIndex with the inverse transformation applied
+     * @param bitsetIndex The bitsetIndex index to transform.
+     * @param variationIndex The index of the variation to transform with.
+     * @return The bitsetIndex with the inverse transformation applied.
      */
     public static byte applyInverseTransformation(byte bitsetIndex, int variationIndex) {
         if (bitsetIndex < 0 || Status.SIZE*Status.SIZE <= bitsetIndex)

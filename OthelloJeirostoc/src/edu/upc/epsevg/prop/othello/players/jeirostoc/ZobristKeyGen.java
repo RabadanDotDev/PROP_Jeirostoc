@@ -13,7 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Helper class to generate Zobrist keys for the Othello game
+ * Helper class to generate Zobrist keys for the Othello game.
  * 
  * @author raul
  * @author josep
@@ -71,7 +71,7 @@ public class ZobristKeyGen {
     
     /**
      * Update a list of Zobrist hashes performing a XOR IN of all the variations
-     * of a specific BitSet index (with the form x*SIZE + y) and a specific status
+     * of a specific BitSet index (with the form x*SIZE + y) and a specific status.
      * 
      * @param keychain The list of Zobrist hashes to update.
      * @param bitsetIndex The BitSet index.
@@ -101,12 +101,12 @@ public class ZobristKeyGen {
     
     /**
      * Get the index of the Zobrist value in VALUES corresponding to the board 
-     * position (x, y) with cell state s after doing the transformation specified
+     * position (x, y) with disk state s after doing the transformation specified
      * by the variation varNum.
      * 
      * @param x The x coordinate.
      * @param y The y coordinate.
-     * @param s The cell state.
+     * @param s The disk state.
      * @param varNum The board variation number.
      * @return The index.
      */
@@ -116,12 +116,12 @@ public class ZobristKeyGen {
     
     /**
      * Get the index of the Zobrist value in VALUES corresponding to the board 
-     * position indicated by bitsetIndex with cell state s after doing the 
+     * position indicated by bitsetIndex with disk state s after doing the 
      * transformation specified by the variation varNum. The BitSet index is 
-     * assumed to be equal to (y*board_size + x)
+     * assumed to be equal to (y*board_size + x).
      * 
      * @param bitsetIndex The BitSet index.
-     * @param s The cell state.
+     * @param s The disk state.
      * @param varNum The board variation number.
      * @return The index.
      */
@@ -133,13 +133,13 @@ public class ZobristKeyGen {
     
     /**
      * Get the index of the Zobrist value in VALUES corresponding to the board 
-     * position (x, y) with cell state s after doing the inverse transformation 
+     * position (x, y) with disk state s after doing the inverse transformation 
      * specified by the variation bp. The inverse transformation is understood 
-     * to be the cell which x, y would fall in after doing bp.
+     * to be the disk which x, y would fall in after doing bp.
      * 
      * @param x The x coordinate.
      * @param y The y coordinate.
-     * @param s The cell state.
+     * @param s The disk state.
      * @param bp The board variation
      * @return The index
      */
@@ -163,8 +163,9 @@ public class ZobristKeyGen {
     }
     
     /**
-     * Dumps all zobrist keys form to the opening book
-     * @param bw The opening book to write
+     * Dumps all zobrist keys to the opening book.
+     * 
+     * @param bw The opening book to write.
      */
     public static void dumpValues(BufferedWriter bw) {
         for (int i = 0; i < VALUES.length; ++i) {
@@ -179,9 +180,10 @@ public class ZobristKeyGen {
     }
     
     /**
-     * Reads the stored keys from the opening book
-     * @param br The opening book to read
-     * @return Returns how many lines were read
+     * Reads the stored keys from the opening book.
+     * 
+     * @param br The opening book to read.
+     * @return Returns how many lines were read.
      */
     public static int fillValues(BufferedReader br) {
         int index = 0;
@@ -245,12 +247,12 @@ public class ZobristKeyGen {
             Logger.getLogger(ZobristKeyGen.class.getName()).log(Level.WARNING, "Could not read already existing zobrist value file!");
         }
         
-        // Generate new values in case they were not read sucessfully
+        // Generate new values in case they were not read successfully 
         try {
             if (linesRead != BOARD_SIZE*BOARD_SIZE*BOARD_STATE*BoardVariation.NUMBER + 1) {
                 Logger.getLogger(ZobristKeyGen.class.getName()).log(Level.INFO, "Generating new zobrist values...");
                 
-                // Gerate values and store them
+                // Generate values and store them
                 generateValues();
                 
                 // Add zobrist keys to the Opening Book

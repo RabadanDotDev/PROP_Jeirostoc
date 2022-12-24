@@ -236,13 +236,13 @@ public class Status {
     private final float[] _neighborScores;
     
     /**
-     * Positions of the game with a disc of any player. The bits are ordered in 
+     * Positions of the game with a disk of any player. The bits are ordered in 
      * the form x*SIZE + y.
      */
     private long _boardOccupied;
     
     /**
-     * The color of the disc of each occupied position. The bits are ordered in 
+     * The color of the disk of each occupied position. The bits are ordered in 
      * the form x*SIZE + y.
      */
     private long _boardColor;
@@ -266,15 +266,15 @@ public class Status {
     
     /**
      * The number of empty neighboring positions to pieces of P1. If an empty 
-     * position is adjacent to more than one discs of P1, it is counted as many 
-     * times as adjacent discs there are.
+     * position is adjacent to more than one disk of P1, it is counted as many 
+     * times as adjacent disks there are.
      */
     private int _neighborsCountP1;
     
     /**
      * The number of empty neighboring positions to pieces of P2. If an empty 
-     * position is adjacent to more than one discs of P2, it is counted as many 
-     * times as adjacent discs there are.
+     * position is adjacent to more than one disk of P2, it is counted as many 
+     * times as adjacent disks there are.
      */
     private int _neighborsCountP2;
     
@@ -304,9 +304,9 @@ public class Status {
     private float _neighborWeightsSum;
     
     /**
-     * The cached heuristic value from the stable disc scores.
+     * The cached heuristic value from the stable disk scores.
      */
-    private float _stableDiscScoreSum;
+    private float _stableDiskScoreSum;
     
     /**
      * The last recorded movement made in the game, expressed in the form SIZE*x
@@ -393,7 +393,7 @@ public class Status {
         _neighborsCountP1   = 0;
         _neighborsCountP2   = 0;
         _neighborWeightsSum = 0;
-        _stableDiscScoreSum = 0;
+        _stableDiskScoreSum = 0;
         
         // Init zobrist keychain
         _zobristKeyChain = new long[BoardVariation.NUMBER];
@@ -417,7 +417,7 @@ public class Status {
      * Constructor with a given board. Starts a game with the given board and 
      * starting player.
      * 
-     * @param board The board. 1 means a disc of P1, -1 means a disc of P2 and 
+     * @param board The board. 1 means a disk of P1, -1 means a disk of P2 and 
      * 0 an empty space.
      * @param startingPlayerBit The bit of the starting player.
      */
@@ -434,11 +434,11 @@ public class Status {
         _boardNeighborsP1 = 0;
         _boardNeighborsP2 = 0;
         
-        // Init neighbours count
+        // Init neighbors count
         _neighborsCountP1 = 0;
         _neighborsCountP2 = 0;
         _neighborWeightsSum = 0;
-        _stableDiscScoreSum = 0;
+        _stableDiskScoreSum = 0;
         
         // Init number of pieces
         _piecesCountP1 = 0;
@@ -482,10 +482,10 @@ public class Status {
      * Constructor from a Game status.
      * 
      * @param gs The game status to copy from.
-     * @param stableScore The score to evaluate the detected positions with
-     * @param diskScores A list of the scores for having captured each position
+     * @param stableScore The score to evaluate the detected positions with.
+     * @param diskScores A list of the scores for having captured each position.
      * @param neighborScores A list of the scores for having each position as a 
-     * neighbor
+     * neighbor.
      */
     public Status(GameStatus gs, float stableScore, float[] diskScores, float[] neighborScores) {
         // Init scoring for heuristic
@@ -537,11 +537,11 @@ public class Status {
         _boardNeighborsP1 = other._boardNeighborsP1;
         _boardNeighborsP2 = other._boardNeighborsP2;
         
-        // Copy player neighbors's count
+        // Copy player neighbors' count
         _neighborsCountP1 = other._neighborsCountP1;
         _neighborsCountP2 = other._neighborsCountP2;
         _neighborWeightsSum = other._neighborWeightsSum;
-        _stableDiscScoreSum = other._stableDiscScoreSum;
+        _stableDiskScoreSum = other._stableDiskScoreSum;
         
         // Copy number of pieces
         _piecesCountP1 = other._piecesCountP1;
@@ -565,7 +565,7 @@ public class Status {
     
     /**
      * Make a movement using the current player at the given point. Point is 
-     * assumed not to be null and to canMovePiece(point.x, point.y)
+     * assumed not to be null and to canMovePiece(point.x, point.y).
      * 
      * @param point The position to make a movement in.
      */
@@ -612,21 +612,21 @@ public class Status {
     }
     
     /**
-     * Get the number of discs a player has.
+     * Get the number of disks a player has.
      * 
      * @param playerBit The player bit.
      * @return The number of movements a player has made.
      */
-    public int getNumDiscs(boolean playerBit) {
+    public int getNumDisks(boolean playerBit) {
         return playerBit == P1_BIT ? _piecesCountP1 : _piecesCountP2;
     }
     
     /**
-     * Get the number of total discs.
+     * Get the number of total disks.
      * 
-     * @return The number of total discs.
+     * @return The number of total disks.
      */
-    public int getNumDiscs() {
+    public int getNumDisks() {
         return _piecesCountP1 + _piecesCountP2;
     }
     
@@ -640,7 +640,7 @@ public class Status {
     }
     
     /**
-     * Get the number of neighbors a player disks has.
+     * Get the number of neighbors player disks has.
      * 
      * @param playerBit The player bit.
      * @return The number of movements a player has made.
@@ -692,7 +692,7 @@ public class Status {
     /**
      * Get a list of the next possible statuses starting from this position. The
      * moves except the bitIndexFirst are ordered in the opposite way as 
-     * getNextMoves()
+     * getNextMoves().
      * 
      * @param result The array to deposit the new statuses objects at the end of
      * the list.
@@ -862,7 +862,7 @@ public class Status {
               .append("\n");
             
             sb.append("Stable score sum")
-              .append(_stableDiscScoreSum)
+              .append(_stableDiskScoreSum)
               .append("\n");
         }
         
@@ -894,7 +894,7 @@ public class Status {
                 return 0;
         }
         
-        return playerColor*(_diskWeightsSum - _neighborWeightsSum + _stableDiscScoreSum);
+        return playerColor*(_diskWeightsSum - _neighborWeightsSum + _stableDiskScoreSum);
     }
     
     /**
@@ -946,8 +946,8 @@ public class Status {
     /**
      * Get the bit value in a specific position of a bitset.
      * 
-     * @param bitSet The bitset to extract the bit from
-     * @param bitIndex The index of the bitset
+     * @param bitSet The bitset to extract the bit from.
+     * @param bitIndex The index of the bitset.
      * @return The bit value in a specific position of a bitset.
      */
     private static long getAt(long bitSet, int bitIndex) {
@@ -955,12 +955,12 @@ public class Status {
     }
     
     /**
-     * Check if bit at a specific index in long is in the same status as the
+     * Check if a bit at a specific index in long is in the same status as the
      * given.
      * 
-     * @param bitSet The bitset to extract the bit from
-     * @param bitIndex The index of the bitset
-     * @param status The expected status
+     * @param bitSet The bitset to extract the bit from.
+     * @param bitIndex The index of the bitset.
+     * @param status The expected status.
      * @return True if the bitSet has a bit equal to status at bitsetIndex.
      */
     private static boolean hasAt(long bitSet, int bitIndex, long status) {
@@ -968,10 +968,10 @@ public class Status {
     }
     
     /**
-     * Check if bit at a specific index in long is set.
+     * Check if a bit at a specific index in long is set.
      * 
-     * @param bitSet The bitset to extract the bit from
-     * @param bitIndex The index of the bitset
+     * @param bitSet The bitset to extract the bit from.
+     * @param bitIndex The index of the bitset.
      * @return True if the bitSet has a set bit at bitsetIndex.
      */
     private static boolean isSetAt(long bitSet, int bitIndex) {
@@ -980,11 +980,11 @@ public class Status {
     
     
     /**
-     * Check if bit at a specific index in long is unset.
+     * Check if a bit at a specific index in long is unset.
      * 
-     * @param bitSet The bitset to extract the bit from
-     * @param bitIndex The index of the bitset
-     * @return True if the bitSet has a unset bit at bitsetIndex.
+     * @param bitSet The bitset to extract the bit from.
+     * @param bitIndex The index of the bitset.
+     * @return True if the bitSet has an unset bit at bitsetIndex.
      */
     private static boolean isUnsetAt(long bitSet, int bitIndex) {
         return ((bitSet >> bitIndex) & 1L) == 0L;
@@ -1015,19 +1015,19 @@ public class Status {
     }
     
     /**
-     * Check if there is a disc at (x, y).
+     * Check if there is a disk at (x, y).
      * 
      * @param x The x coordinate, not necessarily valid.
      * @param y The y coordinate, not necessarily valid.
-     * @return True if there is a valid disc at (x, y).
+     * @return True if there is a valid disk at (x, y).
      */
-    private boolean hasDisc(int x, int y) {
+    private boolean hasDisk(int x, int y) {
         return inBounds(x, y) && 
                isSetAt(_boardOccupied, toIndex(x, y));
     }
     
     /**
-     * Check if there is a empty pos at (x, y).
+     * Check if there is an empty pos at (x, y).
      * 
      * @param x The x coordinate, not necessarily valid.
      * @param y The y coordinate, not necessarily valid.
@@ -1039,11 +1039,11 @@ public class Status {
     }
     
     /**
-     * Checks if a disc is a neighbor from _boardNeighbours.
+     * Checks if a disk is a neighbor from _boardNeighbours.
      * 
      * @param x The x coordinate, not necessarily valid.
      * @param y The y coordinate, not necessarily valid.
-     * @param playerBit The bit of the player to check
+     * @param playerBit The bit of the player to check.
      * @return True if there is a valid neighbor at (x, y).
      */
     private boolean isNeighbor(int x, int y, boolean playerBit) {
@@ -1052,7 +1052,7 @@ public class Status {
     }
     
     /**
-     * Check if any of the bits surrounding a position have a specific status
+     * Check if any of the bits surrounding a position have a specific status.
      * 
      * @param y The y coordinate, not necessarily valid.
      * @param x The x coordinate, not necessarily valid.
@@ -1060,7 +1060,7 @@ public class Status {
      * @return True if any of the bits surrounding a position have a specific 
      * status.
      */
-    private boolean hasAnyDiscSurroundingWithColor(int x, int y, long status) {
+    private boolean hasAnyDiskSurroundingWithColor(int x, int y, long status) {
         for (int dir = 0; dir < XINCR.length; dir++) {
             int x2 = x + XINCR[dir]; int y2 = y + YINCR[dir];
             
@@ -1076,7 +1076,7 @@ public class Status {
     }
     
     /**
-     * Check if the position is stable
+     * Check if the position is stable.
      * 
      * @param y The y coordinate, not necessarily valid.
      * @param x The x coordinate, not necessarily valid.
@@ -1086,13 +1086,13 @@ public class Status {
     }
     
     /**
-     * Check if the position is stable because its out of bounds or is stable
-     * with the given color
+     * Check if the position is stable because it's out of bounds or is stable
+     * with the given color.
      * 
-     * @param x The x coordinate
-     * @param y The y coordinate
-     * @param status The expected status if hasDisc(x, y)
-     * @return True if the position is stable
+     * @param x The x coordinate.
+     * @param y The y coordinate.
+     * @param status The expected status if hasDisk(x, y).
+     * @return True if the position is stable.
      */
     private boolean hasStableWithColor(int x, int y, long status) {
         return !inBounds(x, y) || (
@@ -1103,11 +1103,11 @@ public class Status {
     }
     
     /**
-     * Set (x, y) if it is a neighbor of a occupied disc. It is assumed not to 
-     * be set
+     * Set (x, y) if it is a neighbor of a occupied disk. It is assumed not to 
+     * be set.
      * 
-     * @param x The x coordinate
-     * @param y The y coordinate
+     * @param x The x coordinate.
+     * @param y The y coordinate.
      */
     private void setIfItsNeighbor(int x, int y) {
         if(!isEmpty(x, y))
@@ -1117,7 +1117,7 @@ public class Status {
         boolean p2Set = false;
         for (int dir = 0; dir < XINCR.length && (!p1Set || !p2Set); dir++) {
             int x2 = x + XINCR[dir], y2 = y + YINCR[dir];
-            if(!hasDisc(x2, y2)) {
+            if(!hasDisk(x2, y2)) {
                 continue;
             }
             
@@ -1247,11 +1247,11 @@ public class Status {
             }
             
             // Unset old
-            if(playerBit == P2_BIT && !hasAnyDiscSurroundingWithColor(x2, y2, P1_LONG_BIT)) {
+            if(playerBit == P2_BIT && !hasAnyDiskSurroundingWithColor(x2, y2, P1_LONG_BIT)) {
                 _boardNeighborsP1 &= ~(1L << toIndex(x2, y2));
                 _neighborsCountP1--;
                 _neighborWeightsSum -= _neighborScores[toIndex(x2, y2)];
-            } else if(playerBit == P1_BIT && !hasAnyDiscSurroundingWithColor(x2, y2, P2_LONG_BIT)) {
+            } else if(playerBit == P1_BIT && !hasAnyDiskSurroundingWithColor(x2, y2, P2_LONG_BIT)) {
                 _boardNeighborsP2 &= ~(1L << toIndex(x2, y2));
                 _neighborsCountP2--;
                 _neighborWeightsSum += _neighborScores[toIndex(x2, y2)];
@@ -1260,7 +1260,7 @@ public class Status {
     }
     
     /**
-     * Update the stability status of (x,y).
+     * Update the stability status of (x, y).
      * 
      * @param x The x coordinate.
      * @param y The y coordinate.
@@ -1270,7 +1270,7 @@ public class Status {
         if(isStableAt(x, y) || isUnsetAt(_boardOccupied, toIndex(x, y)) || _stableScore == 0)
             return;
         
-        // Check surrounding stability with same color discs
+        // Check surrounding stability with same color disks
         int sameColorDifDirectionCount = 0;
         long thisColor = getAt(_boardColor, toIndex(x, y));
         
@@ -1289,9 +1289,9 @@ public class Status {
             
             // Update stable score
             if (thisColor == P1_LONG_BIT) {
-                _stableDiscScoreSum += _stableScore;
+                _stableDiskScoreSum += _stableScore;
             } else {
-                _stableDiscScoreSum -= _stableScore;
+                _stableDiskScoreSum -= _stableScore;
             }
             
             // Update surrounding
@@ -1299,7 +1299,7 @@ public class Status {
                 updateStability(x + XINCR[i], y + YINCR[i]);
             }
         } else {
-            // Check surrounding stability with different color discs
+            // Check surrounding stability with different color disks
             long otherColor = ~thisColor;
             
             for (int i = 0; i < XINCR.length; i+=2) {
@@ -1319,7 +1319,7 @@ public class Status {
      */
     private void regenStability() {
         _boardStable = 0;
-        _stableDiscScoreSum = 0;
+        _stableDiskScoreSum = 0;
         
         updateStability(0,      0);
         updateStability(0,      SIZE-1);
@@ -1328,7 +1328,7 @@ public class Status {
     }
     
     /**
-     * Claim position (x,y) for player. The position is assumed to 
+     * Claim position (x, y) for player. The position is assumed to 
      * canMovePiece(x, y) or being called from the constructor.
      * 
      * @param x The x coordinate.
@@ -1366,7 +1366,7 @@ public class Status {
     }
 
     /**
-     * Flip position (x,y). The position is assumed to hasDisc(x, y) and to have
+     * Flip position (x, y). The position is assumed to hasDisk(x, y) and to have
      * !playerBit.
      * 
      * @param x The x coordinate.
@@ -1399,7 +1399,7 @@ public class Status {
     }
       
     /**
-     * Check if a movement at (x,y) would envelop enemies pieces at (dx, dy) 
+     * Check if a movement at (x, y) would envelop enemies pieces at (dx, dy) 
      * direction. The position is assumed to isNeighbor(x, y).
      * 
      * @param x The x coordinate.
@@ -1413,7 +1413,7 @@ public class Status {
         long otherLongBit  = (playerBit == P1_BIT ? P2_LONG_BIT : P1_LONG_BIT);
         
         // Go to the specified direction until out of bounds or finding a free 
-        // position or a player's disc
+        // position or a player's disk
         int positionsSeen = 0;
         do {
             x+=dx;
@@ -1434,10 +1434,10 @@ public class Status {
     }
     
     /**
-     * Check if a movement at (x,y) can be made with the given playerBit.
+     * Check if a movement at (x, y) can be made with the given playerBit.
      * 
      * @param x The x coordinate.
-     * @param y The y coordinate    . 
+     * @param y The y coordinate. 
      * @param playerBit The playerBit coordinate.
      * @return True if only if a movement can be made at (x, y) with playerBit.
      */
@@ -1455,7 +1455,7 @@ public class Status {
     }
     
     /**
-     * Make a movement at (x,y) with direction (dx, dy). The position, bit and 
+     * Make a movement at (x, y) with direction (dx, dy). The position, bit and 
      * direction are assumed to be correct.
      * 
      * @param x The x coordinate.
@@ -1467,11 +1467,11 @@ public class Status {
     private void flipEnveloped(int x, int y, int dx, int dy, boolean playerBit) {
         long otherLongBit  = (playerBit == P1_BIT ? P2_LONG_BIT : P1_LONG_BIT);
         
-        // Align to the first disc to flip
+        // Align to the first disk to flip
         x+=dx;
         y+=dy;
         
-        // Flip discs until getting to the other same-color bit
+        // Flip disks until getting to the other same-color bit
         do {
             flipPosition(x, y, playerBit);
             x+=dx;
@@ -1510,7 +1510,8 @@ public class Status {
     }
     
     /**
-     * Check if the current game is in terminal state
+     * Check if the current game is in terminal state.
+     * 
      * @return True if it is terminal, false if it is not.
      */
     private boolean computeIsTerminal() {

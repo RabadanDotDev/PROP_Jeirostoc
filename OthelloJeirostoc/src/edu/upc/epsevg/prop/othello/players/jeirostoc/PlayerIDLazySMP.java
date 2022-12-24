@@ -13,7 +13,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Player that does a search using MiniMax iteratively and using a LazySMP
- * until it gets a timeout
+ * until it gets a timeout.
  * 
  * @author raul
  * @author josep
@@ -137,13 +137,13 @@ public class PlayerIDLazySMP extends PlayerBase {
      * Constructor with custom heuristic scores.
      * 
      * @param stableScoreConfig Configuration parameter value for Status: the 
-     * score to evaluate the detected positions in with
+     * score to evaluate the detected positions in with.
      * @param diskScoresConfig Configuration parameter value for Status: a list 
-     * of the scores for having captured each position
+     * of the scores for having captured each position.
      * @param neighborScoresConfig Configuration parameter value for Status: a 
-     * list of the scores for having each position as a neighbor
+     * list of the scores for having each position as a neighbor.
      * @param fw File writer to write the logs in csv format to. If it is null, 
-     * logging is disabled
+     * logging is disabled.
      * @param numEntriesTT The number of entries in the transposition table.
      */
     public PlayerIDLazySMP(float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw, long numEntriesTT) {
