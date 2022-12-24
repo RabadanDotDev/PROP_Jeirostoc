@@ -81,7 +81,7 @@ public class PlayerIDLazySMP extends PlayerBase {
                 }
                 
                 
-                if(globalDepthCutoff == _maxDepthCompleted) {
+                if(globalDepthCutoff <= _maxDepthCompleted) {
                     this.shutdownNow();
                     return;
                 }
