@@ -66,7 +66,8 @@ public class PlayerIDLazySMP extends PlayerBase {
                 storeResultsLock.lock();
                 try {
                     _nodesWithComputedHeuristic += result.nodesWithComputedHeuristic;
-                    if(_maxDepthCompleted < rfm.getMaxDepth()) {
+                    if( _maxDepthCompleted <  rfm.getMaxDepth() || 
+                       (_maxDepthCompleted == rfm.getMaxDepth() &&  _depthReached < result.depthReached)) {
                         _maxDepthCompleted = rfm.getMaxDepth();
                         _depthReached = result.depthReached;
                         _lastSelectedHeuristic = result.lastSelectedHeuristic;
