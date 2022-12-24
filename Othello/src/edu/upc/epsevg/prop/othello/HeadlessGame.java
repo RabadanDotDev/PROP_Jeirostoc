@@ -12,6 +12,7 @@ import edu.upc.epsevg.prop.othello.players.jeirostoc.PlayerID;
 import edu.upc.epsevg.prop.othello.players.jeirostoc.PlayerIDLazySMP;
 import edu.upc.epsevg.prop.othello.players.jeirostoc.PlayerIDSeq;
 import edu.upc.epsevg.prop.othello.players.jeirostoc.PlayerMiniMax;
+import edu.upc.epsevg.prop.othello.players.jeirostoc.RunnableFutureMiniMax;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -67,9 +68,10 @@ public class HeadlessGame {
         }
         
     private static void genDepthDifferencesIDMinMax() {
-        for (int i = 5; i < 20; i++) {
+        for (int i = 5; i < 25; i++) {
             PlayerIDLazySMP.globalDepthCutoff = i;
             PlayerIDSeq.globalDepthCutoff = i;
+            RunnableFutureMiniMax.globalDepthCutoff = i;
             IPlayer playerIDPar  = new PlayerIDLazySMP();
             IPlayer playerIDSeq  = new PlayerIDSeq();
             IPlayer playerMinMax = new PlayerMiniMax(i);//GB
@@ -87,7 +89,6 @@ public class HeadlessGame {
             System.out.println("Depth " + i + " player minmax time: \t\t" + (timeMinMax2 - timeMinMax1));
             
             long timePar1 = System.nanoTime();
-            
             GameStatus gs1 = new GameStatus();
             gs1.movePiece(playerIDPar.move(gs1).getTo());
             long timePar2 = System.nanoTime();

@@ -144,12 +144,12 @@ abstract public class PlayerBase implements IAuto, IPlayer {
         }
         
         // Try to fill the table from an already existing table from disc
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(TT_FILENAME));
-            tt.fill(br);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(PlayerBase.class.getName()).log(Level.WARNING, "Could not find the TT table!");
-        }
+//        try {
+//            BufferedReader br = new BufferedReader(new FileReader(TT_FILENAME));
+//            tt.fill(br);
+//        } catch (FileNotFoundException ex) {
+//            Logger.getLogger(PlayerBase.class.getName()).log(Level.WARNING, "Could not find the TT table!");
+//        }
         
         return tt;
     }

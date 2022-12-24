@@ -14,7 +14,7 @@ import java.util.concurrent.TimeoutException;
  * @author raul
  * @author josep
  */
-class RunnableFutureMiniMax implements RunnableFuture {
+public class RunnableFutureMiniMax implements RunnableFuture {
     public static int globalDepthCutoff = Integer.MAX_VALUE;
     
     /**
