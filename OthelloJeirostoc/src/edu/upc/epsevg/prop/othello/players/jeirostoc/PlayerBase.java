@@ -170,9 +170,10 @@ abstract public class PlayerBase implements IAuto, IPlayer {
     /**
      * Protected constructor.
      * 
-     * @param searchAlg The SearchAlg to use
+     * @param searchType The SearchType of the specialization
      * @param fw File writer to write the logs in csv format to. If it is null, 
      * logging is disabled.
+     * @param numEntriesTT The number of entries in the TT
      */
     protected PlayerBase(SearchType searchType, FileWriter fw, long numEntriesTT) {
         this(searchType, Status.STABLE_SCORE_DEFAULT, Status.DISK_SCORES_DEFAULT, Status.NEIGHBOR_SCORES_DEFAULT, fw, numEntriesTT);
@@ -180,7 +181,7 @@ abstract public class PlayerBase implements IAuto, IPlayer {
     
     /**
      * Protected constructor.
-     * @param searchAlg The SearchAlg to use
+     * @param searchType The SearchType of the specialization
      * @param stableScoreConfig Configuration parameter value for Status: the 
      * score to evaluate the detected positions in with
      * @param diskScoresConfig Configuration parameter value for Status: a list 
