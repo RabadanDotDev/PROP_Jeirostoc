@@ -36,31 +36,28 @@ public class HeadlessGame {
     static FileWriter currentGameLog;
 
     public static void main(String[] args) {
-        genTimingDifferencesID();
-//        FileWriter fw = null;
-//        try {
-//            long time = System.currentTimeMillis();
-//            fw = new FileWriter(time + "_actions.csv");
-//            currentGameLog = new FileWriter(time + "_gameLog.log");
-//        } catch (IOException ex) {
-//            Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        
-//        IPlayer player = new PlayerID(fw);
-//        //Player player2 = new RandomPlayer("Desdesmonasia");
-//        IPlayer desdemona = new DesdemonaPlayer(2);//GB
-//
-//        
-//        HeadlessGame game1 = new HeadlessGame(player, desdemona, 2, 5);
-//        GameResult gr1 = game1.start();
-//        
-//        HeadlessGame game2 = new HeadlessGame(desdemona, player, 2, 5);
-//        GameResult gr2 = game2.start();
-//
-//        reportUpdate("-------------------------------------------------------------");
-//        reportUpdate(gr1.toString());
-//        reportUpdate(gr2.toString());
-//        reportUpdate("-------------------------------------------------------------");
+        FileWriter fw = null;
+        try {
+            long time = System.currentTimeMillis();
+            fw = new FileWriter(time + "_actions.csv");
+            currentGameLog = new FileWriter(time + "_gameLog.log");
+        } catch (IOException ex) {
+            Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        IPlayer player = new PlayerID(fw);
+        IPlayer desdemona = new DesdemonaPlayer(2);//GB
+
+        HeadlessGame game1 = new HeadlessGame(player, desdemona, 2, 15);
+        GameResult gr1 = game1.start();
+        
+        HeadlessGame game2 = new HeadlessGame(desdemona, player, 2, 15);
+        GameResult gr2 = game2.start();
+
+        reportUpdate("-------------------------------------------------------------");
+        reportUpdate(gr1.toString());
+        reportUpdate(gr2.toString());
+        reportUpdate("-------------------------------------------------------------");
     }
     
     private static void genTimingDifferencesID() {
