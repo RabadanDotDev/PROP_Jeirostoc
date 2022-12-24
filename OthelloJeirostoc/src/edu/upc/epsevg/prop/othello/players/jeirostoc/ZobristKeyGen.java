@@ -242,13 +242,13 @@ public class ZobristKeyGen {
             BufferedReader br = new BufferedReader(new FileReader(filename));
             linesRead = ZobristKeyGen.fillValues(br);
         } catch (FileNotFoundException ex) {
-            System.out.println("Could not read already existing zobrist value file!");
+            Logger.getLogger(ZobristKeyGen.class.getName()).log(Level.WARNING, "Could not read already existing zobrist value file!");
         }
         
         // Generate new values in case they were not read sucessfully
         try {
             if (linesRead != BOARD_SIZE*BOARD_SIZE*BOARD_STATE*BoardVariation.NUMBER + 1) {
-                System.out.println("Generating new zobrist values...");
+                Logger.getLogger(ZobristKeyGen.class.getName()).log(Level.INFO, "Generating new zobrist values...");
                 
                 // Gerate values and store them
                 generateValues();
@@ -259,6 +259,7 @@ public class ZobristKeyGen {
             }
         } catch (IOException ex) {
             Logger.getLogger(ZobristKeyGen.class.getName()).log(Level.SEVERE, null, ex);
+            generateValues();
         }
     }
 }

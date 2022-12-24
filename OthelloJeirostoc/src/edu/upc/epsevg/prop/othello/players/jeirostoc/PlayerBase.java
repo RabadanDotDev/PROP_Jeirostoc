@@ -100,6 +100,41 @@ abstract class PlayerBase implements IAuto, IPlayer {
     protected final TT _tt;
     
     ////////////////////////////////////////////////////////////////////////////
+    // TT config and creation                                                 //
+    ////////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * The filename to store and read the transposition table from.
+     */
+    private static final String TT_FILENAME = "TanspositionTable.data";
+    
+    /**
+     * The type of TT to create.
+     */
+    private static boolean createRestrictedTable = false;
+    
+    public static void setCreateRestrictedTable(boolean b) {
+        createRestrictedTable = b;
+    }
+    
+    public static TT createTable(int numEntriesTT) {
+        // Instantiate table
+        TT tt;
+        
+        tt = new TT((int)numEntriesTT);
+        
+        // Try to fill the table from an already existing table from disc
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(TT_FILENAME));
+            tt.fill(br);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(PlayerBase.class.getName()).log(Level.WARNING, "Could not find the TT table!");
+        }
+        
+        return tt;
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
     // Constructor                                                            //
     ////////////////////////////////////////////////////////////////////////////
     
@@ -130,14 +165,9 @@ abstract class PlayerBase implements IAuto, IPlayer {
     protected PlayerBase(SearchType searchType, float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw, long numEntriesTT) {
         // Init search config
         _searchType = searchType;
-        _tt = new TT((int)numEntriesTT);
         
-        try {
-            BufferedReader opbr = new BufferedReader(new FileReader("OpeningBook.txt"));
-            _tt.fill(opbr);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(PlayerBase.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        // TT
+        _tt = createTable((int)numEntriesTT);
         
         // Log config
         _fw = fw;
