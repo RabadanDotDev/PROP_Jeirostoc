@@ -45,10 +45,25 @@ public class HeuristicComparisions {
     static ArrayList<HeuristicSettings> settings = new ArrayList<>();
     
     static int timeout = 2;
-    static int gamesAgainstDesdemona = 2;
-    static int gamesAgainstEachOther = 2;
+    static int gamesAgainstDesdemona = 10;
+    static int gamesAgainstEachOther = 4;
     
-    public static void main(String[] args) {        
+    public static void main(String[] args) {
+        float[] diskScores = {
+            5, 
+            1, 1, 
+            2, 1, 4, 
+            2, 1, 3, 1
+        };
+        float[] neighborScores = {
+            4, 
+            1.5f, 1, 
+            2   , 1, 1, 
+            2   , 1, 1, 0
+        };
+        float[] diskScoresTable = Status.generateScoringTable(diskScores);
+        float[] neighborScoresTable = Status.generateScoringTable(neighborScores);
+        
         settings.add(new HeuristicSettings(
             "Ekaitz",
             Status.STABLE_SCORE_DEFAULT, 
@@ -63,46 +78,11 @@ public class HeuristicComparisions {
             Status.NEIGHBOR_SCORES_DEFAULT,
             0, 0
         ));
-        float[] emptyScores = {
-            0, 
-            0, 0, 
-            0, 0, 0, 
-            0, 0, 0, 0
-        };
-        float[] diskScores = {
-            5, 
-            1, 1, 
-            2, 1, 4, 
-            2, 1, 3, 1
-        };
-        float[] neighborScores = {
-            4, 
-            1.5f, 1, 
-            2   , 1, 1, 
-            2   , 1, 1, 0
-        };
-        float[] emptyTable = Status.generateScoringTable(emptyScores);
-        float[] diskScoresTable = Status.generateScoringTable(diskScores);
-        float[] neighborScoresTable = Status.generateScoringTable(neighborScores);
-        settings.add(new HeuristicSettings (
-            "Rogelio",
-            Status.STABLE_SCORE_DEFAULT,
-            diskScoresTable,
-            neighborScoresTable,
-            0, 0
-        ));
         settings.add(new HeuristicSettings (
             "Ataulfo",
             0,
             diskScoresTable,
             neighborScoresTable,
-            0, 0
-        ));
-        settings.add(new HeuristicSettings (
-            "Santiago",
-            Status.STABLE_SCORE_DEFAULT,
-            diskScoresTable,
-            emptyTable,
             0, 0
         ));
         settings.add(new HeuristicSettings(
@@ -112,8 +92,8 @@ public class HeuristicComparisions {
             Status.NEIGHBOR_SCORES_DEFAULT,
             0, 0
         ));
+        //testsDesdemona(settings);
         testsInterSettings(settings);
-        testsDesdemona(settings);
     }
     
     static void testsDesdemona(ArrayList<HeuristicSettings> st) {
@@ -156,11 +136,8 @@ public class HeuristicComparisions {
         FileWriter actions2 = null;
         FileWriter gameLog = null;
         // Tests against each other
-        for(int i = 0; i < st.size(); i++) {
-            for (int j = i+1; j < st.size(); j++) {
-                if(i == j)
-                    continue;
-                
+        for(int i = 0; i < 1; i++) {
+            for (int j = i+1; j < st.size(); j++) {                
                 HeuristicSettings s1 = st.get(i);
                 HeuristicSettings s2 = st.get(j);
                 
