@@ -48,7 +48,7 @@ public class HeuristicComparisions {
     static int gamesAgainstDesdemona = 2;
     static int gamesAgainstEachOther = 2;
     
-    public static void main(String[] args) {
+    public static void main(String[] args) {        
         settings.add(new HeuristicSettings(
             "Ekaitz",
             Status.STABLE_SCORE_DEFAULT, 
@@ -134,10 +134,11 @@ public class HeuristicComparisions {
             }
             
             // Do game
-            IPlayer player = new PlayerID(
-                    s.stableScoreConfig, 
+            IPlayer player;
+            player = new PlayerID(
+                    s.stableScoreConfig,
                     s.discScoresConfig, 
-                    s.neighborScoresConfig, 
+                    s.neighborScoresConfig,
                     actions1,
                     s.name,
                     TT.DEF_NUM_ENTRIES
@@ -166,9 +167,9 @@ public class HeuristicComparisions {
                 // Create output files
                 try {
                     long time = System.currentTimeMillis();
-                    actions1 = new FileWriter(time + "_" + s1.name + "_vs_ " + s2.name + "_actions_" + s1.name + ".csv");
-                    actions2 = new FileWriter(time + "_" + s1.name + "_vs_ " + s2.name + "_actions_" + s2.name + ".csv");
-                    gameLog = new FileWriter(time + "_" + s1.name + "_vs_ " + s2.name + "_gameLog.log");
+                    actions1 = new FileWriter(time + "_" + s1.name + "_vs_" + s2.name + "_actions_" + s1.name + ".csv");
+                    actions2 = new FileWriter(time + "_" + s1.name + "_vs_" + s2.name + "_actions_" + s2.name + ".csv");
+                    gameLog = new FileWriter(time + "_" + s1.name + "_vs_" + s2.name + "_gameLog.log");
                 } catch (IOException ex) {
                     Logger.getLogger(HeadlessGame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
                 }
