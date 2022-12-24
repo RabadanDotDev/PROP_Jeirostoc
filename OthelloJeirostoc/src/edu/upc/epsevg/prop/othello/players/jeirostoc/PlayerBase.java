@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  * @author raul
  * @author josep
  */
-abstract class PlayerBase implements IAuto, IPlayer {
+abstract public class PlayerBase implements IAuto, IPlayer {
     ////////////////////////////////////////////////////////////////////////////
     // Logging variables                                                      //
     ////////////////////////////////////////////////////////////////////////////
@@ -100,7 +100,7 @@ abstract class PlayerBase implements IAuto, IPlayer {
     protected final TT _tt;
     
     ////////////////////////////////////////////////////////////////////////////
-    // TT config and creation                                                 //
+    // TT config, creation and dumping                                        //
     ////////////////////////////////////////////////////////////////////////////
     
     /**
@@ -118,10 +118,21 @@ abstract class PlayerBase implements IAuto, IPlayer {
      */
     private static boolean createRestrictedTable = false;
     
+    /**
+     * Set if TT should be created with the base class or the restricted class
+     * 
+     * @param b True if they should be restricted, false otherwise.
+     */
     public static void setCreateRestrictedTable(boolean b) {
         createRestrictedTable = b;
     }
     
+    /**
+     * Create a TT with the given number entries.
+     * 
+     * @param numEntriesTT The number of entries
+     * @return The TT with the given number entries.
+     */
     public static TT createTable(int numEntriesTT) {
         // Instantiate table
         TT tt;
@@ -141,6 +152,15 @@ abstract class PlayerBase implements IAuto, IPlayer {
         }
         
         return tt;
+    }
+    
+    /**
+     * Write the contents of the TT into bw
+     * 
+     * @param bw The buffered writer to write into.
+     */
+    public void dumpTT(BufferedWriter bw) {
+        _tt.dump(bw);
     }
     
     ////////////////////////////////////////////////////////////////////////////

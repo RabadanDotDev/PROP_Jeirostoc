@@ -7,7 +7,9 @@ package edu.upc.epsevg.prop.othello;
 
 import edu.upc.epsevg.prop.othello.players.DesdemonaPlayer;
 import edu.upc.epsevg.prop.othello.players.RandomPlayer;
+import edu.upc.epsevg.prop.othello.players.jeirostoc.PlayerBase;
 import edu.upc.epsevg.prop.othello.players.jeirostoc.PlayerID;
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -34,30 +36,161 @@ public class HeadlessGame {
     static FileWriter currentGameLog;
 
     public static void main(String[] args) {
-        FileWriter fw = null;
+        genOpeningBook();
+//        FileWriter fw = null;
+//        try {
+//            long time = System.currentTimeMillis();
+//            fw = new FileWriter(time + "_actions.csv");
+//            currentGameLog = new FileWriter(time + "_gameLog.log");
+//        } catch (IOException ex) {
+//            Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//        
+//        IPlayer player = new PlayerID(fw);
+//        //Player player2 = new RandomPlayer("Desdesmonasia");
+//        IPlayer desdemona = new DesdemonaPlayer(2);//GB
+//
+//        
+//        HeadlessGame game1 = new HeadlessGame(player, desdemona, 2, 5);
+//        GameResult gr1 = game1.start();
+//        
+//        HeadlessGame game2 = new HeadlessGame(desdemona, player, 2, 5);
+//        GameResult gr2 = game2.start();
+//
+//        reportUpdate("-------------------------------------------------------------");
+//        reportUpdate(gr1.toString());
+//        reportUpdate(gr2.toString());
+//        reportUpdate("-------------------------------------------------------------");
+    }
+    
+    private static void genOpeningBook() {
+        FileWriter fw1    = null;
+        FileWriter fw2    = null;
+        long time = System.currentTimeMillis();
         try {
-            long time = System.currentTimeMillis();
-            fw = new FileWriter(time + "_actions.csv");
+            fw1 = new FileWriter(time + "_actions1.csv");
+            fw2 = new FileWriter(time + "_actions2.csv");
             currentGameLog = new FileWriter(time + "_gameLog.log");
         } catch (IOException ex) {
             Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        IPlayer player = new PlayerID(fw);
-        //Player player2 = new RandomPlayer("Desdesmonasia");
+        PlayerBase.setCreateRestrictedTable(true);
+        PlayerBase playerGenOpeningBook = new PlayerID(fw1);
+        PlayerBase.setCreateRestrictedTable(false);
+        
+        PlayerBase playerAgainstItself = new PlayerID(fw2);
+        
         IPlayer desdemona = new DesdemonaPlayer(2);//GB
 
+        {
+            BufferedWriter ttdump = null;
+            try {
+                ttdump = new BufferedWriter(new FileWriter(time + "tt1.data"));
+            } catch (IOException ex) {
+                Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
+            }
         
-        HeadlessGame game1 = new HeadlessGame(player, desdemona, 2, 5);
-        GameResult gr1 = game1.start();
+            reportUpdate("------------------PLAYER AGAINST ITSELF---------------------");
+            HeadlessGame game1 = new HeadlessGame(playerGenOpeningBook, playerAgainstItself, 2, 5);
+            GameResult gr1 = game1.start();
+            HeadlessGame game2 = new HeadlessGame(playerAgainstItself, playerGenOpeningBook, 2, 5);
+            GameResult gr2 = game2.start();
+            reportUpdate("-------------------------------------------------------------");
+            reportUpdate(gr1.toString());
+            reportUpdate(gr2.toString());
+            reportUpdate("-------------------------------------------------------------");
+            
+            playerGenOpeningBook.dumpTT(ttdump);
+            try {
+                ttdump.close();
+            } catch (IOException ex) {
+                Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
         
-        HeadlessGame game2 = new HeadlessGame(desdemona, player, 2, 5);
-        GameResult gr2 = game2.start();
+        {
+            BufferedWriter ttdump = null;
+            try {
+                ttdump = new BufferedWriter(new FileWriter(time + "tt2.data"));
+            } catch (IOException ex) {
+                Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            reportUpdate("------------------PLAYER AGAISNT DESDEMONA-------------------");
+            HeadlessGame game1 = new HeadlessGame(playerGenOpeningBook, desdemona, 2, 5);
+            GameResult gr1 = game1.start();
+            HeadlessGame game2 = new HeadlessGame(desdemona, playerGenOpeningBook, 2, 5);
+            GameResult gr2 = game2.start();
+            reportUpdate("-------------------------------------------------------------");
+            reportUpdate(gr1.toString());
+            reportUpdate(gr2.toString());
+            reportUpdate("-------------------------------------------------------------");
+            
+            playerGenOpeningBook.dumpTT(ttdump);
+            try {
+                ttdump.close();
+            } catch (IOException ex) {
+                Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        {
+            BufferedWriter ttdump = null;
+            try {
+                ttdump = new BufferedWriter(new FileWriter(time + "tt3.data"));
+            } catch (IOException ex) {
+                Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            
+            reportUpdate("------------------PLAYER MOVE FROM ROOT-------------------");
+            computeMovement(playerGenOpeningBook, 60*60);
+            
+            playerGenOpeningBook.dumpTT(ttdump);
+            try {
+                ttdump.close();
+            } catch (IOException ex) {
+                Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+    
+    private static void computeMovement(IPlayer p, int timeout) {
+        final Semaphore semaphore = new Semaphore(1);
+        semaphore.tryAcquire();
+        
+        Thread t1 = new Thread(() -> {
+                Move m = null;
+                m = p.move(new GameStatus());
+                
+                if (m != null) {
+                    reportUpdate("Moves " + m.getTo());
+                }
+                
+                semaphore.release();
+            });
 
-        reportUpdate("-------------------------------------------------------------");
-        reportUpdate(gr1.toString());
-        reportUpdate(gr2.toString());
-        reportUpdate("-------------------------------------------------------------");
+            Thread t2 = new Thread(() -> {
+                try {
+                    Thread.sleep(timeout * 1000);
+                } catch (InterruptedException ex) {
+                }
+                
+                p.timeout();
+            });
+
+            t1.start();
+            t2.start();
+            long WAIT_EXTRA_TIME = 2000;
+            try {
+                if (!semaphore.tryAcquire(1, timeout * 1000 + WAIT_EXTRA_TIME, TimeUnit.MILLISECONDS)) {
+                    reportUpdate("Player not finishing properlly");
+                    semaphore.acquire();
+                }
+
+            } catch (InterruptedException ex) {
+                Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
+            }
     }
 
     private static void reportUpdate(String str) {
