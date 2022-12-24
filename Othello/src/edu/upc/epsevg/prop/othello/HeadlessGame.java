@@ -9,6 +9,9 @@ import edu.upc.epsevg.prop.othello.players.DesdemonaPlayer;
 import edu.upc.epsevg.prop.othello.players.RandomPlayer;
 import edu.upc.epsevg.prop.othello.players.jeirostoc.PlayerBase;
 import edu.upc.epsevg.prop.othello.players.jeirostoc.PlayerID;
+import edu.upc.epsevg.prop.othello.players.jeirostoc.PlayerIDLazySMP;
+import edu.upc.epsevg.prop.othello.players.jeirostoc.PlayerIDSeq;
+import edu.upc.epsevg.prop.othello.players.jeirostoc.PlayerMiniMax;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -36,7 +39,7 @@ public class HeadlessGame {
     static FileWriter currentGameLog;
 
     public static void main(String[] args) {
-        genTimingDifferencesID();
+        genDepthDifferencesIDMinMax();
 //        FileWriter fw = null;
 //        try {
 //            long time = System.currentTimeMillis();
@@ -61,6 +64,35 @@ public class HeadlessGame {
 //        reportUpdate(gr1.toString());
 //        reportUpdate(gr2.toString());
 //        reportUpdate("-------------------------------------------------------------");
+    }
+    
+    private static void genDepthDifferencesIDMinMax() {
+        for (int i = 5; i < 14; i++) {
+            PlayerIDLazySMP.globalDepthCutoff = i;
+            PlayerIDSeq.globalDepthCutoff = i;
+            IPlayer playerIDPar  = new PlayerIDLazySMP();
+            IPlayer playerIDSeq  = new PlayerIDSeq();
+            IPlayer playerMinMax = new PlayerMiniMax(i);//GB
+            
+            long timeSeq1 = System.currentTimeMillis();
+            GameStatus gs2 = new GameStatus();
+            gs2.movePiece(playerIDSeq.move(gs2).getTo());
+            long timeSeq2 = System.currentTimeMillis();
+            System.out.println("Depth " + i + " player ID seq time: " + (timeSeq2 - timeSeq1));    
+            
+            long timeMinMax1 = System.currentTimeMillis();
+            GameStatus gs3 = new GameStatus();
+            gs3.movePiece(playerMinMax.move(gs3).getTo());
+            long timeMinMax2 = System.currentTimeMillis();
+            System.out.println("Depth " + i + " player minmax time: " + (timeMinMax2 - timeMinMax1));
+            
+            long timePar1 = System.currentTimeMillis();
+            GameStatus gs1 = new GameStatus();
+            gs1.movePiece(playerIDPar.move(gs1).getTo());
+            long timePar2 = System.currentTimeMillis();
+            System.out.println("Depth " + i + " player ID paralel time: " + (timePar2 - timePar1));
+        }
+        
     }
     
     private static void genTimingDifferencesID() {

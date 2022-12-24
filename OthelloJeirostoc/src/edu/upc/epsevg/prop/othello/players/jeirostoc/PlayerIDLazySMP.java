@@ -19,6 +19,9 @@ import java.util.concurrent.locks.ReentrantLock;
  * @author josep
  */
 public class PlayerIDLazySMP extends PlayerBase {
+    public static int globalDepthCutoff = Integer.MAX_VALUE;
+    
+    
     ////////////////////////////////////////////////////////////////////////////
     // Executor subclass                                                      //
     ////////////////////////////////////////////////////////////////////////////
@@ -76,7 +79,13 @@ public class PlayerIDLazySMP extends PlayerBase {
                 } finally {
                     storeResultsLock.unlock();
                 }
-                    
+                
+                
+                if(globalDepthCutoff == _maxDepthCompleted) {
+                    this.shutdownNow();
+                    return;
+                }
+                
                 // Generate next task if possible
                 RunnableFutureMiniMax nextTask = new RunnableFutureMiniMax(rfm, _depthTaskIncrement);
                 try {
@@ -159,15 +168,17 @@ public class PlayerIDLazySMP extends PlayerBase {
     protected void doSearch(Status s) {
         // Start thread execution
         _maxDepthCompleted = -1;
-        for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
-            _executor.execute(new RunnableFutureMiniMax(
-                1 + i/2,
-                s.getCurrentPlayerColor(),
-                _tt,
-                s,
-                i%2 == 0
-            ));
-        }
+        try {
+            for (int i = 0; i < Runtime.getRuntime().availableProcessors(); i++) {
+                _executor.execute(new RunnableFutureMiniMax(
+                    1 + i/2,
+                    s.getCurrentPlayerColor(),
+                    _tt,
+                    s,
+                    i%2 == 0
+                ));
+            }
+        } catch (RejectedExecutionException e) {}
         
         // Wait for the search to complete
         try {

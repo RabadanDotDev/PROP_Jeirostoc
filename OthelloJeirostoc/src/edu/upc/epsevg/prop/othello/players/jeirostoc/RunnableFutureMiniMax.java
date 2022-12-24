@@ -15,6 +15,8 @@ import java.util.concurrent.TimeoutException;
  * @author josep
  */
 class RunnableFutureMiniMax implements RunnableFuture {
+    public static int globalDepthCutoff = Integer.MAX_VALUE;
+    
     /**
      * Result class to group all the execution information.
      */
@@ -135,6 +137,10 @@ class RunnableFutureMiniMax implements RunnableFuture {
         this._isExact = new boolean[Status.SIZE*Status.SIZE];
         this._s = s;
         this._regularOrder = regularOrder;
+        
+        if(globalDepthCutoff < _maxDepth) {
+            _searchIsOn = false;
+        }
     }
 
     /**
@@ -158,6 +164,10 @@ class RunnableFutureMiniMax implements RunnableFuture {
         this._isExact = new boolean[Status.SIZE*Status.SIZE];
         this._s = r._s;
         this._regularOrder = r._regularOrder;
+        
+        if(globalDepthCutoff < _maxDepth) {
+            _searchIsOn = false;
+        }
     }
     
     /**
