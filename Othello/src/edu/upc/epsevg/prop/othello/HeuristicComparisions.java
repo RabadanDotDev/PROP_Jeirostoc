@@ -92,7 +92,6 @@ public class HeuristicComparisions {
             Status.NEIGHBOR_SCORES_DEFAULT,
             0, 0
         ));
-        
         //testsDesdemona(settings);
         testsInterSettings(settings);
     }

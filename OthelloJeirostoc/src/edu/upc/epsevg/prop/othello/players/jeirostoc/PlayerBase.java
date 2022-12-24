@@ -6,6 +6,10 @@ import edu.upc.epsevg.prop.othello.IPlayer;
 import edu.upc.epsevg.prop.othello.Move;
 import edu.upc.epsevg.prop.othello.SearchType;
 import java.awt.Point;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -96,6 +100,50 @@ abstract class PlayerBase implements IAuto, IPlayer {
     protected final TT _tt;
     
     ////////////////////////////////////////////////////////////////////////////
+    // TT config and creation                                                 //
+    ////////////////////////////////////////////////////////////////////////////
+    
+    /**
+     * The filename to store and read the transposition table from.
+     */
+    private static final String TT_FILENAME = "TanspositionTable.data";
+    
+    /**
+     * The max number of movements for the restricted table.
+     */
+    private static final int MAX_MOVES_RESTRICTED = 10;
+    
+    /**
+     * The type of TT to create.
+     */
+    private static boolean createRestrictedTable = false;
+    
+    public static void setCreateRestrictedTable(boolean b) {
+        createRestrictedTable = b;
+    }
+    
+    public static TT createTable(int numEntriesTT) {
+        // Instantiate table
+        TT tt;
+        
+        if (createRestrictedTable) {
+            tt = new TTRestricted((int)numEntriesTT, MAX_MOVES_RESTRICTED);
+        } else {
+            tt = new TT((int)numEntriesTT);
+        }
+        
+        // Try to fill the table from an already existing table from disc
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(TT_FILENAME));
+            tt.fill(br);
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(PlayerBase.class.getName()).log(Level.WARNING, "Could not find the TT table!");
+        }
+        
+        return tt;
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////
     // Constructor                                                            //
     ////////////////////////////////////////////////////////////////////////////
     
@@ -126,7 +174,9 @@ abstract class PlayerBase implements IAuto, IPlayer {
     protected PlayerBase(SearchType searchType, float stableScoreConfig, float[] diskScoresConfig, float[] neighborScoresConfig, FileWriter fw, long numEntriesTT) {
         // Init search config
         _searchType = searchType;
-        _tt = new TT((int)numEntriesTT);
+        
+        // TT
+        _tt = createTable((int)numEntriesTT);
         
         // Log config
         _fw = fw;

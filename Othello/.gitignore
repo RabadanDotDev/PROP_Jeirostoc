@@ -40,3 +40,4 @@ nbdist/
 .nb-gradle/
 *.csv
 *.log
+*.data

@@ -1,5 +1,11 @@
 package edu.upc.epsevg.prop.othello.players.jeirostoc;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * Transposition table of HeuristicStatus capable of giving a list of explorable
  * nodes.
@@ -67,7 +73,7 @@ public class TT {
     /**
      * Transposition table internal data.
      */
-    private final long[] _table;
+    protected final long[] _table;
     
     /**
      * Counter for the number of write collisions.
@@ -92,6 +98,54 @@ public class TT {
         _numEntries = numEntries;
         _table = new long[(int)(_numEntries*LONGS_PER_ENTRY)];
         _numColisions = 0;
+    }
+    
+    /**
+     * Dumps all data form the transposition table to the opening book
+     * @param bw The opening book to write
+     */
+    public void dump(BufferedWriter bw) {
+        try {
+            for (int entry = 0; entry < _numEntries; entry++) {
+                int index = entry * (int)LONGS_PER_ENTRY;
+                if(extractIsValidEntry(_table[index+1])) {
+                    bw.append(Long.toString(_table[index  ])).append("\n");
+                    bw.append(Long.toString(_table[index+1])).append("\n");
+                }
+            }
+            
+            bw.flush();
+        } catch (IOException ex) {
+            Logger.getLogger(TT.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    
+    /**
+     * Reads the stored transposition table from the opening book
+     * @param br The opening book to read
+     */
+    public void fill(BufferedReader br) {
+        try {
+            for (String line = br.readLine(); line != null; line = br.readLine()) {
+                // Extract xored_key+data
+                long xored_key = Long.parseLong(line);
+                long entry     = Long.parseLong(br.readLine());
+                
+                // Write to table
+                long key       = xored_key ^ entry;
+                int index = (int) (Long.remainderUnsigned(key, _numEntries)*LONGS_PER_ENTRY);
+                
+                _table[index]   = xored_key;
+                _table[index+1] = entry;
+            }
+        } catch (IOException | NullPointerException ex) {
+            Logger.getLogger(TT.class.getName()).log(Level.SEVERE, null, ex);
+            
+            // Clear table just in case
+            for (int i = 0; i < _table.length; i++) {
+                _table[i] = 0;
+            }
+        }
     }
     
     /**
@@ -145,7 +199,7 @@ public class TT {
      * registered entry with a valid movement or -1 as the movement can't be 
      * found, it returns 0.
      * 
-     * @param s The status to register
+     * @param s The status to get the entry from.
      * @return The entry
      */
     public long readEntry(Status s) {
@@ -175,7 +229,7 @@ public class TT {
     /**
      * Get the number of collisions recorded.
      * 
-     * @param The number of collisions.
+     * @return The number of collisions recorded.
      */
     public long getNumCollisions() {
         return _numColisions;
