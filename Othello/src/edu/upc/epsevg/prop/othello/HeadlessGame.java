@@ -37,15 +37,15 @@ public class HeadlessGame {
 
     public static void main(String[] args) {
         FileWriter fw = null;
+        long time = System.currentTimeMillis();
         try {
-            long time = System.currentTimeMillis();
             fw = new FileWriter(time + "_actions.csv");
             currentGameLog = new FileWriter(time + "_gameLog.log");
         } catch (IOException ex) {
             Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        IPlayer player = new PlayerID(fw);
+        PlayerID player = new PlayerID(fw);
         IPlayer desdemona = new DesdemonaPlayer(2);//GB
 
         HeadlessGame game1 = new HeadlessGame(player, desdemona, 2, 15);
@@ -58,6 +58,21 @@ public class HeadlessGame {
         reportUpdate(gr1.toString());
         reportUpdate(gr2.toString());
         reportUpdate("-------------------------------------------------------------");
+        
+        // Store TT
+        BufferedWriter ttdump = null;
+        try {
+            ttdump = new BufferedWriter(new FileWriter(time + "tt.data"));
+        } catch (IOException ex) {
+            Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+            
+        player.dumpTT(ttdump);
+        try {
+            ttdump.close();
+        } catch (IOException ex) {
+            Logger.getLogger(HeadlessGame.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     private static void genTimingDifferencesID() {
