@@ -224,9 +224,9 @@ public class StatusTest {
         assertEquals(reference.toString(), incremental.toString());
         assertEquals(direct.toString(true), copied.toString(true));
         assertEquals(direct.toString(true), incremental.toString(true));
-        assertEquals(reference.getScore(CellType.PLAYER1), direct.getNumDiscs(true));
-        assertEquals(reference.getScore(CellType.PLAYER1), copied.getNumDiscs(true));
-        assertEquals(reference.getScore(CellType.PLAYER1), incremental.getNumDiscs(true));
+        assertEquals(reference.getScore(CellType.PLAYER1), direct.getNumDisks(true));
+        assertEquals(reference.getScore(CellType.PLAYER1), copied.getNumDisks(true));
+        assertEquals(reference.getScore(CellType.PLAYER1), incremental.getNumDisks(true));
         assertEquals(referenceMoves, directMoves);
         assertEquals(referenceMoves, copiedMoves);
         assertEquals(referenceMoves, incrementalMoves);
@@ -257,9 +257,9 @@ public class StatusTest {
             assertEquals(reference.toString(), incremental.toString());
             assertEquals(direct.toString(true), copied.toString(true));
             assertEquals(direct.toString(true), incremental.toString(true));
-            assertEquals(reference.getScore(CellType.PLAYER1), direct.getNumDiscs(true));
-            assertEquals(reference.getScore(CellType.PLAYER1), copied.getNumDiscs(true));
-            assertEquals(reference.getScore(CellType.PLAYER1), incremental.getNumDiscs(true));
+            assertEquals(reference.getScore(CellType.PLAYER1), direct.getNumDisks(true));
+            assertEquals(reference.getScore(CellType.PLAYER1), copied.getNumDisks(true));
+            assertEquals(reference.getScore(CellType.PLAYER1), incremental.getNumDisks(true));
             assertEquals(referenceMoves, directMoves);
             assertEquals(referenceMoves, copiedMoves);
             assertEquals(referenceMoves, incrementalMoves);
@@ -299,8 +299,8 @@ public class StatusTest {
             assertEquals(reference.toString(), copied.toString());
             assertEquals(reference.toString(), incremental.toString());
             assertEquals(copied.toString(true), incremental.toString(true));
-            assertEquals(reference.getScore(CellType.PLAYER1), copied.getNumDiscs(true));
-            assertEquals(reference.getScore(CellType.PLAYER1), incremental.getNumDiscs(true));
+            assertEquals(reference.getScore(CellType.PLAYER1), copied.getNumDisks(true));
+            assertEquals(reference.getScore(CellType.PLAYER1), incremental.getNumDisks(true));
             assertEquals(referenceMoves, copiedMoves);
             assertEquals(referenceMoves, incrementalMoves);
             
@@ -333,8 +333,8 @@ public class StatusTest {
                 assertEquals(reference.toString(), copied.toString());
                 assertEquals(reference.toString(), incremental.toString());
                 assertEquals(copied.toString(true), incremental.toString(true));
-                assertEquals(reference.getScore(CellType.PLAYER1), copied.getNumDiscs(true));
-                assertEquals(reference.getScore(CellType.PLAYER1), incremental.getNumDiscs(true));
+                assertEquals(reference.getScore(CellType.PLAYER1), copied.getNumDisks(true));
+                assertEquals(reference.getScore(CellType.PLAYER1), incremental.getNumDisks(true));
                 assertEquals(referenceMoves, copiedMoves);
                 assertEquals(referenceMoves, incrementalMoves);
                 if(p != null) {
