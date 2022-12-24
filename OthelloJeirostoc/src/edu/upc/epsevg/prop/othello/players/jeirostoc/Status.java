@@ -574,7 +574,7 @@ public class Status {
     }
     
     /**
-     * Check if a movement at (x,y) can be made with currentPlayerColor.
+     * Check if a movement at (x, y) can be made with currentPlayerColor.
      * 
      * @param x The x coordinate.
      * @param y The y coordinate.
@@ -1080,7 +1080,7 @@ public class Status {
      * 
      * @param y The y coordinate, not necessarily valid.
      * @param x The x coordinate, not necessarily valid.
-     * @return True if the position is stable
+     * @return True if the position is stable.
      */
     private boolean isStableAt(int x, int y) {
         return !inBounds(x, y) || isSetAt(_boardStable, toIndex(x, y));
@@ -1407,7 +1407,7 @@ public class Status {
      * @param dx The x coordinate increment.
      * @param dy The y coordinate increment.
      * @param playerBit The player bit.
-     * @return true if the movement envelops enemy pieces
+     * @return true if the movement envelops enemy pieces.
      */
     private boolean envelops(int x, int y, int dx, int dy, boolean playerBit) {
         long playerLongBit = (playerBit == P1_BIT ? P1_LONG_BIT : P2_LONG_BIT);
@@ -1529,7 +1529,7 @@ public class Status {
     
     /**
      * Compute the disk score value sum from the current status.
-     * @return The sum of the disk scores
+     * @return The sum of the disk scores.
      */
     private float computeDiskScoresSum() {
         float dw = 0;
