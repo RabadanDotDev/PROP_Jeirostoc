@@ -45,10 +45,10 @@ public class HeuristicComparisions {
     static ArrayList<HeuristicSettings> settings = new ArrayList<>();
     
     static int timeout = 2;
-    static int gamesAgainstDesdemona = 2;
-    static int gamesAgainstEachOther = 2;
+    static int gamesAgainstDesdemona = 30;
+    static int gamesAgainstEachOther = 6;
     
-    public static void main(String[] args) {        
+    public static void main(String[] args) {
         settings.add(new HeuristicSettings(
             "Ekaitz",
             Status.STABLE_SCORE_DEFAULT, 
@@ -60,6 +60,55 @@ public class HeuristicComparisions {
             "Fionnghuala",
             0, 
             Status.DISK_SCORES_DEFAULT,
+            Status.NEIGHBOR_SCORES_DEFAULT,
+            0, 0
+        ));
+        float[] emptyScores = {
+            0, 
+            0, 0, 
+            0, 0, 0, 
+            0, 0, 0, 0
+        };
+        float[] diskScores = {
+            5, 
+            1, 1, 
+            2, 1, 4, 
+            2, 1, 3, 1
+        };
+        float[] neighborScores = {
+            4, 
+            1.5f, 1, 
+            2   , 1, 1, 
+            2   , 1, 1, 0
+        };
+        float[] emptyTable = Status.generateScoringTable(emptyScores);
+        float[] diskScoresTable = Status.generateScoringTable(diskScores);
+        float[] neighborScoresTable = Status.generateScoringTable(neighborScores);
+        settings.add(new HeuristicSettings (
+            "Rogelio",
+            Status.STABLE_SCORE_DEFAULT,
+            diskScoresTable,
+            neighborScoresTable,
+            0, 0
+        ));
+        settings.add(new HeuristicSettings (
+            "Ataulfo",
+            0,
+            diskScoresTable,
+            neighborScoresTable,
+            0, 0
+        ));
+        settings.add(new HeuristicSettings (
+            "Santiago",
+            Status.STABLE_SCORE_DEFAULT,
+            diskScoresTable,
+            emptyTable,
+            0, 0
+        ));
+        settings.add(new HeuristicSettings(
+            "Magnolio",
+            Status.STABLE_SCORE_DEFAULT,
+            diskScoresTable,
             Status.NEIGHBOR_SCORES_DEFAULT,
             0, 0
         ));
